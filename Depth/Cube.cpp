@@ -1,5 +1,4 @@
 // 引入GLEW库 定义静态链接
-//使用键盘操作相机
 #define GLEW_STATIC
 #include <GLEW/glew.h>
 // 引入GLFW库
@@ -18,9 +17,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-glm::vec3 cameraPos(1.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront(0.f, 0.f, -1.0f);
-glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+
 int main(int argc, char** argv)
 {
 	
@@ -149,15 +146,6 @@ int main(int argc, char** argv)
 	Shader shader("cube.vertex", "cube.frag");
 	glEnable(GL_DEPTH_TEST);
 	glCullFace(GL_BACK);
-	shader.use();
-	
-	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
-
-	for (int i = 0; i < sizeof(cubePostitions) / sizeof(glm::vec3); i++)
-	{
-		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-	}
-	shader.unUse();
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -166,9 +154,14 @@ int main(int argc, char** argv)
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+		//定义modelMatrix
+		long time = glfwGetTime();
+		GLfloat radius = 5.0f;
+		float camx = sin(time)* radius;
+		float camz = cos(time)* radius;
 		glm::mat4 model;
-		glm::mat4 view = glm::lookAt(cameraPos, cameraPos+cameraFront, cameraUp);
+		glm::mat4 view = glm::lookAt(glm::vec3(camx, 0.0, camz), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 projection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
 		// 这里填写场景绘制代码
 		glBindVertexArray(VAOId);
 		shader.use();
@@ -180,7 +173,7 @@ int main(int argc, char** argv)
 			model = glm::translate(model, cubePostitions[i]);
 			glUniformMatrix4fv(glGetUniformLocation(shader.programId, "model"), 1, GL_FALSE, glm::value_ptr(model));
 			glUniformMatrix4fv(glGetUniformLocation(shader.programId, "view"), 1, GL_FALSE, glm::value_ptr(view));
-
+			glUniformMatrix4fv(glGetUniformLocation(shader.programId, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		
@@ -199,46 +192,8 @@ int main(int argc, char** argv)
 }
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	float cameraSpeed = 0.05f; // adjust accordingly
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
-	}
-	else if (key == GLFW_KEY_W && action == GLFW_PRESS)
-	{
-		cameraPos += cameraSpeed * cameraFront;
-		
-	}
-	else if (key == GLFW_KEY_S && action == GLFW_PRESS)
-	{
-		cameraPos -= cameraSpeed * cameraFront;
-	}
-	else if (key == GLFW_KEY_D && action == GLFW_PRESS)
-	{
-		//todo
-	
-		glm::vec3 right = glm::normalize( glm::cross(cameraUp, cameraFront));
-		cameraPos += right * cameraSpeed;
-	}
-	else if (key == GLFW_KEY_A && action == GLFW_PRESS)
-	{
-		//todo
-		
-		glm::vec3 right =glm::normalize(glm::cross(cameraUp, cameraFront));
-		//right = glm::normalize(right);
-		cameraPos -= right * cameraSpeed;
-	}
-	else if (key == GLFW_KEY_UP)
-	{
-		//计算向上移动的方向
-		glm::vec3 right = glm::normalize(glm::cross(cameraUp, cameraFront));
-		cameraPos += glm::normalize(glm::cross(cameraFront, right))*cameraSpeed;
-	}
-
-	else if (key == GLFW_KEY_DOWN)
-	{
-		//计算向下移动的方向
-		glm::vec3 right = glm::normalize(glm::cross(cameraUp, cameraFront));
-		cameraPos -= glm::normalize(glm::cross(cameraFront, right))*cameraSpeed;
 	}
 }

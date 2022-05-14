@@ -38,10 +38,6 @@ public:
 	{
 		glUseProgram(this->programId);
 	}
-	void unUse()
-	{
-		glUseProgram(0);
-	}
 	~Shader()
 	{
 		if (this->programId)

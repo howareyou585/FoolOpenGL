@@ -60,3 +60,13 @@ ViewTransformation/Debug/ViewTran.081D6830.tlog/ViewTransformation.lastbuildstat
 *.obj
 *.obj
 *.obj
+*.obj
+*.exe
+*.ilk
+*.pdb
+*.log
+*.tlog
+*.idb
+*.filters
+*.user
+*.obj
