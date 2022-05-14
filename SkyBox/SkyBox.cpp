@@ -180,12 +180,32 @@ int main(int argc, char** argv)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	
+	GLuint skyVAOId, skyVBO;
+	glGenVertexArrays(1, &skyVAOId);
+	glBindVertexArray(skyVAOId);
+	glGenBuffers(1, &skyVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices,GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 3, (GLvoid*)(0));
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 	GLuint cubeTextureId = TextureHelper::load2DTexture("../resources/textures/container.jpg");
+	std::vector<const char*> picFilePathVec;
+	picFilePathVec.push_back("../resources/skyboxes/sky/sky_lf.jpg");
+	picFilePathVec.push_back("../resources/skyboxes/sky/sky_rt.jpg");
+	picFilePathVec.push_back("../resources/skyboxes/sky/sky_up.jpg");
+	picFilePathVec.push_back("../resources/skyboxes/sky/sky_dn.jpg");
+	picFilePathVec.push_back("../resources/skyboxes/sky/sky_bk.jpg");
+	picFilePathVec.push_back("../resources/skyboxes/sky/sky_ft.jpg");
+	GLuint skyTextureId = TextureHelper::loadCubeMapTexture(picFilePathVec);
 	// Section2 准备着色器程序
+	Shader skyboxShader("skybox.vertex","skybox.frag");
 	Shader shader("scene.vertex", "scene.frag");
+
 	glEnable(GL_DEPTH_TEST);//深度测试
 	glEnable(GL_CULL_FACE);//剔除面
-
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -194,23 +214,41 @@ int main(int argc, char** argv)
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
+		/*float raduis = 3.0f;
+		long val = glfwGetTime();
+		float camx = sin(val)*raduis;
+		float camz = cos(val)*raduis;
+		glm::vec3 postion(camx, 0, camz);*/
+		
 		// 这里填写场景绘制代码
-		glBindVertexArray(cubeVAOId);
+		glBindVertexArray(skyVAOId);
 		glm::mat4 model;
 		glm::mat4 projection = glm::perspective(camera.mouse_zoom, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 1.0f, 100.0f);
 		glm::mat4 view = glm::mat4(camera.getViewMatrix());
-
+		//glm::mat4 view = glm::lookAt(postion, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		glm::mat3 view3(view);
+		glm::mat4 view4(view3);
+		glDepthMask(false);//禁止写深度缓冲区
+		skyboxShader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skyTextureId);
+		glUniform1i(glGetUniformLocation(skyboxShader.programId, "skybox"), 0);
+		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.programId, "view"), 1, GL_FALSE, glm::value_ptr(view4));
+		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.programId, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthMask(true);//启用写深度缓冲区
+		// 这里填写场景绘制代码
+		glBindVertexArray(cubeVAOId);
 		shader.use();
-		
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, cubeTextureId);
+		glUniform1i(glGetUniformLocation(shader.programId, "text"), 0);
 		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, cubeTextureId);
 		
-		glUniform1i(glGetUniformLocation(shader.programId, "text"),0);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 
 		glBindVertexArray(0);
 		glUseProgram(0);
