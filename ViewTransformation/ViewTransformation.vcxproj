@@ -74,15 +74,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Cube.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="shader.h" />
     <ClInclude Include="texture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cube.frag" />
     <None Include="cube.vertex" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CubeWithKeyBoard.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

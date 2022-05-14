@@ -55,3 +55,8 @@ ViewTransformation/Release/vc141.pdb
 ViewTransformation/Release/Cube.obj
 ViewTransformation/Debug/ViewTransformation.log
 ViewTransformation/Debug/ViewTran.081D6830.tlog/ViewTransformation.lastbuildstate
+*.obj
+*.ipch
+*.obj
+*.obj
+*.obj
