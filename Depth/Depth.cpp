@@ -10,7 +10,8 @@
 #include "shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include<glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include "texture.h"
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -121,12 +122,17 @@ int main(int argc, char** argv)
 	// Step4: 指定解析方式  并启用顶点属性
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(sizeof(GLfloat)*3));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(sizeof(GLfloat) * 6));
+	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-
+	GLuint textid= TextureHelper::load2DTexture("../resources/textures/container.jpg");
 	// Section2 准备着色器程序
 	Shader shader("cube.vertex", "cube.frag");
-	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST); //启用深度测试
+	//glDisable(GL_DEPTH_TEST); // 禁用深度测试
 	// 开始游戏主循环
 	glm::mat4 model;
 	glm::mat4 projection;
@@ -138,11 +144,18 @@ int main(int argc, char** argv)
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-		view = glm::lookAt(glm::vec3(1.0f, 0.f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f),glm::vec3(0.0f, 1.0f, 0.0f));
+		double value = glfwGetTime();
+		float radius = 2.5f;
+		GLfloat camx = sin(value) * radius;
+		GLfloat camz = cos(value)*radius;
+		view = glm::lookAt(glm::vec3(camx, 0.f, camz), glm::vec3(0.0f, 0.0f, 0.0f),glm::vec3(0.0f, 1.0f, 0.0f));
 		projection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 1.0f, 1000.0f);
 		// 这里填写场景绘制代码
 		glBindVertexArray(VAOId);
 		shader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textid);
+		glUniform1i(glGetUniformLocation(shader.programId, "tex"), 0);
 		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "projection"), 1, GL_FALSE, glm::value_ptr(projection));

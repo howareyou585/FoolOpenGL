@@ -70,3 +70,8 @@ ViewTransformation/Debug/ViewTran.081D6830.tlog/ViewTransformation.lastbuildstat
 *.filters
 *.user
 *.obj
+*.obj
+*.db
+*.db-shm
+*.db-wal
+*.obj

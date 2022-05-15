@@ -18,7 +18,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-glm::vec3 cameraPos(1.0f, 0.0f, 3.0f);
+glm::vec3 cameraPos(1.0f, 0.0f, 20.0f);
 glm::vec3 cameraFront(0.f, 0.f, -1.0f);
 glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
 int main(int argc, char** argv)
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,	// A
 	};
 
-	glm::vec3 cubePostitions[] = {
+	/*glm::vec3 cubePostitions[] = {
 		glm::vec3(0.0f, 0.0f, 1.2f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(1.2f, 1.2f, 0.0f),
@@ -121,6 +121,15 @@ int main(int argc, char** argv)
 		glm::vec3(-1.2f, -1.5f, 0.0f),
 		glm::vec3(1.2f, -1.5f, 0.0f),
 		glm::vec3(0.0f, 0.0f, -1.2f),
+	};*/
+	glm::vec3 cubePostitions[] = {
+		glm::vec3(0.0f, 0.0f, 3.2f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(1.2f, 2.2f, 0.0f),
+		glm::vec3(-1.2f, 1.2f, 0.0f),
+		glm::vec3(-1.2f, -2.5f, 0.0f),
+		glm::vec3(1.2f, -1.5f, 0.0f),
+		glm::vec3(0.0f, 0.0f, -3.2f),
 	};
 
 	// 创建缓存对象
