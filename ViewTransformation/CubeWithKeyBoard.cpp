@@ -8,7 +8,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include<glm/gtc/type_ptr.hpp>
+#include <glm/gtc/type_ptr.hpp>
 // 包含着色器加载库
 #include "shader.h"
 #include "texture.h"
@@ -18,7 +18,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-glm::vec3 cameraPos(1.0f, 0.0f, 20.0f);
+glm::vec3 cameraPos(1.0f, 0.0f, 10.0f);
 glm::vec3 cameraFront(0.f, 0.f, -1.0f);
 glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
 int main(int argc, char** argv)
@@ -177,6 +177,9 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		glm::mat4 model;
+		/*auto rad = glfwGetTime();
+		cameraPos.x = glm::cos(rad) * 10.0f;
+		cameraPos.z = glm::sin(rad) * 10.0f;*/
 		glm::mat4 view = glm::lookAt(cameraPos, cameraPos+cameraFront, cameraUp);
 		// 这里填写场景绘制代码
 		glBindVertexArray(VAOId);
