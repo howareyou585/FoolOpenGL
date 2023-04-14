@@ -162,10 +162,10 @@ int main(int argc, char** argv)
 	
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
 
-	for (int i = 0; i < sizeof(cubePostitions) / sizeof(glm::vec3); i++)
-	{
+	/*for (int i = 0; i < sizeof(cubePostitions) / sizeof(glm::vec3); i++)
+	{*/
 		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-	}
+	/*}*/
 	shader.unUse();
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
@@ -209,33 +209,34 @@ int main(int argc, char** argv)
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	float cameraSpeed = 0.05f; // adjust accordingly
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	if (key == GLFW_KEY_ESCAPE /*&& action == GLFW_PRESS*/)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
 	}
-	else if (key == GLFW_KEY_W && action == GLFW_PRESS)
+	else if (key == GLFW_KEY_W /*&& action == GLFW_PRESS*/)
 	{
+		//to up
 		cameraPos += cameraSpeed * cameraFront;
 		
 	}
-	else if (key == GLFW_KEY_S && action == GLFW_PRESS)
+	else if (key == GLFW_KEY_S/* && action == GLFW_PRESS*/)
 	{
 		cameraPos -= cameraSpeed * cameraFront;
 	}
-	else if (key == GLFW_KEY_D && action == GLFW_PRESS)
+	else if (key == GLFW_KEY_D /*&& action == GLFW_PRESS*/)   //to right
 	{
 		//todo
 	
 		glm::vec3 right = glm::normalize( glm::cross(cameraUp, cameraFront));
 		cameraPos += right * cameraSpeed;
 	}
-	else if (key == GLFW_KEY_A && action == GLFW_PRESS)
+	else if (key == GLFW_KEY_A /*&& action == GLFW_PRESS*/) //to left
 	{
 		//todo
 		
-		glm::vec3 right =glm::normalize(glm::cross(cameraUp, cameraFront));
+		glm::vec3 left =glm::normalize(glm::cross(cameraUp, cameraFront));
 		//right = glm::normalize(right);
-		cameraPos -= right * cameraSpeed;
+		cameraPos -= left * cameraSpeed;
 	}
 	else if (key == GLFW_KEY_UP)
 	{
