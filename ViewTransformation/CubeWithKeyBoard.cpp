@@ -9,10 +9,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <assimp/postprocess.h>
 // 包含着色器加载库
 #include "shader.h"
 #include "texture.h"
-
+#include "Model.h"
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -65,6 +66,7 @@ int main(int argc, char** argv)
 
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
 
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置
@@ -131,7 +133,8 @@ int main(int argc, char** argv)
 		glm::vec3(1.2f, -1.5f, 0.0f),
 		glm::vec3(0.0f, 0.0f, -3.2f),
 	};
-
+	auto ptrModel = new Model();
+	ptrModel->Load("../Model/Circle.obj", aiProcess_Triangulate | aiProcess_FlipUVs);
 	// 创建缓存对象
 	GLuint VAOId, VBOId;
 	// Step1: 创建并绑定VAO对象
@@ -177,9 +180,6 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		glm::mat4 model;
-		/*auto rad = glfwGetTime();
-		cameraPos.x = glm::cos(rad) * 10.0f;
-		cameraPos.z = glm::sin(rad) * 10.0f;*/
 		glm::mat4 view = glm::lookAt(cameraPos, cameraPos+cameraFront, cameraUp);
 		// 这里填写场景绘制代码
 		glBindVertexArray(VAOId);
