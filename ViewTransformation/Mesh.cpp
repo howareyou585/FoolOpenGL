@@ -14,24 +14,24 @@ void Mesh::BindData()
 	GLuint offset_positon = 0;
 	GLuint size_position = m_vecPositon.size() * sizeof(glm::vec3);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, size_position, m_vecPositon.data());
-	//normal
-	GLuint offset_normal = size_position;
-	GLuint size_normal = m_vecNormal.size() * sizeof(glm::vec3);
-	glBufferSubData(GL_ARRAY_BUFFER, offset_normal, size_normal, m_vecNormal.data());
+	////normal
+	//GLuint offset_normal = size_position;
+	//GLuint size_normal = m_vecNormal.size() * sizeof(glm::vec3);
+	//glBufferSubData(GL_ARRAY_BUFFER, offset_normal, size_normal, m_vecNormal.data());
 
-	//textcoord
-	GLuint offset_textcoord = size_position + size_normal;
-	GLuint size_textcoord = m_vecTexcoord.size() * sizeof(glm::vec2);
-	glBufferSubData(GL_ARRAY_BUFFER, offset_textcoord, size_textcoord, m_vecTexcoord.data());
+	////textcoord
+	//GLuint offset_textcoord = size_position + size_normal;
+	//GLuint size_textcoord = m_vecTexcoord.size() * sizeof(glm::vec2);
+	//glBufferSubData(GL_ARRAY_BUFFER, offset_textcoord, size_textcoord, m_vecTexcoord.data());
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,0, (void*)0);
 	
-	glEnableVertexAttribArray(1);
+	/*glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)offset_normal);
 
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)offset_textcoord);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)offset_textcoord);*/
 
 	
 	glGenBuffers(1, &m_ebo);
@@ -40,10 +40,24 @@ void Mesh::BindData()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_vecIndex.size() * sizeof(GLuint), m_vecIndex.data(), GL_STATIC_DRAW);
 	glBindVertexArray(0);
 }
-
 void Mesh::Draw(GLuint program)
 {
 	glBindVertexArray(m_vao);
-	glDrawElements(GL_TRIANGLES, m_vecIndex.size(), GL_UNSIGNED_INT, m_vecIndex.data());
+	/*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_ebo);
+	glDrawElements(GL_TRIANGLES, m_vecIndex.size(), GL_UNSIGNED_INT, m_vecIndex.data());*/
+	glDrawArrays(GL_TRIANGLES, 0, m_vecPositon.size());
 	glBindVertexArray(0);
+}
+void Mesh::BindVAO()
+{
+	glBindVertexArray(m_vao);
+}
+void Mesh::UnBindVAO()
+{
+	glBindVertexArray(0);
+}
+
+vector<glm::vec3>& Mesh::GetPosition()
+{
+	return m_vecPositon;
 }

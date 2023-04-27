@@ -27,7 +27,9 @@ public:
 	Mesh() {};
 	virtual ~Mesh() {};
 	void BindData();
-
+	void BindVAO();
+	void UnBindVAO();
+	vector<glm::vec3>& GetPosition();
 	void Draw(GLuint program);
 };
 
