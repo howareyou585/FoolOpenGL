@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 	//	glm::vec3(0.0f, 0.0f, -3.2f),*/
 	//};
 	auto ptrModel = new Model();
-	ptrModel->Load("../Model/Circle.obj", /*aiProcess_CalcTangentSpace
+	ptrModel->Load("../Model/male02/male02.obj", /*aiProcess_CalcTangentSpace
 		|*/ aiProcess_Triangulate
 		/*| aiProcess_JoinIdenticalVertices
 		| aiProcess_SortByPType
@@ -181,6 +181,9 @@ int main(int argc, char** argv)
 	float boxLength = ptrModel->GetBoundingBoxLength();
 	boxLength *= 0.8f;
 	glm::vec3 center = ptrModel->m_center;
+	targetPos = center;
+	cameraPos = center;
+	cameraPos.z += boxLength;
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -192,11 +195,10 @@ int main(int argc, char** argv)
 	/*	cameraPos.x = glm::cos(glfwGetTime());
 		cameraPos.z = glm::sin(glfwGetTime());*/
 		//cameraPos = center - cameraFront * boxLength;
-		cameraPos = center;
-		cameraPos.z += boxLength;
+		
 		//auto dir = glm::normalize(center - cameraPos);
 		glm::mat4 model;
-		glm::mat4 view = glm::lookAt(cameraPos,  /*targetPos*//*cameraPos+cameraFront*/center, cameraUp);
+		glm::mat4 view = glm::lookAt(cameraPos,  /*targetPos*//*cameraPos+cameraFront*/targetPos, cameraUp);
 		glm::mat4 projection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
 
 		// 这里填写场景绘制代码
@@ -240,7 +242,7 @@ int main(int argc, char** argv)
 }
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	float cameraSpeed = 0.05f; // adjust accordingly
+	float cameraSpeed = 0.5f; // adjust accordingly
 	if (key == GLFW_KEY_ESCAPE /*&& action == GLFW_PRESS*/)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
@@ -248,33 +250,35 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	else if (key == GLFW_KEY_W /*&& action == GLFW_PRESS*/)
 	{
 		//to up
-		auto dir = glm::normalize(targetPos - cameraPos);
-		targetPos += cameraSpeed * dir;
-		cameraPos += cameraSpeed * cameraFront;
 		
+		auto dir = glm::normalize(targetPos - cameraPos);
+		cameraPos += cameraSpeed * dir;
+		targetPos += cameraSpeed * dir;
 	}
 	else if (key == GLFW_KEY_S/* && action == GLFW_PRESS*/)
 	{
 		auto dir = glm::normalize(cameraPos - targetPos);
-		targetPos += cameraSpeed * dir;
-		//cameraPos -= cameraSpeed * cameraFront;
 		cameraPos += cameraSpeed * dir;
+		targetPos += cameraSpeed * dir;
 	}
 	else if (key == GLFW_KEY_D /*&& action == GLFW_PRESS*/)   //to right
 	{
 		//todo
 		auto dir = glm::normalize(targetPos - cameraPos);
 		
-		glm::vec3 right = glm::normalize( glm::cross(cameraUp, cameraFront));
+		glm::vec3 right = glm::normalize( glm::cross(dir, cameraUp));
 		cameraPos += right * cameraSpeed;
+		targetPos += cameraSpeed * right;
+
 	}
 	else if (key == GLFW_KEY_A /*&& action == GLFW_PRESS*/) //to left
 	{
 		//todo
-		
-		glm::vec3 left =glm::normalize(glm::cross(cameraUp, cameraFront));
+		auto dir = glm::normalize(targetPos - cameraPos);
+		glm::vec3 left =glm::normalize(glm::cross(cameraUp, dir));
 		//right = glm::normalize(right);
-		cameraPos -= left * cameraSpeed;
+		cameraPos += left * cameraSpeed;
+		targetPos += cameraSpeed * left;
 	}
 	else if (key == GLFW_KEY_UP)
 	{

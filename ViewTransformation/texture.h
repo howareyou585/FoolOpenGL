@@ -196,5 +196,8 @@ public:
 		return textureID;
 	}
 };
+class Texture
+{
 
+};
 #endif

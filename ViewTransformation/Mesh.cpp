@@ -43,9 +43,9 @@ void Mesh::BindData()
 void Mesh::Draw(GLuint program)
 {
 	glBindVertexArray(m_vao);
-	/*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_ebo);
-	glDrawElements(GL_TRIANGLES, m_vecIndex.size(), GL_UNSIGNED_INT, m_vecIndex.data());*/
-	glDrawArrays(GL_TRIANGLES, 0, m_vecPositon.size());
+	//glDrawElements(GL_TRIANGLES, m_vecIndex.size(), GL_UNSIGNED_INT, m_vecIndex.data());//这样写没有效果
+	glDrawElements(GL_TRIANGLES, m_vecIndex.size(), GL_UNSIGNED_INT, 0);//为什么上面的不对，这样写才对
+	//glDrawArrays(GL_TRIANGLES, 0, m_vecPositon.size());
 	glBindVertexArray(0);
 }
 void Mesh::BindVAO()
