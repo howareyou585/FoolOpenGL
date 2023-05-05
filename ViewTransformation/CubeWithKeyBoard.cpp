@@ -17,13 +17,16 @@
 
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
+void mouse_callback(GLFWwindow*, double, double);
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
 glm::vec3 cameraPos(1.0f, 0.0f, 10.0f);
 glm::vec3 cameraFront(0.f, 0.f, -1.0f);
 glm::vec3 targetPos(0.f, 0.f, -1.0f);
 glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+bool bFirstMouseMove = true;
+GLfloat lastX{};
+GLfloat lastY{};
 int main(int argc, char** argv)
 {
 	
@@ -54,7 +57,8 @@ int main(int argc, char** argv)
 
 	// 注册窗口键盘事件回调函数
 	glfwSetKeyCallback(window, key_callback);
-
+	glfwSetCursorPosCallback(window, mouse_callback);
+	
 	// 初始化GLEW 获取OpenGL函数
 	glewExperimental = GL_TRUE; // 让glew获取所有拓展函数
 	GLenum status = glewInit();
@@ -293,4 +297,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		glm::vec3 right = glm::normalize(glm::cross(cameraUp, cameraFront));
 		cameraPos -= glm::normalize(glm::cross(cameraFront, right))*cameraSpeed;
 	}
+}
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (bFirstMouseMove)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		bFirstMouseMove = false;
+		return;
+	}
+	GLfloat xoffset = xpos - lastX;
+	GLfloat yoffset = ypos - lastY;
+	
+	lastX = xpos;
+	lastY = ypos;
 }
