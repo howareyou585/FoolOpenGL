@@ -75,3 +75,5 @@ ViewTransformation/Debug/ViewTran.081D6830.tlog/ViewTransformation.lastbuildstat
 *.db-shm
 *.db-wal
 *.obj
+/.vs/FoolOpenGl/v16
+/Debug

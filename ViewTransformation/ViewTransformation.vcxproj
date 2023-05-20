@@ -74,6 +74,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Matrial.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="shader.h" />
@@ -85,6 +86,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CubeWithKeyBoard.cpp" />
+    <ClCompile Include="Matrial.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
   </ItemGroup>

@@ -74,17 +74,7 @@ Mesh  Model::ProcessMesh(aiMesh* ptrMesh, const aiScene* ptrScene)
 				m.m_vecTexcoord.push_back(vv);
 			}
 		}
-		if (ptrMesh->mMaterialIndex >= 0)
-		{
-			aiMaterial* ptrMaterial = ptrScene->mMaterials[ptrMesh->mMaterialIndex];
-			//todo
-			LoadMaterialTextures(ptrMaterial, aiTextureType::aiTextureType_DIFFUSE, "texture_diffuse");
-			LoadMaterialTextures(ptrMaterial, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
-		}
 	}
-
-	
-
 	for (auto j = 0; j < ptrMesh->mNumFaces; j++)
 	{
 		auto face = ptrMesh->mFaces[j];
@@ -94,17 +84,59 @@ Mesh  Model::ProcessMesh(aiMesh* ptrMesh, const aiScene* ptrScene)
 			m.m_vecIndex.push_back(face.mIndices[k]);
 		}
 	}
+
+	
+	if (ptrMesh->mMaterialIndex >= 0)
+	{
+		aiMaterial* ptrMaterial = ptrScene->mMaterials[ptrMesh->mMaterialIndex];
+		//todo
+		vector< Texture> vecTexture;
+		vector<Texture>vecDiffuseTexture = LoadMaterialTextures(ptrMaterial, aiTextureType::aiTextureType_DIFFUSE, "texture_diffuse");
+		vecTexture.insert(vecTexture.end(), vecDiffuseTexture.begin(), vecDiffuseTexture.end());
+		
+		vector<Texture>vecSpcularTexture = LoadMaterialTextures(ptrMaterial, aiTextureType::aiTextureType_SPECULAR, "texture_specular");
+		vecTexture.insert(vecTexture.end(), vecSpcularTexture.begin(), vecSpcularTexture.end());
+		
+		vector<Texture>vecNormalTexture = LoadMaterialTextures(ptrMaterial, aiTextureType::aiTextureType_HEIGHT, "textue_normal");
+		vecTexture.insert(vecTexture.end(), vecNormalTexture.begin(), vecNormalTexture.end());
+
+		vector<Texture>vecHighTexture = LoadMaterialTextures(ptrMaterial, aiTextureType::aiTextureType_AMBIENT, "textue_height");
+		vecTexture.insert(vecTexture.end(), vecHighTexture.begin(), vecHighTexture.end());
+		m.m_vecTexture.swap(vecTexture);
+	}
 	return m;
 }
 
-void Model::LoadMaterialTextures(aiMaterial* ptrMaterial, aiTextureType type, const string& typeName)
+vector<Texture> Model::LoadMaterialTextures(aiMaterial* ptrMaterial, aiTextureType type, const string& typeName)
 {
+	vector<Texture> textures;
 	for (auto i = 0; i < ptrMaterial->GetTextureCount(type); i++)
 	{
 		aiString str;
 		ptrMaterial->GetTexture(type, i, &str);
-		string strPath(str.C_Str());
+		//string strPath(str.C_Str());
+		bool skip = false;
+		for (auto j = 0; j < m_vecTexture.size(); j++)
+		{
+			if (0 == std::strcmp(m_vecTexture[j].path.data(), str.C_Str()))
+			{
+				textures.emplace_back(m_vecTexture[j]);
+				skip = true;
+				break;
+			}
+		}
+		if (!skip)
+		{
+			Texture texture;
+			string strFilePath = string("../Model/male02/") + string(str.C_Str());
+			texture.id = TextureHelper::load2DTexture(strFilePath.data());
+			texture.path = str.C_Str();
+			texture.type = typeName;
+			m_vecTexture.emplace_back(texture);
+			textures.push_back(texture);
+		}
 	}
+	return textures;
 }
 
 void Model::Draw(GLuint program)

@@ -6,6 +6,8 @@
 #include <fstream>
 #include <GLEW/glew.h>
 #include <glm/glm.hpp>
+#include "Matrial.h"
+#include "texture.h"
 using namespace std;
 class Mesh
 {
@@ -14,7 +16,6 @@ public:
 	GLuint m_vao;
 	GLuint m_vbo;
 	GLuint m_ebo;
-	GLuint m_diffuseTexture;
 
 	//∂•µ„ Ù–‘
 	vector<glm::vec3> m_vecPositon;
@@ -23,6 +24,8 @@ public:
 
 	//
 	vector<int> m_vecIndex;
+	vector<Texture> m_vecTexture;
+	Material m_material;
 public:
 	Mesh() {};
 	virtual ~Mesh() {};

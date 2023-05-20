@@ -16,6 +16,8 @@
 #include "Model.h"
 
 // 键盘回调函数原型声明
+GLfloat yaw = 0.0f;
+GLfloat pitch = 0.0f;
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_callback(GLFWwindow*, double, double);
 // 定义程序常量
@@ -24,6 +26,9 @@ glm::vec3 cameraPos(1.0f, 0.0f, 10.0f);
 glm::vec3 cameraFront(0.f, 0.f, -1.0f);
 glm::vec3 targetPos(0.f, 0.f, -1.0f);
 glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+glm::vec3 sideDir;
+glm::vec3 forwardDir;
+GLfloat length{};
 bool bFirstMouseMove = true;
 GLfloat lastX{};
 GLfloat lastY{};
@@ -187,7 +192,8 @@ int main(int argc, char** argv)
 	glm::vec3 center = ptrModel->m_center;
 	targetPos = center;
 	cameraPos = center;
-	cameraPos.z += boxLength;
+	cameraPos.z = boxLength;
+	length = boxLength;
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -202,9 +208,10 @@ int main(int argc, char** argv)
 		
 		//auto dir = glm::normalize(center - cameraPos);
 		glm::mat4 model;
+		model = glm::scale(model, glm::vec3(0.25, 0.25, 0.25));
 		glm::mat4 view = glm::lookAt(cameraPos,  /*targetPos*//*cameraPos+cameraFront*/targetPos, cameraUp);
 		glm::mat4 projection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
-
+		
 		// 这里填写场景绘制代码
 		//glBindVertexArray(VAOId);
 		
@@ -219,6 +226,14 @@ int main(int argc, char** argv)
 		glUniformMatrix4fv(viewLocationId, 1, GL_FALSE, glm::value_ptr(view));
 		auto projectionLocationId = glGetUniformLocation(shader.programId, "projection");
 		glUniformMatrix4fv(projectionLocationId, 1, GL_FALSE, glm::value_ptr(projection));
+		/*vec3 direction;
+		vec3 ambient;
+		vec3 diffuse;
+		vec3 spcular;*/
+		auto lightDirection = glGetUniformLocation(shader.programId, "light.direction");
+		glm::vec3 dir(30.f, 100.f, 10.f);
+		glUniform3fv(lightDirection, 1, &dir[0]);
+		
 	
 		ptrModel->Draw(shader.programId);
 		//for (int i = 0; i < sizeof(cubePostitions) / sizeof(glm::vec3); i++)
@@ -312,4 +327,20 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	
 	lastX = xpos;
 	lastY = ypos;
+
+	pitch += xoffset * 0.05;
+	yaw += yoffset * 0.05;
+	forwardDir.x = -sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	forwardDir.y = sin(glm::radians(pitch));
+	forwardDir.z = -cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	forwardDir = glm::normalize(forwardDir);
+
+	//glm::vec3 side;
+	sideDir.x = cos(glm::radians(yaw));
+	sideDir.y = 0;
+	sideDir.z = -sin(glm::radians(yaw));
+	sideDir = glm::normalize(sideDir);
+
+	targetPos = cameraPos + glm::vec3(forwardDir.x * length, forwardDir.y * length, forwardDir.z * length);
+	
 }

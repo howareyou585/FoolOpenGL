@@ -13,6 +13,7 @@ class Model
 public:
 	vector<Mesh> m_vecMesh;
 	map<string, GLuint> m_mapTexture;
+	vector<Texture> m_vecTexture;
 	glm::vec3 m_center;
 public :
 	Model() {};
@@ -23,7 +24,7 @@ public :
 	float GetBoundingBoxLength();
 	bool  ProcessNode(aiNode* ptrNode, const aiScene* ptrScene);
 	Mesh  ProcessMesh(aiMesh* ptrMesh, const aiScene* ptrScene);
-	void  LoadMaterialTextures(aiMaterial* ptrMaterial, aiTextureType type, const string& typeName);
+	vector<Texture> LoadMaterialTextures(aiMaterial* ptrMaterial, aiTextureType type, const string& typeName);
 	//vector
 	
 };

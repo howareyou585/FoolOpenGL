@@ -196,8 +196,10 @@ public:
 		return textureID;
 	}
 };
-class Texture
+struct Texture
 {
-
+	unsigned int id; // 纹理的ID
+	std::string type;  //纹理的类型
+	std::string path;  //纹理的路径
 };
 #endif
