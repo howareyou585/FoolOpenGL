@@ -80,70 +80,6 @@ int main(int argc, char** argv)
 
 
 	// Section1 准备顶点数据
-	// 指定顶点属性数据 顶点位置
-//	GLfloat vertices[] = {
-//-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,	// A
-//0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,	// B
-//0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,	    // C
-//0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,	    // C
-//-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,	// D
-//-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,	// A
-//
-//
-//-0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,	// E
-//-0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0, 1.0f,    // H
-//0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,	// G
-//0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,	// G
-//0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,	// F
-//-0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,	// E
-//
-//-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,	// D
-//-0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0, 1.0f,    // H
-//-0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f,	// E
-//-0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f,	// E
-//-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,	// A
-//-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,	// D
-//
-//0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,	// F
-//0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,	// G
-//0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,	    // C
-//0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,	    // C
-//0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,	// B
-//0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,	// F
-//
-//0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,	// G
-//-0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0, 1.0f,    // H
-//-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,	// D
-//-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,	// D
-//0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,	// C
-//0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,	// G
-//
-//-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,	// A
-//-0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f,	// E
-//0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,	// F
-//0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,	// F
-//0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,	// B
-//-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,	// A
-//	};
-
-	/*glm::vec3 cubePostitions[] = {
-		glm::vec3(0.0f, 0.0f, 1.2f),
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(1.2f, 1.2f, 0.0f),
-		glm::vec3(-1.2f, 1.2f, 0.0f),
-		glm::vec3(-1.2f, -1.5f, 0.0f),
-		glm::vec3(1.2f, -1.5f, 0.0f),
-		glm::vec3(0.0f, 0.0f, -1.2f),
-	};*/
-	//glm::vec3 cubePostitions[] = {
-	//	glm::vec3(0.0f, 0.0f, 3.2f)/*,
-	//	glm::vec3(0.0f, 0.0f, 0.0f),
-	//	glm::vec3(1.2f, 2.2f, 0.0f),
-	//	glm::vec3(-1.2f, 1.2f, 0.0f),
-	//	glm::vec3(-1.2f, -2.5f, 0.0f),
-	//	glm::vec3(1.2f, -1.5f, 0.0f),
-	//	glm::vec3(0.0f, 0.0f, -3.2f),*/
-	//};
 	auto ptrModel = new Model();
 	ptrModel->Load("../Model/male02/male02.obj", /*aiProcess_CalcTangentSpace
 		|*/ aiProcess_Triangulate
@@ -152,40 +88,11 @@ int main(int argc, char** argv)
 		| aiProcess_SplitLargeMeshes
 		| aiProcess_GenSmoothNormals*/
 		| aiProcess_FlipUVs);
-	// 创建缓存对象
-	//GLuint VAOId, VBOId;
-	//// Step1: 创建并绑定VAO对象
-	//glGenVertexArrays(1, &VAOId);
-	//glBindVertexArray(VAOId);
-	//// Step2: 创建并绑定VBO对象
-	//glGenBuffers(1, &VBOId);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBOId);
-	//// Step3: 分配空间 传送数据
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	//// Step4: 指定解析方式  并启用顶点属性
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)0);
-	//glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT)));
-	//glEnableVertexAttribArray(1);
-	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT)));
-	//glEnableVertexAttribArray(2);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindVertexArray(0);
-
-	//GLuint textureId = TextureHelper::load2DTexture("../resources/textures/cat.png");
-
-	//// Section2 准备着色器程序
+	// Section2 准备着色器程序
 	Shader shader("cube.vertex", "cube.frag");
 	glEnable(GL_DEPTH_TEST);
 	glCullFace(GL_BACK);
-	//shader.use();
 	
-	
-	/*for (int i = 0; i < sizeof(cubePostitions) / sizeof(glm::vec3); i++)
-	{*/
-
-	/*}*/
-	//shader.unUse();
 	float angle = 0.0f;
 	float boxLength = ptrModel->GetBoundingBoxLength();
 	boxLength *= 0.8f;
@@ -233,8 +140,9 @@ int main(int argc, char** argv)
 		auto lightDirection = glGetUniformLocation(shader.programId, "light.direction");
 		glm::vec3 dir(30.f, 100.f, 10.f);
 		glUniform3fv(lightDirection, 1, &dir[0]);
-		
-	
+		auto lightAmbient = glGetUniformLocation(shader.programId, "light.ambient");
+		auto lightDiffuse = glGetUniformLocation(shader.programId, "light.diffuse");
+		auto lightSpcular = glGetUniformLocation(shader.programId, "light.spcular");
 		ptrModel->Draw(shader.programId);
 		//for (int i = 0; i < sizeof(cubePostitions) / sizeof(glm::vec3); i++)
 		//{

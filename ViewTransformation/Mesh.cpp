@@ -4,6 +4,7 @@ void Mesh::BindData()
 {
 	glGenVertexArrays(1, &m_vao);
 	glBindVertexArray(m_vao);
+	//使用一个VBO保存位置 法向 纹理坐标
 	glGenBuffers(1, &m_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 	auto length = m_vecPositon.size() * sizeof(glm::vec3) +
@@ -32,8 +33,8 @@ void Mesh::BindData()
 
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)offset_textcoord);
-
 	
+
 	glGenBuffers(1, &m_ebo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
 	
