@@ -158,12 +158,49 @@ int main(int argc, char** argv)
 	GLuint cubeTextureId = TextureHelper::load2DTexture("../resources/textures/marble.jpg");
 	// Section2 准备着色器程序
 	Shader shader("cube.vertex", "cube.frag");
-	glEnable(GL_DEPTH_TEST);
+	Shader hdrShader("hdr.vertex", "hdr.frag");
+	std::vector<glm::vec3> lightPositions;
+	lightPositions.emplace_back(glm::vec3(0.0f, 0.0f, 49.5f));
+	lightPositions.push_back(glm::vec3(-1.4f, -1.9f, 9.0f));
+	lightPositions.push_back(glm::vec3(0.0f, -1.8f, 4.0f));
+	lightPositions.push_back(glm::vec3(0.8f, -1.7f, 6.0f));
+
+	std::vector<glm::vec3> lightColors;
+	lightColors.emplace_back(glm::vec3(200.f, 200.0f, 200.f));
+	lightColors.push_back(glm::vec3(0.1f, 0.0f, 0.0f));
+	lightColors.push_back(glm::vec3(0.0f, 0.0f, 0.2f));
+	lightColors.push_back(glm::vec3(0.0f, 0.1f, 0.0f));
+
+	GLuint hdrFBO;
+	glGenFramebuffers(1, &hdrFBO);
+	//创建一个浮点 color buffer
+	GLuint colorBuffer;
+	glGenTextures(1, &colorBuffer);
+	glBindTexture(GL_TEXTURE_2D, colorBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA16F, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	//创建一个depth buffer
+	GLuint rboDepth;
+	glGenRenderbuffers(1, &rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT);
+	//附加buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "Framebuffer no complete!" << std::endl;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	/*glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
-	//glFrontFace(GL_CW);
+	
 	glCullFace(GL_BACK);
-	glFrontFace(GL_CCW);
+	glFrontFace(GL_CCW);*/
 	//glCullFace(GL_FRONT);
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
