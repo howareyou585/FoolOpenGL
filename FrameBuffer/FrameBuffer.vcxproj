@@ -85,6 +85,7 @@
     <None Include="scene.vertex" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\stb_image.cpp" />
     <ClCompile Include="Bloom.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

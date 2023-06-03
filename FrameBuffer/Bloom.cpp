@@ -8,9 +8,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "stb_image.h"
 // 包含着色器加载库
 #include "learnopengl/shader.h"
-#include "texture.h"
+#include "learnopengl/filesystem.h"
+//#include "texture.h"
 #include "learnopengl/camera.h"
 
 // 键盘回调函数原型声明
@@ -188,6 +190,54 @@ bool  CreateBlurFBO()
 	return bRet;
 
 }
+// utility function for loading a 2D texture from file
+// ---------------------------------------------------
+unsigned int loadTexture(char const* path, bool gammaCorrection)
+{
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+
+	int width, height, nrComponents;
+	unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
+	if (data)
+	{
+		GLenum internalFormat;
+		GLenum dataFormat;
+		if (nrComponents == 1)
+		{
+			internalFormat = dataFormat = GL_RED;
+		}
+		else if (nrComponents == 3)
+		{
+			internalFormat = gammaCorrection ? GL_SRGB : GL_RGB;
+			dataFormat = GL_RGB;
+		}
+		else if (nrComponents == 4)
+		{
+			internalFormat = gammaCorrection ? GL_SRGB_ALPHA : GL_RGBA;
+			dataFormat = GL_RGBA;
+		}
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "Texture failed to load at path: " << path << std::endl;
+		stbi_image_free(data);
+	}
+
+	return textureID;
+}
+
 int main(int argc, char** argv)
 {
 	
@@ -241,8 +291,10 @@ int main(int argc, char** argv)
 	Shader shaderLight("7.bloom.vs", "7.light_box.fs");
 	Shader shaderBlur("7.blur.vs", "7.blur.fs");
 	Shader shaderBloomFinal("7.bloom_final.vs", "7.bloom_final.fs");
-	GLuint woodTexture = TextureHelper::load2DTexture("../resources/textures/wood.png");
-	GLuint containerTexture = TextureHelper::load2DTexture("../resources/textures/container2.png");
+	/*GLuint woodTexture = TextureHelper::load2DTexture("../resources/textures/wood.png");
+	GLuint containerTexture = TextureHelper::load2DTexture("../resources/textures/container2.png");*/
+	GLuint woodTexture = loadTexture("../resources/textures/wood.png",true);
+	GLuint containerTexture = loadTexture("../resources/textures/container2.png",true);
 	if (!woodTexture || !containerTexture)
 	{
 		return -1;
