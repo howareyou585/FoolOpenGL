@@ -69,16 +69,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="fbo1.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="shader.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="7.bloom.fs" />
+    <None Include="7.bloom.vs" />
+    <None Include="7.bloom_final.fs" />
+    <None Include="7.bloom_final.vs" />
+    <None Include="7.blur.fs" />
+    <None Include="7.blur.vs" />
+    <None Include="7.light_box.fs" />
     <None Include="quad.frag" />
     <None Include="quad.vertex" />
     <None Include="scene.frag" />
     <None Include="scene.vertex" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Bloom.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
