@@ -19,8 +19,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
 typedef struct  MaterailInfo
 {
-	glm::vec3  ambient;
-	glm::vec3  diffuse;
+	GLuint  diffuse;
 	glm::vec3  specular;
 	float shininess;
 }Material;
@@ -123,13 +122,13 @@ int main(int argc, char** argv)
 -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,	// A
 	};
 	
+	//glm::vec3 ambient = glm::vec3(1.0f, 0.5f, 0.31f);
 	Material material;
-	material.ambient = glm::vec3(1.0f, 0.5f, 0.31f);
-	material.diffuse = glm::vec3(1.0f, 0.5f, 0.31f);
+	
 	material.specular = glm::vec3(0.5f, 0.5f, 0.5f);
-	material.shininess = 256.0f;
+	material.shininess = 256.f;
 	Light light;
-	light.position = glm::vec3(1.2f,1.0f,2.0f);
+	light.position = glm::vec3(0.0f,1.5f,2.0f);
 	light.color = glm::vec3(1.f, 1.f, 1.f);
 	// 创建缓存对象
 	GLuint VAOId, VBOId;
@@ -159,9 +158,10 @@ int main(int argc, char** argv)
 	//glEnableVertexAttribArray(0);
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 	//glBindVertexArray(0);
-	GLuint textureId= TextureHelper::load2DTexture("../resources/textures/container.jpg");
+	GLuint diffuseMap  = TextureHelper::load2DTexture("../resources/textures/container2.png");
+	GLuint specularMap = TextureHelper::load2DTexture("../resources/textures/container_specular.png");
 	// Section2 准备着色器程序
-	Shader shader("material.vertex", "material.frag");
+	Shader shader("light_map.vertex", "light_map.frag");
 	Shader cubeShader("light_cube.vertex", "light_cube.frag");
 	glEnable(GL_DEPTH_TEST); //启用深度测试
 	//glDisable(GL_DEPTH_TEST); // 禁用深度测试
@@ -176,8 +176,8 @@ int main(int argc, char** argv)
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-		/*double value = glfwGetTime();
-		float radius = 2.5f;
+		double value = glfwGetTime();
+		/*float radius = 5.f;
 		GLfloat camx = sin(value) * radius;
 		GLfloat camz = cos(value)*radius;
 		glm::vec3 eyePos(camx, 0.f, camz);*/
@@ -185,32 +185,37 @@ int main(int argc, char** argv)
 		glBindVertexArray(VAOId);
 
 		//light color is changing .
-		double value = glfwGetTime();
-		float sinVal = sinf(value);
-		light.color = glm::vec3(sinVal * 2.0f, sinVal*0.7f, sinVal*1.3f);
+		glm::vec3 ambientColor = light.color * glm::vec3(0.2f);
+		glm::vec3 diffuseColor = light.color * glm::vec3(0.5f);
 		
-		glm::vec3 eyePos(0.f, 0.f, 3.0f);
+		glm::vec3 eyePos(0.f, 0.f, 5.0f);
 		view = glm::lookAt(eyePos, glm::vec3(0.0f, 0.0f, 0.0f),glm::vec3(0.0f, 1.0f, 0.0f));
 		projection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 1.0f, 1000.0f);
 		// 这里填写场景绘制代码
 		
 		shader.use();
-		/*glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textureId);
-		glUniform1i(glGetUniformLocation(shader.programId, "tex"), 0);*/
+		
+		model = glm::rotate(model, (float)(value * 0.004), glm::vec3(1.0f, 1.0f, 1.0f));
+		//model = glm::rotate(model, (float)(value * 0.005), glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 		
-		glUniform3fv(glGetUniformLocation(shader.programId, "material.ambient"), 1, &material.ambient[0]);
-		glUniform3fv(glGetUniformLocation(shader.programId, "material.diffuse"), 1, &material.diffuse[0]);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseMap);
+		glUniform1i(glGetUniformLocation(shader.programId, "material.diffuse"), 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specularMap);
+		glUniform1i(glGetUniformLocation(shader.programId, "material.specular"), 1);
+
+		
 		glUniform3fv(glGetUniformLocation(shader.programId, "material.specular"), 1, &material.specular[0]);
 		glUniform1f(glGetUniformLocation(shader.programId, "material.shininess"), material.shininess);
 		glUniform3fv(glGetUniformLocation(shader.programId, "viewPos"), 1, &eyePos[0]);
 
 		glUniform3fv(glGetUniformLocation(shader.programId, "light.positon"), 1, &light.position[0]);
-		glm::vec3 ambientColor = light.color*glm::vec3(0.5f);
-		glm::vec3 diffuseColor = light.color*glm::vec3(0.2f);
+		
 		glUniform3fv(glGetUniformLocation(shader.programId, "light.ambient"), 1, &ambientColor[0]);
 		glUniform3fv(glGetUniformLocation(shader.programId, "light.diffuse"), 1, &diffuseColor[0]);
 		glUniform3f(glGetUniformLocation(shader.programId, "light.specular"), 1.0f, 1.0f, 1.0f);
@@ -220,10 +225,10 @@ int main(int argc, char** argv)
 		cubeShader.use();
 		//glBindVertexArray(lightCubeVAOId);
 		glm::mat4 light_model = glm::mat4(1.0f);
-
 		
-		light_model =  glm::scale(light_model, glm::vec3(0.2f, 0.2f, 0.2f));
-		light_model = glm::translate(light_model, glm::vec3(1.0f, 4.7f, 1.0f));
+		light_model = glm::translate(light_model, light.position);
+		light_model = glm::scale(light_model, glm::vec3(0.2f, 0.2f, 0.2f));
+		
 		
 		glUniformMatrix4fv(glGetUniformLocation(cubeShader.programId, "model"), 1, GL_FALSE, glm::value_ptr(light_model));
 		glUniformMatrix4fv(glGetUniformLocation(cubeShader.programId, "view"), 1, GL_FALSE, glm::value_ptr(view));
