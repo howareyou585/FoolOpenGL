@@ -30,10 +30,7 @@ typedef struct  LightInfo
 	glm::vec3 position;
 	glm::vec3 color;
 }Light;
-//vec3  material.ambient;
-		//vec3  material.diffuse;
-		//vec3  material.specular;
-		//float material.shininess;
+
 int main(int argc, char** argv)
 {
 	
@@ -127,12 +124,12 @@ int main(int argc, char** argv)
 	};
 	
 	Material material;
-	material.ambient = glm::vec3(0.1f, 0.1f, 0.1f);
-	material.diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
-	material.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+	material.ambient = glm::vec3(1.0f, 0.5f, 0.31f);
+	material.diffuse = glm::vec3(1.0f, 0.5f, 0.31f);
+	material.specular = glm::vec3(0.5f, 0.5f, 0.5f);
 	material.shininess = 256.0f;
 	Light light;
-	light.position = glm::vec3(1.2f,1.0f,3.0f);
+	light.position = glm::vec3(1.2f,1.0f,2.0f);
 	light.color = glm::vec3(1.f, 1.f, 1.f);
 	// 创建缓存对象
 	GLuint VAOId, VBOId;
@@ -153,13 +150,23 @@ int main(int argc, char** argv)
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
+	//GLuint lightCubeVAOId;
+	//glGenVertexArrays(1,&lightCubeVAOId);
+	//glBindVertexArray(lightCubeVAOId);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBOId);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)0);
+	//glEnableVertexAttribArray(0);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindVertexArray(0);
 	GLuint textureId= TextureHelper::load2DTexture("../resources/textures/container.jpg");
 	// Section2 准备着色器程序
-	Shader shader("cube.vertex", "cube.frag");
+	Shader shader("material.vertex", "material.frag");
+	Shader cubeShader("light_cube.vertex", "light_cube.frag");
 	glEnable(GL_DEPTH_TEST); //启用深度测试
 	//glDisable(GL_DEPTH_TEST); // 禁用深度测试
 	// 开始游戏主循环
-	glm::mat4 model;
+	glm::mat4 model = glm::mat4(1.0f);
 	glm::mat4 projection;
 	glm::mat4 view;
 	while (!glfwWindowShouldClose(window))
@@ -167,21 +174,26 @@ int main(int argc, char** argv)
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
 
 		// 清除颜色缓冲区 重置为指定颜色
-		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		/*double value = glfwGetTime();
 		float radius = 2.5f;
 		GLfloat camx = sin(value) * radius;
 		GLfloat camz = cos(value)*radius;
 		glm::vec3 eyePos(camx, 0.f, camz);*/
+
+		glBindVertexArray(VAOId);
+
+		//light color is changing .
 		double value = glfwGetTime();
 		float sinVal = sinf(value);
-		light.color = glm::vec3(sinVal, sinVal, sinVal);
+		light.color = glm::vec3(sinVal * 2.0f, sinVal*0.7f, sinVal*1.3f);
+		
 		glm::vec3 eyePos(0.f, 0.f, 3.0f);
 		view = glm::lookAt(eyePos, glm::vec3(0.0f, 0.0f, 0.0f),glm::vec3(0.0f, 1.0f, 0.0f));
 		projection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 1.0f, 1000.0f);
 		// 这里填写场景绘制代码
-		glBindVertexArray(VAOId);
+		
 		shader.use();
 		/*glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
@@ -197,16 +209,34 @@ int main(int argc, char** argv)
 		glUniform3fv(glGetUniformLocation(shader.programId, "viewPos"), 1, &eyePos[0]);
 
 		glUniform3fv(glGetUniformLocation(shader.programId, "light.positon"), 1, &light.position[0]);
-		glUniform3fv(glGetUniformLocation(shader.programId, "light.lightColor"), 1, &light.color[0]);
+		glm::vec3 ambientColor = light.color*glm::vec3(0.5f);
+		glm::vec3 diffuseColor = light.color*glm::vec3(0.2f);
+		glUniform3fv(glGetUniformLocation(shader.programId, "light.ambient"), 1, &ambientColor[0]);
+		glUniform3fv(glGetUniformLocation(shader.programId, "light.diffuse"), 1, &diffuseColor[0]);
+		glUniform3f(glGetUniformLocation(shader.programId, "light.specular"), 1.0f, 1.0f, 1.0f);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//also draw the lamp object
+		
+		cubeShader.use();
+		//glBindVertexArray(lightCubeVAOId);
+		glm::mat4 light_model = glm::mat4(1.0f);
 
-		glBindVertexArray(0);
-		glUseProgram(0);
+		
+		light_model =  glm::scale(light_model, glm::vec3(0.2f, 0.2f, 0.2f));
+		light_model = glm::translate(light_model, glm::vec3(1.0f, 4.7f, 1.0f));
+		
+		glUniformMatrix4fv(glGetUniformLocation(cubeShader.programId, "model"), 1, GL_FALSE, glm::value_ptr(light_model));
+		glUniformMatrix4fv(glGetUniformLocation(cubeShader.programId, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(cubeShader.programId, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		/*glBindVertexArray(0);
+		glUseProgram(0);*/
 
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源
 	glDeleteVertexArrays(1, &VAOId);
+	//glDeleteVertexArrays(1, &lightCubeVAOId);
 	glDeleteBuffers(1, &VBOId);
 	glfwTerminate();
 	return 0;

@@ -76,8 +76,10 @@
     <ClInclude Include="texture.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="cube.frag" />
-    <None Include="cube.vertex" />
+    <None Include="light_cube.frag" />
+    <None Include="light_cube.vertex" />
+    <None Include="material.frag" />
+    <None Include="material.vertex" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
