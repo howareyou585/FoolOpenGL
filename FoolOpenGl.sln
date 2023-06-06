@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CullFace", "CullFace\CullFa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MSAA", "MSAA\MSAA.vcxproj", "{220B7E28-BA80-4A26-8287-436C14C6688A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShadowDemo", "ShadowDemo\ShadowDemo.vcxproj", "{8DA0C9D3-FC56-48F1-BEB6-88E6D3702977}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -75,6 +77,12 @@ Global
 		{220B7E28-BA80-4A26-8287-436C14C6688A}.Release|x64.ActiveCfg = Release|Win32
 		{220B7E28-BA80-4A26-8287-436C14C6688A}.Release|x86.ActiveCfg = Release|Win32
 		{220B7E28-BA80-4A26-8287-436C14C6688A}.Release|x86.Build.0 = Release|Win32
+		{8DA0C9D3-FC56-48F1-BEB6-88E6D3702977}.Debug|x64.ActiveCfg = Debug|Win32
+		{8DA0C9D3-FC56-48F1-BEB6-88E6D3702977}.Debug|x86.ActiveCfg = Debug|Win32
+		{8DA0C9D3-FC56-48F1-BEB6-88E6D3702977}.Debug|x86.Build.0 = Debug|Win32
+		{8DA0C9D3-FC56-48F1-BEB6-88E6D3702977}.Release|x64.ActiveCfg = Release|Win32
+		{8DA0C9D3-FC56-48F1-BEB6-88E6D3702977}.Release|x86.ActiveCfg = Release|Win32
+		{8DA0C9D3-FC56-48F1-BEB6-88E6D3702977}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
