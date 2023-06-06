@@ -85,7 +85,7 @@
     <None Include="cube.vertex" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CubeWithKeyBoard.cpp" />
+    <ClCompile Include="IndirectDrawDemo.cpp" />
     <ClCompile Include="Matrial.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
