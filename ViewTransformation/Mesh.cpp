@@ -1,5 +1,4 @@
 #include "Mesh.h"
-
 void Mesh::BindData()
 {
 	glGenVertexArrays(1, &m_vao);
@@ -86,9 +85,32 @@ void Mesh::Draw(GLuint program)
 	}
 
 	glBindVertexArray(m_vao);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
 	//glDrawElements(GL_TRIANGLES, m_vecIndex.size(), GL_UNSIGNED_INT, m_vecIndex.data());//这样写没有效果
 	glDrawElements(GL_TRIANGLES, m_vecIndex.size(), GL_UNSIGNED_INT, 0);//为什么上面的不对，这样写才对
 	//glDrawArrays(GL_TRIANGLES, 0, m_vecPositon.size());
+	glBindVertexArray(0);
+}
+void Mesh::IndirectDraw()
+{
+	if (!m_ptrIndirectCommandBuffer&& m_vecIndex.size())
+	{
+		
+		vector<EBOOffeset> vecEBOOffset;
+		EBOOffeset eboOffset;
+		eboOffset.offset = 0;
+		eboOffset.length = m_vecIndex.size();
+		vecEBOOffset.emplace_back(eboOffset);
+		m_ptrIndirectCommandBuffer = new IndirectCommandBuffer(vecEBOOffset);
+	}
+	glBindVertexArray(m_vao);
+	m_ptrIndirectCommandBuffer->Bind();
+	glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, 0, m_ptrIndirectCommandBuffer->GetCmdCount(), 0);
+	int error = glGetError();
+	if (error != 0)
+	{
+		std::cout << "error no: " << error << std::endl;
+	}
 	glBindVertexArray(0);
 }
 void Mesh::BindVAO()

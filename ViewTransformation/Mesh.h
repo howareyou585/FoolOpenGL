@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include "Matrial.h"
 #include "texture.h"
+#include "learnopengl/IndirectCommandBuffer.h"
 using namespace std;
 class Mesh
 {
@@ -26,6 +27,7 @@ public:
 	vector<int> m_vecIndex;
 	vector<Texture> m_vecTexture;
 	Material m_material;
+	IndirectCommandBuffer* m_ptrIndirectCommandBuffer{};
 public:
 	Mesh() {};
 	virtual ~Mesh() {};
@@ -34,5 +36,6 @@ public:
 	void UnBindVAO();
 	vector<glm::vec3>& GetPosition();
 	void Draw(GLuint program);
+	void IndirectDraw();
 };
 

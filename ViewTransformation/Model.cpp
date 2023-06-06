@@ -144,6 +144,7 @@ void Model::Draw(GLuint program)
 	for (auto& mesh : m_vecMesh)
 	{
 		mesh.Draw(program);
+		//mesh.IndirectDraw();
 	}
 }
 
