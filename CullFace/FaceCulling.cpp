@@ -33,8 +33,110 @@ bool firstMouseMove = true;
 bool keyPressedStatus[1024]; // 按键情况记录
 GLfloat deltaTime = 0.0f; // 当前帧和上一帧的时间差
 GLfloat lastFrame = 0.0f; // 上一帧时间
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
+// 创建缓存对象
+GLuint cubeVAOId = 0, cubeVBOId = 0;
+void renderCube()
+{
+	if (!cubeVAOId)
+	{
+		//Section1 顶点属性数据
+	// 指定立方体顶点属性数据 顶点位置 颜色 纹理
+		GLfloat cubeVertices[] = {
+			// back face
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+			// front face
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			// left face
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			// right face
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+			// bottom face
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			// top face
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+			 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left 
+		};
 
+		// Step1: 创建并绑定VAO对象
+		glGenVertexArrays(1, &cubeVAOId);
+		glBindVertexArray(cubeVAOId);
+		// Step2: 创建并绑定VBO对象
+		glGenBuffers(1, &cubeVBOId);
+		glBindBuffer(GL_ARRAY_BUFFER, cubeVBOId);
+		// Step3: 分配空间 传送数据
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+		// Step4: 指定解析方式  并启用顶点属性
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)0);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(sizeof(GL_FLOAT) * 3));
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(sizeof(GLfloat) * 6));
+		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+	glBindVertexArray(cubeVAOId);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+}
+GLuint quadVAO;
+GLuint quadVBO;
+void renderQuad()
+{
+	if (quadVAO == 0)
+	{
+		float quadVertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+		// setup plane VAO
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	}
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}
 int main(int argc, char** argv)
 {
 	
@@ -82,102 +184,38 @@ int main(int argc, char** argv)
 
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-	//Section1 顶点属性数据
-	// 指定立方体顶点属性数据 顶点位置 颜色 纹理
-	GLfloat cubeVertices[] = {
-		// 正面
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,	// A
-		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,	// B
-		0.5f, 0.5f, 0.5f,	1.0f, 1.0f,	// C
-		0.5f, 0.5f, 0.5f,	1.0f, 1.0f,	// C
-		-0.5f, 0.5f, 0.5f,	0.0f, 1.0f,	// D
-		-0.5f, -0.5f, 0.5f,	0.0f, 0.0f,	// A
-
-		// 背面
-		-0.5f, -0.5f, -0.5f,0.0f, 0.0f,	// E
-		-0.5f, 0.5f, -0.5f,0.0, 1.0f,   // H
-		0.5f, 0.5f, -0.5f,1.0f, 1.0f,	// G
-		0.5f, 0.5f, -0.5f,1.0f, 1.0f,	// G
-		0.5f, -0.5f, -0.5f,1.0f, 0.0f,	// F
-		-0.5f, -0.5f, -0.5f,0.0f, 0.0f,	// E
-
-		// 左侧面
-		-0.5f, 0.5f, 0.5f,0.0f, 1.0f,	// D
-		-0.5f, 0.5f, -0.5f,1.0, 1.0f,   // H
-		-0.5f, -0.5f, -0.5f,1.0f, 0.0f,	// E
-		-0.5f, -0.5f, -0.5f,1.0f, 0.0f,	// E
-		-0.5f, -0.5f, 0.5f,0.0f, 0.0f,	// A
-		-0.5f, 0.5f, 0.5f,0.0f, 1.0f,	// D
-
-		// 右侧面
-		0.5f, -0.5f, -0.5f,1.0f, 0.0f,	// F
-		0.5f, 0.5f, -0.5f,1.0f, 1.0f,	// G
-		0.5f, 0.5f, 0.5f,0.0f, 1.0f,	// C
-		0.5f, 0.5f, 0.5f,0.0f, 1.0f,	// C
-		0.5f, -0.5f, 0.5f, 0.0f, 0.0f,	// B
-		0.5f, -0.5f, -0.5f,1.0f, 0.0f,	// F
-
-		// 顶面
-		0.5f, 0.5f, -0.5f,1.0f, 1.0f,	// G
-		-0.5f, 0.5f, -0.5f,0.0, 1.0f,   // H
-		-0.5f, 0.5f, 0.5f,0.0f, 0.0f,	// D
-		-0.5f, 0.5f, 0.5f,0.0f, 0.0f,	// D
-		0.5f, 0.5f, 0.5f,1.0f, 0.0f,	// C
-		0.5f, 0.5f, -0.5f,1.0f, 1.0f,	// G
-
-		// 底面
-		-0.5f, -0.5f, 0.5f,0.0f, 0.0f,	// A
-		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,// E
-		0.5f, -0.5f, -0.5f,1.0f, 1.0f,	// F
-		0.5f, -0.5f, -0.5f,1.0f, 1.0f,	// F
-		0.5f, -0.5f, 0.5f,1.0f, 0.0f,	// B
-		-0.5f, -0.5f, 0.5f,0.0f, 0.0f,	// A
-	};
-	// Section2 准备缓存对象
-
-	// 创建缓存对象
-	GLuint cubeVAOId, cubeVBOId;
-	// Step1: 创建并绑定VAO对象
-	glGenVertexArrays(1, &cubeVAOId);
-	glBindVertexArray(cubeVAOId);
-	// Step2: 创建并绑定VBO对象
-	glGenBuffers(1, &cubeVBOId);
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBOId);
-	// Step3: 分配空间 传送数据
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-	// Step4: 指定解析方式  并启用顶点属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-	
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (GLvoid*)(sizeof(GLfloat)*3));
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	auto error = glGetError();
+	if (error != 0)
+	{
+		std::cout << error << std::endl;
+	}
+	Shader shader("lighting.vertex", "lighting.frag");
+	Shader hdrShader("hrd.vertex", "hrd.frag");
 
 	GLuint cubeTextureId = TextureHelper::load2DTexture("../resources/textures/marble.jpg");
+	error = glGetError();
+	if (error != 0)
+	{
+		std::cout << error << std::endl;
+	}
 	// Section2 准备着色器程序
-	Shader shader("cube.vertex", "cube.frag");
-	Shader hdrShader("hdr.vertex", "hdr.frag");
-	std::vector<glm::vec3> lightPositions;
-	lightPositions.emplace_back(glm::vec3(0.0f, 0.0f, 49.5f));
-	lightPositions.push_back(glm::vec3(-1.4f, -1.9f, 9.0f));
-	lightPositions.push_back(glm::vec3(0.0f, -1.8f, 4.0f));
-	lightPositions.push_back(glm::vec3(0.8f, -1.7f, 6.0f));
-
-	std::vector<glm::vec3> lightColors;
-	lightColors.emplace_back(glm::vec3(200.f, 200.0f, 200.f));
-	lightColors.push_back(glm::vec3(0.1f, 0.0f, 0.0f));
-	lightColors.push_back(glm::vec3(0.0f, 0.0f, 0.2f));
-	lightColors.push_back(glm::vec3(0.0f, 0.1f, 0.0f));
-
+	//Shader shader("cube.vertex", "cube.frag");
+	
+	error = glGetError();
+	if (error != 0)
+	{
+		std::cout << error << std::endl;
+	}
+	
 	GLuint hdrFBO;
 	glGenFramebuffers(1, &hdrFBO);
 	//创建一个浮点 color buffer
 	GLuint colorBuffer;
 	glGenTextures(1, &colorBuffer);
 	glBindTexture(GL_TEXTURE_2D, colorBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA16F, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -195,10 +233,31 @@ int main(int argc, char** argv)
 		std::cout << "Framebuffer no complete!" << std::endl;
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	/*glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	error = glGetError();
+	if (error != 0)
+	{
+		std::cout << error << std::endl;
+	}
+	//多个光源的位置 和颜色
+	std::vector<glm::vec3> lightPositions;
+	lightPositions.emplace_back(glm::vec3(0.0f, 0.0f, 49.5f));
+	lightPositions.push_back(glm::vec3(-1.4f, -1.9f, 9.0f));
+	lightPositions.push_back(glm::vec3(0.0f, -1.8f, 4.0f));
+	lightPositions.push_back(glm::vec3(0.8f, -1.7f, 6.0f));
+
+	std::vector<glm::vec3> lightColors;
+	lightColors.emplace_back(glm::vec3(200.f, 200.0f, 200.f));
+	lightColors.push_back(glm::vec3(0.1f, 0.0f, 0.0f));
+	lightColors.push_back(glm::vec3(0.0f, 0.0f, 0.2f));
+	lightColors.push_back(glm::vec3(0.0f, 0.1f, 0.0f));
 	
+	shader.use();
+	shader.setInt("diffuseTexture", 0);
+	//hdrShader.use("")
+
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	
+	/*
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);*/
 	//glCullFace(GL_FRONT);
@@ -212,29 +271,48 @@ int main(int argc, char** argv)
 		do_movement(); // 根据用户操作情况 更新相机属性
 
 		// 清除颜色缓冲区 重置为指定颜色
-		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+		//render scene into floating point framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 projection = glm::perspective(camera.mouse_zoom, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 1.0f, 10.f);
+		glm::mat4 projection = glm::perspective(camera.mouse_zoom, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.f);
 		glm::mat4 view = camera.getViewMatrix();
-		glm::mat4 model;
-		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+		glm::mat4 model = glm::mat4(1.0f);
+		/*model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0));
+		model = glm::scale(model, glm::vec3(2.5f, 2.5f, 27.5f));
+		*/
+
+		shader.use();
+		shader.setMat4("projection", projection);
+		shader.setMat4("view", view);
+		shader.setMat4("model", model);
+		shader.setInt("inverse_normals", true);
+	
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, cubeTextureId);
-		
-		// 这里填写场景绘制代码
-		glBindVertexArray(cubeVAOId);
-		shader.use();
-		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "model"), 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "view"), 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-		
-		
-		glUniform1i(glGetAttribLocation(shader.programId, "text"), 0);
-		
-
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
+		//set lighting uniforms
+		for (int i = 0; i < lightPositions.size(); i++)
+		{
+			std::string strLightPositon = "lights[" + std::to_string(i) + "].Position";
+			shader.setVec3(strLightPositon, lightPositions[i]);
+		}
+		for (int i = 0; i < lightColors.size(); i++)
+		{
+			std::string strLightColor = "lights[" + std::to_string(i) + "].Color";
+			shader.setVec3(strLightColor, lightColors[i]);
+		}
+		renderCube();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// 2. now render floating point color buffer to 2D quad and 
+		//tonemap HDR colors to default framebuffer's (clamped) color range
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		hdrShader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, colorBuffer);
+		renderQuad();
 		glBindVertexArray(0);
 		glUseProgram(0);
 

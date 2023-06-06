@@ -38,6 +38,54 @@ public:
 	{
 		glUseProgram(this->programId);
 	}
+
+	void setInt(const std::string& strName, int value) const
+	{
+		auto locationId = glGetUniformLocation(programId, strName.c_str());
+		glUniform1i(glGetUniformLocation(programId, strName.c_str()), value);
+		
+		auto error = glGetError();
+		if (error != 0)
+		{
+			std::cout << error << std::endl;
+		}
+	}
+	void setBool(const std::string &name, bool value) const
+	{
+		glUniform1i(glGetUniformLocation(programId, name.c_str()), (int)value);
+		auto error = glGetError();
+		if (error != 0)
+		{
+			std::cout << error << std::endl;
+		}
+	}
+	void setVec3(const std::string &name, const glm::vec3 &value) const
+	{
+		glUniform3fv(glGetUniformLocation(programId, name.c_str()), 1, &value[0]);
+		auto error = glGetError();
+		if (error != 0)
+		{
+			std::cout << error << std::endl;
+		}
+	}
+	void setVec3(const std::string &name, float x, float y, float z) const
+	{
+		glUniform3f(glGetUniformLocation(programId, name.c_str()), x, y, z);
+		auto error = glGetError();
+		if (error != 0)
+		{
+			std::cout << error << std::endl;
+		}
+	}
+	void setMat4(const std::string &name, const glm::mat4 &mat) const
+	{
+		glUniformMatrix4fv(glGetUniformLocation(programId, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+		auto error = glGetError();
+		if (error != 0)
+		{
+			std::cout << error << std::endl;
+		}
+	}
 	~Shader()
 	{
 		if (this->programId)

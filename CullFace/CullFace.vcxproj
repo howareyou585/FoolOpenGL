@@ -78,6 +78,10 @@
   <ItemGroup>
     <None Include="cube.frag" />
     <None Include="cube.vertex" />
+    <None Include="HRD.frag" />
+    <None Include="HRD.vertex" />
+    <None Include="Lighting.frag" />
+    <None Include="Lighting.vertex" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
