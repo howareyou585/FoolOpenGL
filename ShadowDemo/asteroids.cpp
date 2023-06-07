@@ -18,7 +18,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-Camera camera(glm::vec3(0.0f, 0.0f, 55.0f));
+
 int main(int argc, char** argv)
 {
 	
@@ -66,16 +66,53 @@ int main(int argc, char** argv)
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	// Section2 准备着色器程序
 	Shader shader("instance.vertex", "instance.frag");
+	int error = glGetError();
+	if (error != 0)
+	{
+		std::cout << "error:" << error << std::endl;
+	}
 	Model rock(FileSystem::getPath("Model/rock/rock.obj"));
+	auto & boundingBox = rock.GetBoundingBox();
+	float length = boundingBox.GetLength()*0.8;
+
+	glm::vec3 targetPos = boundingBox.GetCenter();
+	glm::vec3 eysPos = targetPos + glm::vec3(0, 0, 1) *length;
+	Camera camera(eysPos);
+	error = glGetError();
+	if (error != 0)
+	{
+		std::cout << "error:" << error << std::endl;
+	}
 	Model planet(FileSystem::getPath("Model/planet/planet.obj"));
+	error = glGetError();
+	if (error != 0)
+	{
+		std::cout << "error:" << error << std::endl;
+	}
 	shader.use();
 	glm::mat4 model;
 	//model = glm::scale(model, glm::vec3(0.25, 0.25, 0.25));
 	glm::mat4 view = camera.GetViewMatrix();
-	glm::mat4 projection = glm::perspective(camera.Zoom, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
+	float rad = glm::radians(camera.Zoom);
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
 	shader.setMat4("model", model);
+	error = glGetError();
+	if (error != 0)
+	{
+		std::cout << "error:" << error << std::endl;
+	}
 	shader.setMat4("view", view);
+	error = glGetError();
+	if (error != 0)
+	{
+		std::cout << "error:" << error << std::endl;
+	}
 	shader.setMat4("projection", projection);
+	error = glGetError();
+	if (error != 0)
+	{
+		std::cout << "error:" << error << std::endl;
+	}
 	shader.unUse();
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
@@ -84,7 +121,7 @@ int main(int argc, char** argv)
 
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 		// 这里填写场景绘制代码
 		

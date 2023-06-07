@@ -64,10 +64,19 @@ public:
         unsigned int specularNr = 1;
         unsigned int normalNr   = 1;
         unsigned int heightNr   = 1;
-        for(unsigned int i = 0; i < textures.size(); i++)
+		int error = glGetError();
+		if (error != 0)
+		{
+			std::cout << "error:" << error << std::endl;
+		}
+        for(unsigned int i = 0; i <1; i++)
         {
             glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
-            // retrieve texture number (the N in diffuse_textureN)
+			error = glGetError();
+			if (error != 0)
+			{
+				std::cout << "error:" << error << std::endl;
+			}											  // retrieve texture number (the N in diffuse_textureN)
             string number;
             string name = textures[i].type;
             if(name == "texture_diffuse")
@@ -81,13 +90,35 @@ public:
 
             // now set the sampler to the correct texture unit
             glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
-            // and finally bind the texture
+			error = glGetError();
+			if (error != 0)
+			{
+				std::cout << "error:" << error << std::endl;
+			}
+			// and finally bind the texture
             glBindTexture(GL_TEXTURE_2D, textures[i].id);
+			error = glGetError();
+			if (error != 0)
+			{
+				std::cout << "error:" << error << std::endl;
+			}
         }
         
         // draw mesh
         glBindVertexArray(VAO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		error = glGetError();
+		if (error != 0)
+		{
+			std::cout << "error:" << error << std::endl;
+		}
         glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+		error = glGetError();
+		if (error != 0)
+		{
+			std::cout << "error:" << error << std::endl;
+		}
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 
         // always good practice to set everything back to defaults once configured.

@@ -2,7 +2,7 @@
 #define MODEL_H
 
 //#include <glad/glad.h> 
-#include "../GLEW/glew.h"
+#include <GLEW/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <stb_image.h>
@@ -12,7 +12,7 @@
 
 #include <learnopengl/mesh.h>
 #include <learnopengl/shader.h>
-
+#include <learnopengl/BoundingBox.h>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -31,6 +31,7 @@ public:
     vector<Mesh>    meshes;
     string directory;
     bool gammaCorrection;
+	BoundingBox m_boudingBox;
 
     // constructor, expects a filepath to a 3D model.
     Model(string const &path, bool gamma = false) : gammaCorrection(gamma)
@@ -44,7 +45,35 @@ public:
         for(unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].Draw(shader);
     }
-    
+	BoundingBox& Model::GetBoundingBox()
+	{
+		float len = 0;
+		glm::vec3 minPnt;
+		glm::vec3 maxPnt;
+		for (auto mesh : meshes)
+		{
+			auto& vecVertex = mesh.vertices;
+			for (auto &vertex : vecVertex)
+			{
+				auto& point = vertex.Position;
+				if (point.x < minPnt.x)
+					minPnt.x = point.x;
+				if (point.y < minPnt.y)
+					minPnt.y = point.y;
+				if (point.z < minPnt.z)
+					minPnt.z = point.z;
+				if (point.x > maxPnt.x)
+					maxPnt.x = point.x;
+				if (point.y > maxPnt.y)
+					maxPnt.y = point.y;
+				if (point.z > maxPnt.z)
+					maxPnt.z = point.z;
+			}
+		}
+		m_boudingBox.m_minPnt = minPnt;
+		m_boudingBox.m_maxPnt = maxPnt;
+		return m_boudingBox;
+	}
 private:
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
     void loadModel(string const &path)
