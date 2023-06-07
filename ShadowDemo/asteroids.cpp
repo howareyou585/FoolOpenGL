@@ -11,13 +11,14 @@
 #include "learnopengl/shader.h"
 #include "learnopengl/filesystem.h"
 #include "learnopengl/model.h"
+#include "learnopengl/camera.h"
 
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-
+Camera camera(glm::vec3(0.0f, 0.0f, 55.0f));
 int main(int argc, char** argv)
 {
 	
@@ -63,12 +64,19 @@ int main(int argc, char** argv)
 	// 设置视口参数
 	glEnable(GL_DEPTH_TEST);
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-	GLuint VAOId = 1;
-	GLuint VBOId = 11;
 	// Section2 准备着色器程序
-	Shader shader("triangle.vertex", "triangle.frag");
+	Shader shader("instance.vertex", "instance.frag");
 	Model rock(FileSystem::getPath("Model/rock/rock.obj"));
 	Model planet(FileSystem::getPath("Model/planet/planet.obj"));
+	shader.use();
+	glm::mat4 model;
+	//model = glm::scale(model, glm::vec3(0.25, 0.25, 0.25));
+	glm::mat4 view = camera.GetViewMatrix();
+	glm::mat4 projection = glm::perspective(camera.Zoom, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
+	shader.setMat4("model", model);
+	shader.setMat4("view", view);
+	shader.setMat4("projection", projection);
+	shader.unUse();
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -80,18 +88,16 @@ int main(int argc, char** argv)
 
 		// 这里填写场景绘制代码
 		
-		glBindVertexArray(VAOId);
+		
 		shader.use();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		rock.Draw(shader);
 		glBindVertexArray(0);
 		glUseProgram(0);
 
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源
-	glDeleteVertexArrays(1, &VAOId);
-	glDeleteBuffers(1, &VBOId);
 	glfwTerminate();
 	return 0;
 }
