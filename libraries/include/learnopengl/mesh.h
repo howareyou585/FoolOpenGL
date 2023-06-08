@@ -69,7 +69,7 @@ public:
 		{
 			std::cout << "error:" << error << std::endl;
 		}
-        for(unsigned int i = 0; i <1; i++)
+        for(unsigned int i = 0; i < textures.size(); i++)
         {
             glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
 			error = glGetError();
@@ -106,7 +106,7 @@ public:
         
         // draw mesh
         glBindVertexArray(VAO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		error = glGetError();
 		if (error != 0)
 		{
@@ -118,7 +118,7 @@ public:
 		{
 			std::cout << "error:" << error << std::endl;
 		}
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 
         // always good practice to set everything back to defaults once configured.

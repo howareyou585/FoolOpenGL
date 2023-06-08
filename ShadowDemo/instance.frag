@@ -9,5 +9,5 @@ in vec2 texcoord;
 void main()
 {
 	//color = vec4(0.8, 0.8, 0.0, 1.0);
-	color = texture(texture_diffuse1, texcoord)+texture(texture_specular1, texcoord)+texture(texture_normal1, texcoord)+texture(texture_height1, texcoord);
+	color = texture(texture_normal1, texcoord);
 }
