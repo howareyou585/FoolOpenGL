@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 	}
 	Model rock(FileSystem::getPath("Model/rock/rock.obj"));
 	Model planet(FileSystem::getPath("Model/planet/planet.obj"));
-	unsigned int amount = 10000;
+	unsigned int amount = 1000;
 	vector<glm::mat4> vecRockModelMatrix;
 	vecRockModelMatrix.reserve(amount);
 	vecRockModelMatrix.resize(amount);
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
 
 		// 4. now add to list of matrices
-		vecRockModelMatrix.emplace_back(model);
+		vecRockModelMatrix[i] = model;
 		// 5.merge boundingbox
 		auto& boundingBox = rock.GetBoundingBox();
 		BoundingBox tempBoundingBox = boundingBox.Transformed(model);
@@ -119,16 +119,53 @@ int main(int argc, char** argv)
 	vector<Model*> vecRock;
 	vecRock.push_back(&rock);
 	VAOBuffer vaoBuffer(vecRock);
+
 	vaoBuffer.Bind();
+	GLuint instanceMatrixBuffer;
+	int mat4Size = sizeof(glm::mat4);
+	int vec4Size = sizeof(glm::vec4);
+	glGenBuffers(1, &instanceMatrixBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceMatrixBuffer);
+	glBufferData(GL_ARRAY_BUFFER, mat4Size * amount, vecRockModelMatrix.data(), GL_STATIC_DRAW);
+	
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)0);
+	
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(vec4Size));
+
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(vec4Size * 2));
+	
+	glEnableVertexAttribArray(6);
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, mat4Size, (void*)(vec4Size * 3));
+	
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
+	glVertexAttribDivisor(5, 1);
+	glVertexAttribDivisor(6, 1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 	GLuint indirect_draw_buffer;
 	glGenBuffers(1, &indirect_draw_buffer);
 	glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect_draw_buffer);
 	glBufferStorage(GL_DRAW_INDIRECT_BUFFER, amount * sizeof(DrawElementsIndirectCommand), nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+	error = glGetError();
+	if (error != 0)
+	{
+		std::cout << "error:" << error << std::endl;
+	}
 	DrawElementsIndirectCommand* ptrIndirectCommands = (DrawElementsIndirectCommand*)glMapBufferRange(
 		GL_DRAW_INDIRECT_BUFFER, 
 		0, 
 		sizeof(DrawElementsIndirectCommand) * amount, 
 		GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+	error = glGetError();
+	if (error != 0)
+	{
+		std::cout << "error:" << error << std::endl;
+	}
 	for (int i = 0; i < amount; i++)
 	{
 		ptrIndirectCommands[i].baseInstance = i;
@@ -153,11 +190,7 @@ int main(int argc, char** argv)
 	glm::vec3 targetPos = totalBoundingBox.GetCenter();
 	glm::vec3 eysPos = targetPos + glm::vec3(0, 0, 1) *length;
 	Camera camera(eysPos);
-	error = glGetError();
-	if (error != 0)
-	{
-		std::cout << "error:" << error << std::endl;
-	}
+	
 	
 	glm::mat4 view = camera.GetViewMatrix();
 	float rad = glm::radians(camera.Zoom);
@@ -181,11 +214,11 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 		// 这里填写场景绘制代码
-		plantShader.use();
+		/*plantShader.use();
 		plantShader.setMat4("model", planetModelMatrix);
 		planet.Draw(plantShader);
-		plantShader.unUse();
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		plantShader.unUse();*/
+
 		rockShader.use();
 		/*for (auto i = 0; i < vecRockModelMatrix.size(); i++)
 		{
@@ -198,10 +231,21 @@ int main(int argc, char** argv)
 			}
 			rock.Draw(rockShader);
 		}*/
+		int error = glGetError();
+		if (error != 0)
+		{
+			std::cout << "error:" << error << endl;
+		}
+		vaoBuffer.Bind();
+		//vaoBuffer.BindEBO();
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect_draw_buffer);
+		glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, amount, 0);
+		GL_INPUT_ERROR
+		
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+		//vaoBuffer.UnBindEBO();
+		vaoBuffer.UnBind();
 		rockShader.unUse();
-		glBindVertexArray(0);
-		glUseProgram(0);
-
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源

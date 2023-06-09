@@ -11,10 +11,11 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <assimp/postprocess.h>
 // 包含着色器加载库
-#include "shader.h"
-#include "texture.h"
-#include "Model.h"
+#include "learnopengl/shader.h"
+#include "learnopengl/Model.h"
 #include "learnopengl/VAOBuffer.h"
+#include "learnopengl/IndirectCommandBuffer.h"
+#include "learnopengl/Maroc.h"
 
 // 键盘回调函数原型声明
 GLfloat yaw = 0.0f;
@@ -34,39 +35,6 @@ bool bFirstMouseMove = true;
 GLfloat lastX{};
 GLfloat lastY{};
 
-bool MergeMesh(vector<Model>& vecModel, 
-vector<glm::vec3> &vecMergedPositon,
-vector<glm::vec2> &vecMergedTexcoord,
-vector<glm::vec3> &vecMergedNormal,
-vector<unsigned long long>& vecMergedIndex)
-{
-	bool bRet = false;
-	if (!vecModel.size())
-	{
-		return bRet;
-	}
-	unsigned long long offset = 0;
-	for(size_t i = 0; i < vecModel.size(); i++)
-	{
-		auto& model = vecModel[i];
-		auto& vecMesh = model.m_vecMesh;
-		//for (auto& mesh : vecMesh)
-		for(size_t j = 0; j < vecMesh.size(); j++)
-		{
-			auto& mesh = vecMesh[j];
-			vecMergedPositon.insert(vecMergedPositon.end(), mesh.m_vecPositon.begin(), mesh.m_vecPositon.end());
-			vecMergedTexcoord.insert(vecMergedTexcoord.end(), mesh.m_vecTexcoord.begin(), mesh.m_vecTexcoord.end());
-			vecMergedNormal.insert(vecMergedNormal.end(), mesh.m_vecNormal.begin(), mesh.m_vecNormal.end());
-			for (size_t k = 0; k < mesh.m_vecIndex.size(); k++)
-			{
-				vecMergedIndex.push_back(mesh.m_vecIndex[k] + offset);
-			}
-			offset += mesh.m_vecPositon.size();
-		}
-	}
-	bRet = true;
-	return bRet;
-}
 
 int main(int argc, char** argv)
 {
@@ -116,22 +84,12 @@ int main(int argc, char** argv)
 
 
 	// Section1 准备顶点数据
-	auto ptrModel = new Model();
-	ptrModel->Load("../Model/male02/male02.obj", /*aiProcess_CalcTangentSpace
-		|*/ aiProcess_Triangulate
-		/*| aiProcess_JoinIdenticalVertices
-		| aiProcess_SortByPType
-		| aiProcess_SplitLargeMeshes
-		| aiProcess_GenSmoothNormals*/
-		| aiProcess_FlipUVs);
-	vector<Model> vecModel;
-	vecModel.push_back(*ptrModel);
-	vector<glm::vec3> vecMergedPositon;
-	vector<glm::vec2> vecMergedTexcoord;
-	vector<glm::vec3> vecMergedNormal;
-	vector<unsigned long long> vecMergedIndex;
-	MergeMesh(vecModel, vecMergedPositon, vecMergedTexcoord,vecMergedNormal, vecMergedIndex);
-	VAOBuffer vaoBuffer(vecMergedPositon, vecMergedTexcoord, vecMergedNormal, vecMergedIndex);
+	auto ptrModel = new Model("../Model/male02/male02.obj");
+	
+	vector<Model*> vecModel;
+	vecModel.push_back(ptrModel);
+	
+	VAOBuffer vaoBuffer(vecModel);
 	
 	vector<EBOOffeset> vecEBOOffset;
 	EBOOffeset eboOffset;
@@ -145,9 +103,10 @@ int main(int argc, char** argv)
 	glCullFace(GL_BACK);
 	
 	float angle = 0.0f;
-	float boxLength = ptrModel->GetBoundingBoxLength();
+	BoundingBox& boudingBox = ptrModel->GetBoundingBox();
+	float boxLength = boudingBox.GetLength();
 	boxLength *= 0.8f;
-	glm::vec3 center = ptrModel->m_center;
+	glm::vec3 center = boudingBox.GetCenter();
 	targetPos = center;
 	cameraPos = center;
 	cameraPos.z = boxLength;
@@ -178,30 +137,32 @@ int main(int argc, char** argv)
 		glBindTexture(GL_TEXTURE_2D, textureId);
 		auto texLocationId = glGetUniformLocation(shader.programId, "tex");
 		glUniform1i(texLocationId, 0);*/
-		auto modelLocationId = glGetUniformLocation(shader.programId, "model");
+		auto modelLocationId = glGetUniformLocation(shader.ID, "model");
 		glUniformMatrix4fv(modelLocationId, 1, GL_FALSE, glm::value_ptr(model));
-		auto viewLocationId = glGetUniformLocation(shader.programId, "view");
+		auto viewLocationId = glGetUniformLocation(shader.ID, "view");
 		glUniformMatrix4fv(viewLocationId, 1, GL_FALSE, glm::value_ptr(view));
-		auto projectionLocationId = glGetUniformLocation(shader.programId, "projection");
+		auto projectionLocationId = glGetUniformLocation(shader.ID, "projection");
 		glUniformMatrix4fv(projectionLocationId, 1, GL_FALSE, glm::value_ptr(projection));
 		/*vec3 direction;
 		vec3 ambient;
 		vec3 diffuse;
 		vec3 spcular;*/
-		auto lightDirection = glGetUniformLocation(shader.programId, "light.direction");
+		auto lightDirection = glGetUniformLocation(shader.ID, "light.direction");
 		glm::vec3 dir(30.f, 100.f, 10.f);
 		glUniform3fv(lightDirection, 1, &dir[0]);
-		auto lightAmbient = glGetUniformLocation(shader.programId, "light.ambient");
-		auto lightDiffuse = glGetUniformLocation(shader.programId, "light.diffuse");
-		auto lightSpcular = glGetUniformLocation(shader.programId, "light.spcular");
+		auto lightAmbient = glGetUniformLocation(shader.ID, "light.ambient");
+		auto lightDiffuse = glGetUniformLocation(shader.ID, "light.diffuse");
+		auto lightSpcular = glGetUniformLocation(shader.ID, "light.spcular");
 
 		
 		vaoBuffer.Bind();
-		vaoBuffer.BindEBO();
+		GL_INPUT_ERROR
+		//vaoBuffer.BindEBO();
 		indirectCommandBuffer.Bind();
 		glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, 0, indirectCommandBuffer.GetCmdCount(), 0);
+		GL_INPUT_ERROR
 		indirectCommandBuffer.UnBind();
-		vaoBuffer.UnBindEBO();
+		//vaoBuffer.UnBindEBO();
 		vaoBuffer.UnBind();
 	
 		//glBindVertexArray(0);

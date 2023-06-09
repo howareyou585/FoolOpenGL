@@ -1,7 +1,10 @@
+#ifndef VAOBUFFER_H
+#define VAOBUFFER_H
 #include "../glm/glm.hpp"
 #include "../GLEW/glew.h"
 #include "model.h"
 #include <vector>
+#include "Maroc.h"
 using namespace std;
 class VAOBuffer
 {
@@ -12,11 +15,16 @@ public:
 		{
 			BuildVAO(m_vecPositon, m_vecTexcoord, m_vecNormal, m_vecIndex);
 		}
+		/*vector<Vertex>vecVertex;
+		if (MergeMeshes(vecModel, vecVertex))
+		{
+
+		}*/
 	}
 	VAOBuffer(vector<glm::vec3>& vecPositon,
 		vector<glm::vec2>& vecTexcoord,
 		vector<glm::vec3>& vecNormal,
-		vector<unsigned long long>& vecIndex)
+		vector<unsigned int>& vecIndex)
 	{
 		BuildVAO(vecPositon, vecTexcoord,vecNormal,vecIndex);
 		m_vecPositon.swap(vecPositon);
@@ -41,10 +49,33 @@ public:
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 private:
-	bool MergeMeshes(vector<Model*>& vecModel)
+	bool MergeMeshes(vector<Model*>& vecModel, vector<Vertex>& vecMergedVertex)
 	{
 		bool bRet = false;
 		unsigned long long offset = 0;
+		for (size_t i = 0; i < vecModel.size(); i++)
+		{
+			auto* ptrModel = vecModel[i];
+			auto& vecMesh = ptrModel->meshes;
+			for (size_t j = 0; j < vecMesh.size(); j++)
+			{
+				auto& mesh = vecMesh[j];
+				auto& vecVertex = mesh.vertices;
+				vecMergedVertex.insert(vecMergedVertex.end(), vecVertex.begin(), vecVertex.end());
+				for (size_t m = 0; m < mesh.indices.size(); m++)
+				{
+					m_vecIndex.push_back(mesh.indices[m] + offset);
+				}
+				offset += vecVertex.size();
+			}
+		}
+		bRet = true;
+		return bRet;
+	}
+	bool MergeMeshes(vector<Model*>& vecModel)
+	{
+		bool bRet = false;
+		unsigned int offset = 0;
 		for (size_t i = 0; i < vecModel.size(); i++)
 		{
 			auto* ptrModel = vecModel[i];
@@ -60,7 +91,6 @@ private:
 					m_vecPositon.emplace_back(vertex.Position);
 					m_vecTexcoord.emplace_back(vertex.TexCoords);
 					m_vecNormal.emplace_back(vertex.Normal);
-					
 				}
 				for (size_t m = 0; m < mesh.indices.size(); m++)
 				{
@@ -72,34 +102,70 @@ private:
 		bRet = true;
 		return bRet;
 	}
+	bool BuildVAO(vector<Vertex>&vecVertex, vector<unsigned int>& vecIndex)
+	{
+		bool bRet = false;
+		GL_INPUT_ERROR
+			glGenVertexArrays(1, &m_vaoId);
+		glBindVertexArray(m_vaoId);
+
+		//使用一个VBO保存位置 法向 纹理坐标
+		glGenBuffers(1, &m_vboId);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
+		auto length = vecVertex.size()*sizeof(Vertex);
+		glBufferData(GL_ARRAY_BUFFER, length, vecVertex.data(), GL_STATIC_DRAW);
+		// set the vertex attribute pointers
+		// vertex Positions
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+		// vertex normals
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+		// vertex texture coords
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+		
+
+		glGenBuffers(1, &m_eboId);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboId);
+
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vecIndex.size() * sizeof(GLuint), vecIndex.data(), GL_STATIC_DRAW);
+		GL_INPUT_ERROR
+		glBindVertexArray(0);
+		return true;
+	}
 	bool BuildVAO(vector<glm::vec3>& vecPositon,
 		vector<glm::vec2>& vecTexcoord,
 		vector<glm::vec3>& vecNormal,
-		vector<unsigned long long>& vecIndex)
+		vector<unsigned int>& vecIndex)
 	{
+		GL_INPUT_ERROR
 		glGenVertexArrays(1, &m_vaoId);
 		glBindVertexArray(m_vaoId);
+		
 		//使用一个VBO保存位置 法向 纹理坐标
 		glGenBuffers(1, &m_vboId);
 		glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
 		auto length = vecPositon.size() * sizeof(glm::vec3) +
 			vecNormal.size() * sizeof(glm::vec3) +
 			vecTexcoord.size() * sizeof(glm::vec2);
-		glBufferData(GL_ARRAY_BUFFER, vecPositon.size() * sizeof(glm::vec3), nullptr, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, length, nullptr, GL_STATIC_DRAW);
+		GL_INPUT_ERROR
 		//position
 		GLuint offset_positon = 0;
 		GLuint size_position = vecPositon.size() * sizeof(glm::vec3);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size_position, vecPositon.data());
+		GL_INPUT_ERROR
 		////normal
 		GLuint offset_normal = size_position;
 		GLuint size_normal = vecNormal.size() * sizeof(glm::vec3);
 		glBufferSubData(GL_ARRAY_BUFFER, offset_normal, size_normal, vecNormal.data());
-
+		GL_INPUT_ERROR
 		////textcoord
 		GLuint offset_textcoord = size_position + size_normal;
 		GLuint size_textcoord = vecTexcoord.size() * sizeof(glm::vec2);
 		glBufferSubData(GL_ARRAY_BUFFER, offset_textcoord, size_textcoord, vecTexcoord.data());
-
+		GL_INPUT_ERROR
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
@@ -108,13 +174,15 @@ private:
 
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)offset_textcoord);
-
+		GL_INPUT_ERROR
 
 		glGenBuffers(1, &m_eboId);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboId);
 
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vecIndex.size() * sizeof(GLuint), vecIndex.data(), GL_STATIC_DRAW);
+		GL_INPUT_ERROR
 		glBindVertexArray(0);
+		return true;
 	}
 private:
 	GLuint m_vaoId;
@@ -124,5 +192,6 @@ public:
 	vector<glm::vec3> m_vecPositon;
 	vector<glm::vec2> m_vecTexcoord;
 	vector<glm::vec3> m_vecNormal;
-	vector<unsigned long long> m_vecIndex;
+	vector<unsigned int> m_vecIndex;
 };
+#endif

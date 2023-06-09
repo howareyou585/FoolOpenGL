@@ -1,3 +1,5 @@
+#ifndef INDIRECT_COMMAND_BUFFER_H
+#define INDIRECT_COMMAND_BUFFER_H
 #include "../GLEW/glew.h"
 #include <vector>
 using namespace std;
@@ -95,3 +97,4 @@ private:
 	GLuint m_objectId{};
 	int m_nCommand{};
 };
+#endif

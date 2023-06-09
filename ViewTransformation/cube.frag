@@ -1,4 +1,4 @@
-#version 330
+#version 450 core
 struct DirectionLight //Æ½ÐÐ¹â
 {
 	vec3 direction;
