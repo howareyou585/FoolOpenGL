@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 	}
 	Model rock(FileSystem::getPath("Model/rock/rock.obj"));
 	Model planet(FileSystem::getPath("Model/planet/planet.obj"));
-	unsigned int amount = 1000;
+	unsigned int amount = 10000;
 	vector<glm::mat4> vecRockModelMatrix;
 	vecRockModelMatrix.reserve(amount);
 	vecRockModelMatrix.resize(amount);
@@ -214,29 +214,31 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 		// 这里填写场景绘制代码
-		/*plantShader.use();
+		plantShader.use();
 		plantShader.setMat4("model", planetModelMatrix);
 		planet.Draw(plantShader);
-		plantShader.unUse();*/
+		plantShader.unUse();
 
 		rockShader.use();
-		/*for (auto i = 0; i < vecRockModelMatrix.size(); i++)
-		{
-			glm::mat4& model = vecRockModelMatrix[i];
-			rockShader.setMat4("model", model);
-			error = glGetError();
-			if (error != 0)
-			{
-				std::cout << "error:" << error << std::endl;
-			}
-			rock.Draw(rockShader);
-		}*/
+		
 		int error = glGetError();
 		if (error != 0)
 		{
 			std::cout << "error:" << error << endl;
 		}
 		vaoBuffer.Bind();
+		
+		auto& vecTexture = vaoBuffer.GetTextures();
+		for (int i = 0; i < vecTexture.size(); i++)
+		{
+			auto& texture = vecTexture[i];
+			glBindTexture(GL_TEXTURE_2D, texture.id);
+			string strName = texture.type + std::to_string(i + 1);
+			rockShader.setInt(strName, i);
+			glActiveTexture(GL_TEXTURE0);
+			break;
+		}
+		
 		//vaoBuffer.BindEBO();
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect_draw_buffer);
 		glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, amount, 0);

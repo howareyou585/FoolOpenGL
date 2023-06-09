@@ -14,12 +14,9 @@ public:
 		if (MergeMeshes(vecModel))
 		{
 			BuildVAO(m_vecPositon, m_vecTexcoord, m_vecNormal, m_vecIndex);
+			SetTexture(vecModel);
 		}
-		/*vector<Vertex>vecVertex;
-		if (MergeMeshes(vecModel, vecVertex))
-		{
-
-		}*/
+		
 	}
 	VAOBuffer(vector<glm::vec3>& vecPositon,
 		vector<glm::vec2>& vecTexcoord,
@@ -48,6 +45,11 @@ public:
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
+	vector<Texture>& GetTextures()
+	{
+		return m_vecTexture;
+	}
+	
 private:
 	bool MergeMeshes(vector<Model*>& vecModel, vector<Vertex>& vecMergedVertex)
 	{
@@ -184,6 +186,19 @@ private:
 		glBindVertexArray(0);
 		return true;
 	}
+
+	void SetTexture(vector<Model*>& vecModel)
+	{
+		for (size_t i = 0; i < vecModel.size(); i++)
+		{
+			auto ptrModel = vecModel[i];
+			auto& vecMesh = ptrModel->meshes;
+			for (auto& mesh : vecMesh)
+			{
+				m_vecTexture.insert(m_vecTexture.end(), mesh.textures.begin(), mesh.textures.end());
+			}
+		}
+	}
 private:
 	GLuint m_vaoId;
 	GLuint m_vboId;
@@ -193,5 +208,6 @@ public:
 	vector<glm::vec2> m_vecTexcoord;
 	vector<glm::vec3> m_vecNormal;
 	vector<unsigned int> m_vecIndex;
+	vector<Texture> m_vecTexture;
 };
 #endif
