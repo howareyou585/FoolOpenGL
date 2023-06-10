@@ -183,6 +183,7 @@ int main(int argc, char** argv)
 
 		// 这里填写场景绘制代码
 		plantShader.use();
+		planetModelMatrix = glm::rotate(planetModelMatrix, (float)(glfwGetTime())/1000.f, glm::vec3(0, 1, 0));
 		plantShader.setMat4("model", planetModelMatrix);
 		planet.Draw(plantShader);
 		plantShader.unUse();
