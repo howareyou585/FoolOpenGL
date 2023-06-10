@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MRTDemo", "MRTDemo\MRTDemo.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IndirectDrawDynamicDemo", "IndirectDrawDynamicDemo\IndirectDrawDynamicDemo.vcxproj", "{0D3B9732-C602-436C-8CAF-01EACE301896}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeferredRenderingDemo", "DeferredRenderingDemo\DeferredRenderingDemo.vcxproj", "{C648DDB0-A780-4396-8427-A3880BEFFB83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -115,6 +117,12 @@ Global
 		{0D3B9732-C602-436C-8CAF-01EACE301896}.Release|x64.ActiveCfg = Release|Win32
 		{0D3B9732-C602-436C-8CAF-01EACE301896}.Release|x86.ActiveCfg = Release|Win32
 		{0D3B9732-C602-436C-8CAF-01EACE301896}.Release|x86.Build.0 = Release|Win32
+		{C648DDB0-A780-4396-8427-A3880BEFFB83}.Debug|x64.ActiveCfg = Debug|Win32
+		{C648DDB0-A780-4396-8427-A3880BEFFB83}.Debug|x86.ActiveCfg = Debug|Win32
+		{C648DDB0-A780-4396-8427-A3880BEFFB83}.Debug|x86.Build.0 = Debug|Win32
+		{C648DDB0-A780-4396-8427-A3880BEFFB83}.Release|x64.ActiveCfg = Release|Win32
+		{C648DDB0-A780-4396-8427-A3880BEFFB83}.Release|x86.ActiveCfg = Release|Win32
+		{C648DDB0-A780-4396-8427-A3880BEFFB83}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
