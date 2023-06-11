@@ -35,6 +35,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultiInstanceDemo", "MultiI
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BloomDemo", "BloomDemo\BloomDemo.vcxproj", "{FCC095FF-BF64-4208-9494-E16D8FD62746}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OutlineEffect", "OutlineEffect\OutlineEffect.vcxproj", "{2A3A5D68-89C4-4BD5-BFE4-2DB052A516F3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XRayEffect", "XRayEffect\XRayEffect.vcxproj", "{170D299B-E146-4FBD-83D8-41B00D49EB20}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -139,6 +143,18 @@ Global
 		{FCC095FF-BF64-4208-9494-E16D8FD62746}.Release|x64.ActiveCfg = Release|Win32
 		{FCC095FF-BF64-4208-9494-E16D8FD62746}.Release|x86.ActiveCfg = Release|Win32
 		{FCC095FF-BF64-4208-9494-E16D8FD62746}.Release|x86.Build.0 = Release|Win32
+		{2A3A5D68-89C4-4BD5-BFE4-2DB052A516F3}.Debug|x64.ActiveCfg = Debug|Win32
+		{2A3A5D68-89C4-4BD5-BFE4-2DB052A516F3}.Debug|x86.ActiveCfg = Debug|Win32
+		{2A3A5D68-89C4-4BD5-BFE4-2DB052A516F3}.Debug|x86.Build.0 = Debug|Win32
+		{2A3A5D68-89C4-4BD5-BFE4-2DB052A516F3}.Release|x64.ActiveCfg = Release|Win32
+		{2A3A5D68-89C4-4BD5-BFE4-2DB052A516F3}.Release|x86.ActiveCfg = Release|Win32
+		{2A3A5D68-89C4-4BD5-BFE4-2DB052A516F3}.Release|x86.Build.0 = Release|Win32
+		{170D299B-E146-4FBD-83D8-41B00D49EB20}.Debug|x64.ActiveCfg = Debug|Win32
+		{170D299B-E146-4FBD-83D8-41B00D49EB20}.Debug|x86.ActiveCfg = Debug|Win32
+		{170D299B-E146-4FBD-83D8-41B00D49EB20}.Debug|x86.Build.0 = Debug|Win32
+		{170D299B-E146-4FBD-83D8-41B00D49EB20}.Release|x64.ActiveCfg = Release|Win32
+		{170D299B-E146-4FBD-83D8-41B00D49EB20}.Release|x86.ActiveCfg = Release|Win32
+		{170D299B-E146-4FBD-83D8-41B00D49EB20}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{6126BC25-73CD-4C59-8824-A121BF4E8D6D}</ProjectGuid>
+    <ProjectGuid>{2A3A5D68-89C4-4BD5-BFE4-2DB052A516F3}</ProjectGuid>
     <RootNamespace>OutlineEffect</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
