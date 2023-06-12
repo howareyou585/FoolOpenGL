@@ -7,7 +7,11 @@
 #include <vector>
 
 // 包含着色器加载库
-#include "shader.h"
+#include <glm/glm.hpp>
+#include "learnopengl/shader.h"
+#include "learnopengl/model.h"
+#include "learnopengl/filesystem.h"
+
 
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -63,12 +67,16 @@ int main(int argc, char** argv)
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置
 	GLfloat vertices[] = {
-		-0.5f, 0.0f, 0.0f,
-		0.5f, 0.0f, 0.0f,
-		0.0f, 0.5f, 0.0f
+		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, //0
+		1.0f, -1.0f, 0.0f,	1.0f, 0.0f, //1
+		1.0f, 1.0f,  0.0f,	1.0f,1.0f,  //2
+		/*-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, //0
+		1.0f, 1.0f, 0.0f,   1.0f,1.0f,*/ //2
+		-1.0f, 1.0f, 0.0f,  0.0f,1.0f  //3
 	};
+	GLuint indexes[] = {0,1,2,0,2,3};
 	// 创建缓存对象
-	GLuint VAOId, VBOId;
+	GLuint VAOId, VBOId, EBOId;
 	// Step1: 创建并绑定VAO对象
 	glGenVertexArrays(1, &VAOId);
 	glBindVertexArray(VAOId);
@@ -78,14 +86,34 @@ int main(int argc, char** argv)
 	// Step3: 分配空间 传送数据
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	// Step4: 指定解析方式  并启用顶点属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	// Section2 准备着色器程序
-	Shader shader("triangle.vertex", "triangle.frag");
+	glGenBuffers(1, &EBOId);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOId);
+	// Step3: 分配空间 传送数据
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexes), indexes, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	GLuint mrtFrameBufferId;
+	glGenFramebuffers(1, &mrtFrameBufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, mrtFrameBufferId);
+	
+	//glGenTextures()
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	// Section2 准备着色器程序
+	GLuint texId = TextureFromFile("/resources/textures/cat.png","E:/github/FoolOpenGL");
+	Shader shader("triangle.vertex", "triangle.frag");
+	shader.use();
+	shader.setInt("txt", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texId);
+	shader.unUse();
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -98,8 +126,9 @@ int main(int argc, char** argv)
 		// 这里填写场景绘制代码
 		glBindVertexArray(VAOId);
 		shader.use();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-
+		glBindTexture(GL_TEXTURE_2D, texId);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, indexes);
 		glBindVertexArray(0);
 		glUseProgram(0);
 
