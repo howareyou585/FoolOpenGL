@@ -6,6 +6,8 @@
 #include <iostream>
 #include <vector>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 // 包含着色器加载库
 #include "learnopengl/shader.h"
@@ -126,7 +128,7 @@ int main(int argc, char** argv)
 	}
 	for (int i = 0; i < amount; i++)
 	{
-		ptrIndirectCommands[i].baseInstance = i%100;
+		ptrIndirectCommands[i].baseInstance = i%100;//为什么？
 		ptrIndirectCommands[i].firstIndex = 0;
 		ptrIndirectCommands[i].primCount = 1;
 		ptrIndirectCommands[i].baseVertex = 0;
@@ -239,9 +241,9 @@ int main(int argc, char** argv)
 
 			glm::mat4 rockModelMatrix = glm::mat4(1.0f);
 			rockModelMatrix = glm::translate(rockModelMatrix, glm::vec3(sinf(f * 7.3f) * 70.0f, sinf(f * 3.7f + 2.0f) * 70.0f, sinf(f * 2.9f + 8.0f) * 70.0f));
-			//rockModelMatrix = glm::angleAxis(rockModelMatrix, glm::vec3(f * 330.0f, f * 490.0f, f * 250.0f));
-				/**
-				vmath::rotate(f * 330.0f, f * 490.0f, f * 250.0f);*/
+			/*glm::quat q = glm::quat(glm::radians(glm::vec3(f * 330.0f, f * 490.0f, f * 250.0f)));
+			rockModelMatrix = glm::mat4_cast(q) * rockModelMatrix;*/
+			
 			ptrRockModelMatrix[i] = rockModelMatrix;
 			f += 3.1f;
 		}
