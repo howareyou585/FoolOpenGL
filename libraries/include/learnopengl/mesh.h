@@ -125,6 +125,8 @@ public:
         glActiveTexture(GL_TEXTURE0);
     }
 
+    unsigned int GetVBO() { return VBO; }
+    unsigned int GetEBO() { return EBO; }
 private:
     // render data 
     unsigned int VBO, EBO;
