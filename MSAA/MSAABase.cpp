@@ -5,9 +5,11 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
-
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 // 包含着色器加载库
-#include "shader.h"
+#include "learnopengl/shader.h"
 
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -30,6 +32,8 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	//提供多重采样缓冲，用以代替默认的颜色缓冲
+	glfwWindowHint(GLFW_SAMPLES, 4);
 
 	// 创建窗口
 	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT,
@@ -62,10 +66,48 @@ int main(int argc, char** argv)
 
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置
-	GLfloat vertices[] = {
-		-0.5f, 0.0f, 0.0f,
-		0.5f, 0.0f, 0.0f,
-		0.0f, 0.5f, 0.0f
+	float vertices[] = {
+		-0.5f, -0.5f, -0.5f,  
+		 0.5f, -0.5f, -0.5f,  
+		 0.5f,  0.5f, -0.5f,  
+		 0.5f,  0.5f, -0.5f,  
+		-0.5f,  0.5f, -0.5f,  
+		-0.5f, -0.5f, -0.5f,  
+
+		-0.5f, -0.5f,  0.5f,  
+		 0.5f, -0.5f,  0.5f,  
+		 0.5f,  0.5f,  0.5f,  
+		 0.5f,  0.5f,  0.5f,  
+		-0.5f,  0.5f,  0.5f,  
+		-0.5f, -0.5f,  0.5f,  
+
+		-0.5f,  0.5f,  0.5f,  
+		-0.5f,  0.5f, -0.5f,  
+		-0.5f, -0.5f, -0.5f,  
+		-0.5f, -0.5f, -0.5f,  
+		-0.5f, -0.5f,  0.5f,  
+		-0.5f,  0.5f,  0.5f,  
+
+		 0.5f,  0.5f,  0.5f,  
+		 0.5f,  0.5f, -0.5f,  
+		 0.5f, -0.5f, -0.5f,  
+		 0.5f, -0.5f, -0.5f,  
+		 0.5f, -0.5f,  0.5f,  
+		 0.5f,  0.5f,  0.5f,  
+
+		-0.5f, -0.5f, -0.5f,  
+		 0.5f, -0.5f, -0.5f,  
+		 0.5f, -0.5f,  0.5f,  
+		 0.5f, -0.5f,  0.5f,  
+		-0.5f, -0.5f,  0.5f,  
+		-0.5f, -0.5f, -0.5f,  
+
+		-0.5f,  0.5f, -0.5f,  
+		 0.5f,  0.5f, -0.5f,  
+		 0.5f,  0.5f,  0.5f,  
+		 0.5f,  0.5f,  0.5f,  
+		-0.5f,  0.5f,  0.5f,  
+		-0.5f,  0.5f, -0.5f  
 	};
 	// 创建缓存对象
 	GLuint VAOId, VBOId;
@@ -84,8 +126,13 @@ int main(int argc, char** argv)
 	glBindVertexArray(0);
 
 	// Section2 准备着色器程序
-	Shader shader("triangle.vertex", "triangle.frag");
-
+	Shader shader("cube.vertex", "cube.frag");
+	glEnable(GL_DEPTH_TEST);
+	//调用glEnable并启用GL_MULTISAMPLE，
+	//来启用多重采样。在大多数OpenGL的驱动上，
+	//多重采样都是默认启用的，所以这个调用可能会有点多余，
+	//但显式地调用一下会更保险一点。
+	glEnable(GL_MULTISAMPLE);
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -93,12 +140,17 @@ int main(int argc, char** argv)
 
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-
+		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+		
 		// 这里填写场景绘制代码
 		glBindVertexArray(VAOId);
 		shader.use();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glm::mat4 model = glm::mat4(1.0f);
+		auto angle = (float)(((int)glfwGetTime())%360);
+		glm::quat q = glm::quat(glm::vec3(angle, angle, angle));
+		model = glm::mat4_cast(q)*model;
+		shader.setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glBindVertexArray(0);
 		glUseProgram(0);
