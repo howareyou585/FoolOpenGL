@@ -61,9 +61,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	// 设置视口参数
-	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
+	
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置
 	GLfloat vertices[] = {
@@ -106,18 +104,20 @@ int main(int argc, char** argv)
 	glGenFramebuffers(1, &mrtFrameBufferId);
 	glBindFramebuffer(GL_FRAMEBUFFER, mrtFrameBufferId);
 	const int nAttachment = 4;
-	GLenum attatchments[nAttachment] = { GL_COLOR_ATTACHMENT0,
-		GL_COLOR_ATTACHMENT1,
-		GL_COLOR_ATTACHMENT2,
-		GL_COLOR_ATTACHMENT3 };
+	GLenum attatchments[nAttachment] = { 
+		GL_COLOR_ATTACHMENT0, // 原图
+		GL_COLOR_ATTACHMENT1, // 红色
+		GL_COLOR_ATTACHMENT2, //绿色
+		GL_COLOR_ATTACHMENT3 };// 蓝色
+
 	GLuint textureIds[nAttachment] = {};
 	glGenTextures(nAttachment, textureIds);
 	for (auto i = 0; i < nAttachment; i++)
 	{
 		glBindTexture(GL_TEXTURE_2D, textureIds[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attatchments[i], GL_TEXTURE_2D, textureIds[i], 0);
@@ -131,7 +131,9 @@ int main(int argc, char** argv)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Section2 准备着色器程序
-	GLuint texId = TextureFromFile("cat.png","../resources/textures");
+	int imgHeight = 0;
+	int imgWidth = 0;
+	GLuint texId = TextureFromFile("cat.png","../resources/textures",imgWidth, imgHeight);
 	Shader shader("triangle.vertex", "triangle.frag");
 	Shader mrtShader("MRT.vertex", "MRT.frag");
 	shader.use();
@@ -146,6 +148,8 @@ int main(int argc, char** argv)
 		mrtShader.setInt(strname, i);
 	}
 	mrtShader.unUse();
+	// 设置视口参数
+	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	// 开始游戏主循环
 	// 清除颜色缓冲区 重置为指定颜色
 	glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
@@ -153,26 +157,30 @@ int main(int argc, char** argv)
 	{
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
 		glBindFramebuffer(GL_FRAMEBUFFER, mrtFrameBufferId);
+		// 设置视口参数
+		//glViewport(0, 0, imgWidth, imgHeight);
 		glClear(GL_COLOR_BUFFER_BIT);
-		
 		glDrawBuffers(nAttachment, attatchments);
 		// 这里填写场景绘制代码
 		glBindVertexArray(VAOId);
-
 		shader.use();
-		glBindTexture(GL_TEXTURE_2D, texId);
+		//必须先激活，再进行绑定。
 		glActiveTexture(GL_TEXTURE0);
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindTexture(GL_TEXTURE_2D, texId);
+		
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, indexes);
 		shader.unUse();
 		
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 		glClear(GL_COLOR_BUFFER_BIT);
 		mrtShader.use();
 		for (int i = 0; i < nAttachment; i++)
 		{
-			glBindTexture(GL_TEXTURE_2D, textureIds[i]);
+			//必须先激活，再进行绑定。
 			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, textureIds[i]);
+			
 		}
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, indexes);
 		mrtShader.unUse();
