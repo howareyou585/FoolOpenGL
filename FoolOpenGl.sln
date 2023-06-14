@@ -41,6 +41,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XRayEffect", "XRayEffect\XR
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AdvancedIndirectDrawDemo", "AdvancedIndirectDrawDemo\AdvancedIndirectDrawDemo.vcxproj", "{9F32E086-784E-4B07-8526-40E54B6DA20A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AdvancedLighting", "AdvancedLighting\AdvancedLighting.vcxproj", "{3050A396-9362-491F-80D5-E401688B253A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -163,6 +165,12 @@ Global
 		{9F32E086-784E-4B07-8526-40E54B6DA20A}.Release|x64.ActiveCfg = Release|Win32
 		{9F32E086-784E-4B07-8526-40E54B6DA20A}.Release|x86.ActiveCfg = Release|Win32
 		{9F32E086-784E-4B07-8526-40E54B6DA20A}.Release|x86.Build.0 = Release|Win32
+		{3050A396-9362-491F-80D5-E401688B253A}.Debug|x64.ActiveCfg = Debug|Win32
+		{3050A396-9362-491F-80D5-E401688B253A}.Debug|x86.ActiveCfg = Debug|Win32
+		{3050A396-9362-491F-80D5-E401688B253A}.Debug|x86.Build.0 = Debug|Win32
+		{3050A396-9362-491F-80D5-E401688B253A}.Release|x64.ActiveCfg = Release|Win32
+		{3050A396-9362-491F-80D5-E401688B253A}.Release|x86.ActiveCfg = Release|Win32
+		{3050A396-9362-491F-80D5-E401688B253A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
