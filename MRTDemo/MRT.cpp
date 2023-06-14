@@ -11,7 +11,7 @@
 #include "learnopengl/shader.h"
 #include "learnopengl/model.h"
 #include "learnopengl/filesystem.h"
-
+#include "learnopengl/Maroc.h"
 
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 		1.0f, 1.0f, 0.0f,   1.0f,1.0f,*/ //2
 		-1.0f, 1.0f, 0.0f,  0.0f,1.0f  //3
 	};
-	GLuint indexes[] = {0,1,2,0,2,3};
+	GLuint indexes[] = {0,1,2,2,3,0};
 	// 创建缓存对象
 	GLuint VAOId, VBOId, EBOId;
 	// Step1: 创建并绑定VAO对象
@@ -107,12 +107,14 @@ int main(int argc, char** argv)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Section2 准备着色器程序
-	GLuint texId = TextureFromFile("/resources/textures/cat.png","E:/github/FoolOpenGL");
+	GLuint texId = TextureFromFile("cat.png","../resources/textures");
 	Shader shader("triangle.vertex", "triangle.frag");
 	shader.use();
-	shader.setInt("txt", 0);
+	GL_INPUT_ERROR
+	shader.setInt("tex", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texId);
+	GL_INPUT_ERROR
 	shader.unUse();
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
