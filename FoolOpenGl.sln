@@ -39,6 +39,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OutlineEffect", "OutlineEff
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XRayEffect", "XRayEffect\XRayEffect.vcxproj", "{170D299B-E146-4FBD-83D8-41B00D49EB20}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AdvancedIndirectDrawDemo", "AdvancedIndirectDrawDemo\AdvancedIndirectDrawDemo.vcxproj", "{9F32E086-784E-4B07-8526-40E54B6DA20A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -155,6 +157,12 @@ Global
 		{170D299B-E146-4FBD-83D8-41B00D49EB20}.Release|x64.ActiveCfg = Release|Win32
 		{170D299B-E146-4FBD-83D8-41B00D49EB20}.Release|x86.ActiveCfg = Release|Win32
 		{170D299B-E146-4FBD-83D8-41B00D49EB20}.Release|x86.Build.0 = Release|Win32
+		{9F32E086-784E-4B07-8526-40E54B6DA20A}.Debug|x64.ActiveCfg = Debug|Win32
+		{9F32E086-784E-4B07-8526-40E54B6DA20A}.Debug|x86.ActiveCfg = Debug|Win32
+		{9F32E086-784E-4B07-8526-40E54B6DA20A}.Debug|x86.Build.0 = Debug|Win32
+		{9F32E086-784E-4B07-8526-40E54B6DA20A}.Release|x64.ActiveCfg = Release|Win32
+		{9F32E086-784E-4B07-8526-40E54B6DA20A}.Release|x86.ActiveCfg = Release|Win32
+		{9F32E086-784E-4B07-8526-40E54B6DA20A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
