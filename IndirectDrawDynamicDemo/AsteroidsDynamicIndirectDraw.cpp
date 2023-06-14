@@ -23,8 +23,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
-// 定义程序常量
-const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
+
 
 struct vp_matrix_buffer
 {
@@ -40,6 +39,12 @@ struct material_property
 	glm::vec3 specular;
 	float shiness;
 };
+// 定义程序常量
+const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
+const unsigned int amount = 16384;
+unsigned int realRenderModelCount = amount;
+const unsigned int material_count = 100;
+const unsigned int addend = 512;
 
 int main(int argc, char** argv)
 {
@@ -96,13 +101,7 @@ int main(int argc, char** argv)
 	}
 	Model rock(FileSystem::getPath("Model/rock/rock.obj"));
 	Model planet(FileSystem::getPath("Model/planet/planet.obj"));
-	unsigned int amount = 10000;
-	unsigned int material_count = 100;
-	vector<glm::mat4> vecRockModelMatrix;
-	vecRockModelMatrix.reserve(amount);
-	vecRockModelMatrix.resize(amount);
-
-
+	
 	vector<Model*> vecRock;
 	vecRock.push_back(&rock);
 	VAOBuffer vaoBuffer(vecRock);
@@ -228,38 +227,40 @@ int main(int argc, char** argv)
 		plantShader.setMat4("model", planetModelMatrix);
 		planet.Draw(plantShader);
 		plantShader.unUse();
-
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, rock_model_matrix_shared_buffer);
-		glm::mat4* ptrRockModelMatrix = (glm::mat4 *) glMapBufferRange(GL_SHADER_STORAGE_BUFFER,
-			0, sizeof(glm::mat4) * amount,
-			GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, rock_model_matrix_shared_buffer);
-		float f = (float)glfwGetTime()*0.1f;
-		for (int i = 0; i < amount; i++)
+		if (realRenderModelCount)
 		{
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, rock_model_matrix_shared_buffer);
+			glm::mat4* ptrRockModelMatrix = (glm::mat4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER,
+				0, sizeof(glm::mat4) * realRenderModelCount,
+				GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
 
-			glm::mat4 rockModelMatrix = glm::mat4(1.0f);
-			rockModelMatrix = glm::translate(rockModelMatrix, glm::vec3(sinf(f * 7.3f) * 70.0f, sinf(f * 3.7f + 2.0f) * 70.0f, sinf(f * 2.9f + 8.0f) * 70.0f));
-			/*glm::quat q = glm::quat(glm::radians(glm::vec3(f * 330.0f, f * 490.0f, f * 250.0f)));
-			rockModelMatrix = glm::mat4_cast(q) * rockModelMatrix;*/
-			
-			ptrRockModelMatrix[i] = rockModelMatrix;
-			f += 3.1f;
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, rock_model_matrix_shared_buffer);
+			float f = (float)glfwGetTime() * 0.1f;
+			for (int i = 0; i < realRenderModelCount; i++)
+			{
+
+				glm::mat4 rockModelMatrix = glm::mat4(1.0f);
+				rockModelMatrix = glm::translate(rockModelMatrix, glm::vec3(sinf(f * 7.3f) * 70.0f, sinf(f * 3.7f + 2.0f) * 70.0f, sinf(f * 2.9f + 8.0f) * 70.0f));
+				/*glm::quat q = glm::quat(glm::radians(glm::vec3(f * 330.0f, f * 490.0f, f * 250.0f)));
+				rockModelMatrix = glm::mat4_cast(q) * rockModelMatrix;*/
+
+				ptrRockModelMatrix[i] = rockModelMatrix;
+				f += 3.1f;
+			}
+			glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+			glBindBufferBase(GL_UNIFORM_BUFFER, 2, rock_matrial_buffer);
+
+			rockShader.use();
+			vaoBuffer.Bind();
+			//vaoBuffer.BindEBO();
+			glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect_draw_buffer);
+			glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, realRenderModelCount, 0);
+
+			glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+			//vaoBuffer.UnBindEBO();
+			vaoBuffer.UnBind();
+			rockShader.unUse();
 		}
-		glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-		glBindBufferBase(GL_UNIFORM_BUFFER, 2, rock_matrial_buffer);
-
-		rockShader.use();
-		vaoBuffer.Bind();
-		//vaoBuffer.BindEBO();
-		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect_draw_buffer);
-		glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, amount, 0);
-	
-		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-		//vaoBuffer.UnBindEBO();
-		vaoBuffer.UnBind();
-		rockShader.unUse();
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源
@@ -271,6 +272,22 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
+	}
+	else if (key == GLFW_KEY_A && action == GLFW_PRESS)
+	{
+		realRenderModelCount += addend;
+		if (realRenderModelCount > amount)
+		{
+			realRenderModelCount = amount;
+		}
+	}
+	else if (key == GLFW_KEY_Z && action == GLFW_PRESS)
+	{
+		realRenderModelCount -= addend;
+		if (realRenderModelCount >amount)
+		{
+			realRenderModelCount = 0;
+		}
 	}
 }
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
