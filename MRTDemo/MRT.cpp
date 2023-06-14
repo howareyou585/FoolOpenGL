@@ -92,45 +92,90 @@ int main(int argc, char** argv)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
+	
+	//创建并绑定EBO对象
 	glGenBuffers(1, &EBOId);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOId);
-	// Step3: 分配空间 传送数据
+	// Step5: 分配空间 传送数据
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexes), indexes, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	//创建FBO
 	GLuint mrtFrameBufferId;
 	glGenFramebuffers(1, &mrtFrameBufferId);
 	glBindFramebuffer(GL_FRAMEBUFFER, mrtFrameBufferId);
-	
+	const int nAttachment = 4;
+	GLenum attatchments[nAttachment] = { GL_COLOR_ATTACHMENT0,
+		GL_COLOR_ATTACHMENT1,
+		GL_COLOR_ATTACHMENT2,
+		GL_COLOR_ATTACHMENT3 };
+	GLuint textureIds[nAttachment] = {};
+	glGenTextures(nAttachment, textureIds);
+	for (auto i = 0; i < nAttachment; i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, textureIds[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attatchments[i], GL_TEXTURE_2D, textureIds[i], 0);
+	}
+	glDrawBuffers(nAttachment, attatchments);
+	if (GL_FRAMEBUFFER_COMPLETE != glCheckFramebufferStatus(GL_FRAMEBUFFER))
+	{
+		//todo
+	}
 	//glGenTextures()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Section2 准备着色器程序
 	GLuint texId = TextureFromFile("cat.png","../resources/textures");
 	Shader shader("triangle.vertex", "triangle.frag");
+	Shader mrtShader("MRT.vertex", "MRT.frag");
 	shader.use();
 	GL_INPUT_ERROR
 	shader.setInt("tex", 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texId);
-	GL_INPUT_ERROR
 	shader.unUse();
+
+	mrtShader.use();
+	for (int i = 0; i < nAttachment; i++)
+	{
+		string strname = "tex" + std::to_string(i);
+		mrtShader.setInt(strname, i);
+	}
+	mrtShader.unUse();
 	// 开始游戏主循环
+	// 清除颜色缓冲区 重置为指定颜色
+	glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
-
-		// 清除颜色缓冲区 重置为指定颜色
-		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
+		glBindFramebuffer(GL_FRAMEBUFFER, mrtFrameBufferId);
 		glClear(GL_COLOR_BUFFER_BIT);
-
+		
+		glDrawBuffers(nAttachment, attatchments);
 		// 这里填写场景绘制代码
 		glBindVertexArray(VAOId);
+
 		shader.use();
 		glBindTexture(GL_TEXTURE_2D, texId);
+		glActiveTexture(GL_TEXTURE0);
 		//glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, indexes);
+		shader.unUse();
+		
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+		mrtShader.use();
+		for (int i = 0; i < nAttachment; i++)
+		{
+			glBindTexture(GL_TEXTURE_2D, textureIds[i]);
+			glActiveTexture(GL_TEXTURE0 + i);
+		}
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, indexes);
+		mrtShader.unUse();
 		glBindVertexArray(0);
 		glUseProgram(0);
 
@@ -139,6 +184,7 @@ int main(int argc, char** argv)
 	// 释放资源
 	glDeleteVertexArrays(1, &VAOId);
 	glDeleteBuffers(1, &VBOId);
+	glDeleteBuffers(1, &EBOId);
 	glfwTerminate();
 	return 0;
 }

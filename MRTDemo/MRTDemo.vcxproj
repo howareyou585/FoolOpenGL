@@ -73,9 +73,8 @@
     <ClCompile Include="MRT.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shader.h" />
-  </ItemGroup>
-  <ItemGroup>
+    <None Include="MRT.frag" />
+    <None Include="MRT.vertex" />
     <None Include="triangle.frag" />
     <None Include="triangle.vertex" />
   </ItemGroup>
