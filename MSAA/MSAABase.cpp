@@ -146,7 +146,7 @@ int main(int argc, char** argv)
 		glBindVertexArray(VAOId);
 		shader.use();
 		glm::mat4 model = glm::mat4(1.0f);
-		auto angle = (float)(((int)glfwGetTime())%360);
+		auto angle =glm::radians(glfwGetTime());
 		glm::quat q = glm::quat(glm::vec3(angle, angle, angle));
 		model = glm::mat4_cast(q)*model;
 		shader.setMat4("model", model);

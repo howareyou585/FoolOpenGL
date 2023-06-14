@@ -70,11 +70,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="MSAA.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="cube.frag" />
     <None Include="cube.vertex" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MSAABase.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
