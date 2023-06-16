@@ -6,9 +6,18 @@
 #include <vector>
 #include "Maroc.h"
 using namespace std;
+enum class vertex_attribute
+{
+	position = 0,
+	normal,
+	texcoord,
+	color
+};
 class VAOBuffer
 {
 public:
+	VAOBuffer()
+	{}
 	VAOBuffer(vector<Model*>& vecModel)
 	{
 		if (MergeMeshes(vecModel))
@@ -49,7 +58,49 @@ public:
 	{
 		return m_vecTexture;
 	}
-	
+	bool BuildVAO(GLfloat* ptrVertex, unsigned int length,
+		GLuint* ptrIndex, unsigned int indexLength,
+		vector<vertex_attribute>& vecAttrib,
+		map<vertex_attribute, int>& mapAttrib2Size)
+	{
+		bool bRet = false;
+		if (!ptrVertex || !length || !vecAttrib.size() || !mapAttrib2Size.size())
+		{
+			return bRet;
+		}
+		glGenVertexArrays(1, &m_vaoId);
+		glBindVertexArray(m_vaoId);
+		glGenBuffers(1, &m_vboId);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
+		glBufferData(GL_ARRAY_BUFFER, length, ptrVertex, GL_STATIC_DRAW);
+		int strid = 0;
+		for (auto it = mapAttrib2Size.begin(); it != mapAttrib2Size.end(); it++)
+		{
+			strid += it->second;
+		}
+		strid *= sizeof(GLfloat);
+		GLuint offset = 0;
+		for (auto i = 0; i < vecAttrib.size(); i++)
+		{
+			int num = mapAttrib2Size[vecAttrib[i]];
+			glVertexAttribPointer(i, num, GL_FLOAT, GL_FALSE, strid, (GLvoid*)offset);
+			glEnableVertexAttribArray(i);
+			offset += num * sizeof(GLfloat);
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		if (ptrIndex && indexLength)
+		{
+			glGenBuffers(1, &m_eboId);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboId);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexLength, ptrIndex, GL_STATIC_DRAW);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		}
+		glBindVertexArray(0);
+		return bRet;
+	}
+	GLuint GetVAO() { return m_vaoId; }
+	GLuint GetVBO() { return m_vboId; }
+	GLuint GetEBO() { return m_eboId; }
 private:
 	bool MergeMeshes(vector<Model*>& vecModel, vector<Vertex>& vecMergedVertex)
 	{
@@ -108,7 +159,7 @@ private:
 	{
 		bool bRet = false;
 		GL_INPUT_ERROR
-			glGenVertexArrays(1, &m_vaoId);
+		glGenVertexArrays(1, &m_vaoId);
 		glBindVertexArray(m_vaoId);
 
 		//使用一个VBO保存位置 法向 纹理坐标
@@ -187,6 +238,8 @@ private:
 		return true;
 	}
 
+	
+
 	void SetTexture(vector<Model*>& vecModel)
 	{
 		for (size_t i = 0; i < vecModel.size(); i++)
@@ -200,9 +253,9 @@ private:
 		}
 	}
 private:
-	GLuint m_vaoId;
-	GLuint m_vboId;
-	GLuint m_eboId;
+	GLuint m_vaoId{};
+	GLuint m_vboId{};
+	GLuint m_eboId{};
 public:
 	vector<glm::vec3> m_vecPositon;
 	vector<glm::vec2> m_vecTexcoord;

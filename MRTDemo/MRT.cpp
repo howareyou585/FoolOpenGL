@@ -12,6 +12,7 @@
 #include "learnopengl/model.h"
 #include "learnopengl/filesystem.h"
 #include "learnopengl/Maroc.h"
+#include "learnopengl/vaoBuffer.h"
 
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -74,30 +75,43 @@ int main(int argc, char** argv)
 	};
 	GLuint indexes[] = {0,1,2,2,3,0};
 	// 创建缓存对象
-	GLuint VAOId, VBOId, EBOId;
-	// Step1: 创建并绑定VAO对象
-	glGenVertexArrays(1, &VAOId);
-	glBindVertexArray(VAOId);
-	// Step2: 创建并绑定VBO对象
-	glGenBuffers(1, &VBOId);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOId);
-	// Step3: 分配空间 传送数据
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// Step4: 指定解析方式  并启用顶点属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
-	//创建并绑定EBO对象
-	glGenBuffers(1, &EBOId);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOId);
-	// Step5: 分配空间 传送数据
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexes), indexes, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	VAOBuffer vaoBuffer;
+	int length = sizeof(vertices);
+	vector<vertex_attribute> vecVertexAttrib;
+	vecVertexAttrib.push_back(vertex_attribute::position);
+	vecVertexAttrib.push_back(vertex_attribute::texcoord);
+	map< vertex_attribute, int> mapAttrib2Num;
+	mapAttrib2Num[vertex_attribute::position] = 3;
+	mapAttrib2Num[vertex_attribute::texcoord] = 2;
+	vaoBuffer.BuildVAO(vertices, length, indexes, sizeof(indexes), vecVertexAttrib, mapAttrib2Num);
+	GLuint VAOId, VBOId, EBOId;
+	VAOId = vaoBuffer.GetVAO();
+	VBOId = vaoBuffer.GetVBO();
+	EBOId = vaoBuffer.GetEBO();
+	//// Step1: 创建并绑定VAO对象
+	//glGenVertexArrays(1, &VAOId);
+	//glBindVertexArray(VAOId);
+	//// Step2: 创建并绑定VBO对象
+	//glGenBuffers(1, &VBOId);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBOId);
+	//// Step3: 分配空间 传送数据
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//// Step4: 指定解析方式  并启用顶点属性
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+	//glEnableVertexAttribArray(0);
+
+	//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	//glEnableVertexAttribArray(1);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//
+	////创建并绑定EBO对象
+	//glGenBuffers(1, &EBOId);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOId);
+	//// Step5: 分配空间 传送数据
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexes), indexes, GL_STATIC_DRAW);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	//glBindVertexArray(0);
 
 	//创建FBO
 	GLuint mrtFrameBufferId;
