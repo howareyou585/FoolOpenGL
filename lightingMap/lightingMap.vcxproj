@@ -69,10 +69,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="triangle02.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="shader.h" />
+    <ClCompile Include="lightingMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="triangle.frag" />

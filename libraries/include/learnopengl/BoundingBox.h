@@ -5,7 +5,7 @@
 class BoundingBox
 {
 public:
-	BoundingBox()
+	BoundingBox():m_minPnt(0.f, 0.f, 0.f),m_maxPnt(0.f, 0.f, 0.f)
 	{}
 	BoundingBox(glm::vec3& minPnt, glm::vec3& maxPnt)
 	{
