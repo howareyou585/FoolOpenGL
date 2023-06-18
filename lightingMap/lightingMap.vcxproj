@@ -72,8 +72,8 @@
     <ClCompile Include="lightingMap.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="triangle.frag" />
-    <None Include="triangle.vertex" />
+    <None Include="lighting_map.frag" />
+    <None Include="lighting_map.vertex" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

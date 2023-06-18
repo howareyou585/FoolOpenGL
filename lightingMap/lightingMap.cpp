@@ -8,13 +8,14 @@
 
 // 包含着色器加载库
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include "learnopengl/shader.h"
 #include "learnopengl/vertexset.h"
 #include "learnopengl/vaoBuffer.h"
 #include "learnopengl/model.h"
 #include "learnopengl/camera.h"
 #include "learnopengl/boundingbox.h"
-
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -93,12 +94,13 @@ int main(int argc, char** argv)
 	glm::vec3 position = center +  (box.GetLength()*0.8f)*glm::vec3(0, 0, 1.0f);
 	Camera camera(position);
 	// Section2 准备着色器程序
-	Shader shader("triangle.vertex", "triangle.frag");
+	Shader shader("lighting_map.vertex", "lighting_map.frag");
 	
 	// 
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	// 开始游戏主循环
+	GLfloat angle = 0.0f;
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
@@ -111,12 +113,44 @@ int main(int argc, char** argv)
 		glBindVertexArray(VAOId);
 		shader.use();
 		glm::mat4 model(1.f);
+		angle += 0.02f;
+		if (angle > 360.f)
+		{
+			angle-=360;
+		}
+		glm::quat q = glm::quat(glm::vec3(0.f, angle, 0.f));
+		model = glm::mat4_cast(q)*model;
+		BoundingBox currentBox = box.Transformed(model);
+		glm::vec3 currentCenter = box.GetCenter();
+
+		//camera.Position = currentCenter+ (box.GetLength())*glm::vec3(0, 0, 1.0f);
+		camera.Front = glm::normalize(currentCenter - camera.Position);
+	
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
 		shader.setMat4("model", model);
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
-		shader.setInt("texure_s", 0);
+		shader.setVec3("eyePos", camera.Position);
+		shader.setInt("material.diffuse", 0);
+		/*vec3 postion;
+		vec3 ambient;
+		vec3 diffuse;
+		vec3 spacular;*/
+		glm::vec3 lightPos(0.0f,3.0f,0.0f);
+		glm::vec3 ambient(0.2f, 0.2f, 0.2f);
+		glm::vec3 diffuse(0.5f, 0.5f, 0.5f);
+		glm::vec3 spacular(0.8f, 0.8f, 0.8f);
+
+		
+		shader.setVec3("light.positon", lightPos);
+		shader.setVec3("light.ambient", ambient);
+		shader.setVec3("light.diffuse", diffuse);
+		shader.setVec3("light.spacular", spacular);
+
+		shader.setVec3("material.ambient", ambient);
+		shader.setVec3("material.spacular", spacular);
+		shader.setFloat("material.shiness", 256.0f);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
 		glDrawArrays(GL_TRIANGLES, 0, nVal/3);
