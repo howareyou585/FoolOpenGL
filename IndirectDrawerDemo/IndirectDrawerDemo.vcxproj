@@ -70,15 +70,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AsteroidsIndirctDraw2.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="instance.frag" />
     <None Include="instance.vertex" />
     <None Include="instanceIndirectDraw.frag" />
     <None Include="instanceIndirectDraw.vertex" />
     <None Include="instanceIndirectDraw2.frag" />
     <None Include="instanceIndirectDraw2.vertex" />
+    <None Include="instanceIndirectDraw3.frag" />
+    <None Include="instanceIndirectDraw3.vertex" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AsteroidsIndirctDraw3.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

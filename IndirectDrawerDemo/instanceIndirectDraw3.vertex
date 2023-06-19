@@ -1,0 +1,17 @@
+#version 450 core
+
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec3 aNoraml;
+layout(location = 2) in vec2 aTexcoord;
+layout(location = 3) in mat4 aInstaceModel;
+out vec2 texcoord;
+out vec4 insColor;
+uniform mat4 view;
+uniform mat4 projection;
+uniform vec4 uColor;
+void main()
+{
+	gl_Position = projection*view*aInstaceModel*vec4(aPosition, 1.0);
+	texcoord = aTexcoord;
+	insColor = uColor;
+}
