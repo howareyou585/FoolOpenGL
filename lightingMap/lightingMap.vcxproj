@@ -69,11 +69,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="lightingMap.cpp" />
+    <ClCompile Include="lightingDiffuseMap.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="lighting_map.frag" />
-    <None Include="lighting_map.vertex" />
+    <None Include="lighting_diffuse_map.frag" />
+    <None Include="lighting_diffuse_map.vertex" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

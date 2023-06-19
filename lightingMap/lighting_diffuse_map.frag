@@ -5,7 +5,7 @@ in vec3 normalDir;
 in vec3 fragPos;
 struct Light
 {
-	vec3 postion;
+	vec3 position;
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 spacular;
@@ -25,7 +25,7 @@ uniform Light light;
 void main()
 {
 	vec3 nor = normalize(normalDir);
-	vec3 lightDir =normalize(light.postion -  fragPos);
+	vec3 lightDir =normalize(light.position -  fragPos);
 	
 	vec3 ambientColor = light.ambient*material.ambient;
 	float diffFactor =  max(dot(nor, lightDir), 0.0);

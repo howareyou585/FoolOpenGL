@@ -16,6 +16,7 @@
 #include "learnopengl/model.h"
 #include "learnopengl/camera.h"
 #include "learnopengl/boundingbox.h"
+#include "learnopengl/Maroc.h"
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -94,7 +95,7 @@ int main(int argc, char** argv)
 	glm::vec3 position = center +  (box.GetLength()*0.8f)*glm::vec3(0, 0, 1.0f);
 	Camera camera(position);
 	// Section2 准备着色器程序
-	Shader shader("lighting_map.vertex", "lighting_map.frag");
+	Shader shader("lighting_diffuse_map.vertex", "lighting_diffuse_map.frag");
 	
 	// 
 	glEnable(GL_DEPTH_TEST);
@@ -132,7 +133,8 @@ int main(int argc, char** argv)
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 		shader.setVec3("eyePos", camera.Position);
-		shader.setInt("material.diffuse", 0);
+		GL_INPUT_ERROR
+		
 		/*vec3 postion;
 		vec3 ambient;
 		vec3 diffuse;
@@ -143,13 +145,21 @@ int main(int argc, char** argv)
 		glm::vec3 spacular(0.8f, 0.8f, 0.8f);
 
 		
-		shader.setVec3("light.positon", lightPos);
+		shader.setVec3("light.position", lightPos);
+		GL_INPUT_ERROR
 		shader.setVec3("light.ambient", ambient);
+		GL_INPUT_ERROR
 		shader.setVec3("light.diffuse", diffuse);
+		GL_INPUT_ERROR
 		shader.setVec3("light.spacular", spacular);
+		GL_INPUT_ERROR
 
 		shader.setVec3("material.ambient", ambient);
+		GL_INPUT_ERROR
+		shader.setInt("material.diffuse", 0);
+		GL_INPUT_ERROR
 		shader.setVec3("material.spacular", spacular);
+		GL_INPUT_ERROR
 		shader.setFloat("material.shiness", 256.0f);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
