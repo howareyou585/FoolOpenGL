@@ -86,17 +86,17 @@ int main(int argc, char** argv)
 	//设置相机
 	BoundingBox box;
 	int nVal = sizeof(cubeVertices) / sizeof(GLfloat);
-	for(int i = 0; i< nVal; i+=3)
+	for(int i = 0; i< nVal; i+=8)
 	{ 
 		glm::vec3 pnt(cubeVertices[i], cubeVertices[i + 1], cubeVertices[i + 2]);
 		box.Merge(pnt);
 	}
 	glm::vec3 center = box.GetCenter();
-	glm::vec3 position = center +  (box.GetLength()*0.8f)*glm::vec3(0, 0, 1.0f);
+	glm::vec3 position = center +  (box.GetLength()*3.f)*glm::vec3(0, 0, 1.0f);
 	Camera camera(position);
 	// Section2 准备着色器程序
 	Shader shader("lighting_diffuse_map.vertex", "lighting_diffuse_map.frag");
-	
+	Shader lightCubeShader("light_cube.vertex", "light_cube.frag");
 	// 
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
@@ -114,15 +114,17 @@ int main(int argc, char** argv)
 		glBindVertexArray(VAOId);
 		shader.use();
 		glm::mat4 model(1.f);
-		angle += 0.02f;
+		
+		angle += 0.015f;
 		if (angle > 360.f)
 		{
 			angle-=360;
 		}
-		glm::quat q = glm::quat(glm::vec3(0.f, angle, 0.f));
+		glm::quat q = glm::quat(glm::vec3(angle, angle, angle));
 		model = glm::mat4_cast(q)*model;
 		BoundingBox currentBox = box.Transformed(model);
 		glm::vec3 currentCenter = box.GetCenter();
+		
 
 		//camera.Position = currentCenter+ (box.GetLength())*glm::vec3(0, 0, 1.0f);
 		camera.Front = glm::normalize(currentCenter - camera.Position);
@@ -133,38 +135,38 @@ int main(int argc, char** argv)
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 		shader.setVec3("eyePos", camera.Position);
-		GL_INPUT_ERROR
+	
 		
-		/*vec3 postion;
-		vec3 ambient;
-		vec3 diffuse;
-		vec3 spacular;*/
-		glm::vec3 lightPos(0.0f,3.0f,0.0f);
-		glm::vec3 ambient(0.2f, 0.2f, 0.2f);
-		glm::vec3 diffuse(0.5f, 0.5f, 0.5f);
-		glm::vec3 spacular(0.8f, 0.8f, 0.8f);
+		glm::vec3 ambient(0.3f, 0.3f, 0.3f);
+		glm::vec3 diffuse(0.8f, 0.8f, 0.8f);
+		glm::vec3 spacular(1.0f, 1.0f, 1.0f);
 
 		
-		shader.setVec3("light.position", lightPos);
-		GL_INPUT_ERROR
 		shader.setVec3("light.ambient", ambient);
-		GL_INPUT_ERROR
 		shader.setVec3("light.diffuse", diffuse);
-		GL_INPUT_ERROR
 		shader.setVec3("light.spacular", spacular);
-		GL_INPUT_ERROR
-
 		shader.setVec3("material.ambient", ambient);
-		GL_INPUT_ERROR
 		shader.setInt("material.diffuse", 0);
-		GL_INPUT_ERROR
 		shader.setVec3("material.spacular", spacular);
-		GL_INPUT_ERROR
 		shader.setFloat("material.shiness", 256.0f);
+
+		glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
+		shader.setVec3("light.position", lightPos);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
 		glDrawArrays(GL_TRIANGLES, 0, nVal/3);
 
+		lightCubeShader.use();
+		
+		glm::mat4 cubeModel(1.f);
+		
+		cubeModel = glm::translate(cubeModel, lightPos);
+		cubeModel = glm::scale(cubeModel, glm::vec3(0.15f, 0.15f, 0.15f));
+
+		lightCubeShader.setMat4("model", cubeModel);
+		lightCubeShader.setMat4("view", view);
+		lightCubeShader.setMat4("projection", projection);
+		glDrawArrays(GL_TRIANGLES, 0, nVal / 3);
 		glBindVertexArray(0);
 		glUseProgram(0);
 

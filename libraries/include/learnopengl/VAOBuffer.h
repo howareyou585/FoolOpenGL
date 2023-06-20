@@ -96,6 +96,7 @@ public:
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
 		glBindVertexArray(0);
+		bRet = true;
 		return bRet;
 	}
 	GLuint GetVAO() { return m_vaoId; }

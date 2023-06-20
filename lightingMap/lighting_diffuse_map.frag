@@ -13,7 +13,6 @@ struct Light
 
 struct Material
 {
-	vec3 ambient;
 	sampler2D diffuse;
 	vec3 spacular;
 	float shiness;
@@ -24,16 +23,19 @@ uniform Material material;
 uniform Light light;
 void main()
 {
-	vec3 nor = normalize(normalDir);
-	vec3 lightDir =normalize(light.position -  fragPos);
-	
-	vec3 ambientColor = light.ambient*material.ambient;
-	float diffFactor =  max(dot(nor, lightDir), 0.0);
 	vec3 diffuse = texture(material.diffuse,texcoord).xyz;
+    //ambient
+	vec3 ambientColor = light.ambient*diffuse;
+	vec3 nor = normalize(normalDir);
+	vec3 lightDir =normalize(light.position - fragPos);
+	
+	//diffuse
+	float diffFactor =  max(dot(nor, lightDir), 0.0);
 	vec3 diffuseColor = light.diffuse*diffuse*diffFactor;
 	vec3 eyeDir = normalize(eyePos-fragPos);
 	vec3 halfDir = normalize(eyeDir + lightDir);
 
+	//specular
 	float spacularFator = pow(max(dot(halfDir, nor), 0.0), material.shiness);
 	vec3 spacularColor = light.spacular*material.spacular*spacularFator;
 	vec3 result = ambientColor + diffuseColor + spacularColor;
