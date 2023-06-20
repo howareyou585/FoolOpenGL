@@ -76,11 +76,11 @@
     <None Include="instanceIndirectDraw.vertex" />
     <None Include="instanceIndirectDraw2.frag" />
     <None Include="instanceIndirectDraw2.vertex" />
-    <None Include="instanceIndirectDraw3.frag" />
-    <None Include="instanceIndirectDraw3.vertex" />
+    <None Include="UpdateIndirectDrawCmd.frag" />
+    <None Include="UpdateIndirectDrawCmd.vertex" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AsteroidsIndirctDraw3.cpp" />
+    <ClCompile Include="AsteroidsUpdateIndirctDrawCommand.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

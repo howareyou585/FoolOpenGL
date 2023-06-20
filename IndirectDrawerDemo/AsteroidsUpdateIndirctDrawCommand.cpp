@@ -24,9 +24,10 @@ void processInput(GLFWwindow* window);
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
 int keyValue = 0;
+bool dirty = false;
+const unsigned int amount = 4;
 int main(int argc, char** argv)
 {
-	
 	if (!glfwInit())	// 初始化glfw库
 	{
 		std::cout << "Error::GLFW could not initialize GLFW!" << std::endl;
@@ -70,14 +71,14 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	// Section2 准备着色器程序
-	Shader rockShader("instanceIndirectDraw3.vertex", "instanceIndirectDraw3.frag");
+	Shader rockShader("UpdateIndirectDrawCmd.vertex", "UpdateIndirectDrawCmd.frag");
 	int error = glGetError();
 	if (error != 0)
 	{
 		std::cout << "error:" << error << std::endl;
 	}
 	Model rock(FileSystem::getPath("Model/rock/rock.obj"));
-	const unsigned int amount = 4;
+	
 	vector<glm::mat4> vecRockModelMatrix;
 	vector<glm::vec4> vecColor;
 	vecRockModelMatrix.reserve(amount);
@@ -86,7 +87,7 @@ int main(int argc, char** argv)
 	vecColor.emplace_back(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));//red
 	vecColor.emplace_back(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));//green
 	vecColor.emplace_back(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));//blue
-	vecColor.emplace_back(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));//
+	vecColor.emplace_back(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));// yellow
 	BoundingBox totalBoundingBox;
 	
 	srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
@@ -164,7 +165,8 @@ int main(int argc, char** argv)
 		GL_DRAW_INDIRECT_BUFFER, 
 		0, 
 		sizeof(DrawElementsIndirectCommand) *amount, 
-		GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+		GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | 
+		GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 	error = glGetError();
 	if (error != 0)
 	{
@@ -237,6 +239,12 @@ int main(int argc, char** argv)
 		
 		//vaoBuffer.BindEBO();
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect_draw_buffer);
+		if (dirty)
+		{
+			dirty = false;
+			std::cout << "setting dirty is false" << std::endl;
+			ptrIndirectCommands[0].baseInstance = keyValue;
+		}
 		glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, 1/*amount*/, 0);
 		GL_INPUT_ERROR
 		
@@ -255,6 +263,24 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
+	}
+	else if (key == GLFW_KEY_UP&& action == GLFW_PRESS)
+	{
+		++keyValue;
+		keyValue = keyValue % amount;
+		dirty = true;
+		std::cout << "setting dirty is true" << std::endl;
+	}
+	else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
+	{
+		--keyValue;
+		if (keyValue < 0)
+		{
+			keyValue = 0;
+		}
+		keyValue = keyValue % amount;
+		std::cout << "setting dirty is true" << std::endl;
+		dirty = true;
 	}
 }
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
