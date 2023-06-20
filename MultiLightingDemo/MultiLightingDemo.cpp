@@ -17,6 +17,8 @@
 #include "learnopengl/camera.h"
 #include "learnopengl/boundingbox.h"
 #include "learnopengl/Maroc.h"
+#include "learnopengl/light.h"
+#include "learnopengl/lights.h"
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
