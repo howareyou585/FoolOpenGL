@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 		nullptr, 0, vecVertexAttrib, mapVertexAttrib2Num);
 	GLuint VAOId = vaoBuffer.GetVAO();
 	//准备材质
-	GLuint diffuseTextureId = TextureFromFile("container2.png", "../resources/textures");
+	GLuint diffuseTextureId = TextureFromFile("container_diffuse.png", "../resources/textures");
 	GLuint spacularTexureId = TextureFromFile("container_specular.png", "../resources/textures");
 	//设置相机
 	BoundingBox box;
@@ -103,6 +103,7 @@ int main(int argc, char** argv)
 	//glEnable(GL_CULL_FACE);
 	// 开始游戏主循环
 	GLfloat angle = 0.0f;
+	int nVertex = nVal / 8;
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
@@ -157,7 +158,7 @@ int main(int argc, char** argv)
 		glBindTexture(GL_TEXTURE_2D, diffuseTextureId);
 		glActiveTexture(GL_TEXTURE0+1);
 		glBindTexture(GL_TEXTURE_2D, spacularTexureId);
-		glDrawArrays(GL_TRIANGLES, 0, nVal/3);
+		glDrawArrays(GL_TRIANGLES, 0, nVertex);
 
 		lightCubeShader.use();
 		
@@ -169,7 +170,7 @@ int main(int argc, char** argv)
 		lightCubeShader.setMat4("model", cubeModel);
 		lightCubeShader.setMat4("view", view);
 		lightCubeShader.setMat4("projection", projection);
-		glDrawArrays(GL_TRIANGLES, 0, nVal / 3);
+		glDrawArrays(GL_TRIANGLES, 0, nVertex);
 		glBindVertexArray(0);
 		glUseProgram(0);
 

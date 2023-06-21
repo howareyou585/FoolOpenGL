@@ -102,6 +102,7 @@ int main(int argc, char** argv)
 	//glEnable(GL_CULL_FACE);
 	// 开始游戏主循环
 	GLfloat angle = 0.0f;
+	int nVeretx = nVal / 8;
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
@@ -154,7 +155,7 @@ int main(int argc, char** argv)
 		shader.setVec3("light.position", lightPos);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
-		glDrawArrays(GL_TRIANGLES, 0, nVal/3);
+		glDrawArrays(GL_TRIANGLES, 0, nVeretx);
 
 		lightCubeShader.use();
 		
@@ -166,7 +167,7 @@ int main(int argc, char** argv)
 		lightCubeShader.setMat4("model", cubeModel);
 		lightCubeShader.setMat4("view", view);
 		lightCubeShader.setMat4("projection", projection);
-		glDrawArrays(GL_TRIANGLES, 0, nVal / 3);
+		glDrawArrays(GL_TRIANGLES, 0, nVeretx);
 		glBindVertexArray(0);
 		glUseProgram(0);
 

@@ -18,7 +18,7 @@
 #include "learnopengl/boundingbox.h"
 #include "learnopengl/Maroc.h"
 #include "learnopengl/light.h"
-#include "learnopengl/lights.h"
+#include "learnopengl/lightManager.h"
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -104,6 +104,7 @@ int main(int argc, char** argv)
 	//glEnable(GL_CULL_FACE);
 	// 开始游戏主循环
 	GLfloat angle = 0.0f;
+	int nVetex = nVal / 8; //顶点的数量
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
@@ -152,11 +153,11 @@ int main(int argc, char** argv)
 		shader.setVec3("material.spacular", spacular);
 		shader.setFloat("material.shiness", 256.0f);
 
-		glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
+		glm::vec3 lightPos = camera.Position;
 		shader.setVec3("light.position", lightPos);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
-		glDrawArrays(GL_TRIANGLES, 0, nVal/3);
+		glDrawArrays(GL_TRIANGLES, 0, nVetex);
 
 		lightCubeShader.use();
 		
@@ -168,7 +169,7 @@ int main(int argc, char** argv)
 		lightCubeShader.setMat4("model", cubeModel);
 		lightCubeShader.setMat4("view", view);
 		lightCubeShader.setMat4("projection", projection);
-		glDrawArrays(GL_TRIANGLES, 0, nVal / 3);
+		glDrawArrays(GL_TRIANGLES, 0, nVetex);
 		glBindVertexArray(0);
 		glUseProgram(0);
 

@@ -60,7 +60,9 @@ protected:
 };
 //平行光
 class Directionlight :public Light
-{};
+{
+
+};
 //点光
 class PointLight :public Light
 {
@@ -71,12 +73,17 @@ class Spotlight :public Light
 {
 public:
 	Spotlight(glm::vec3 & ambient, glm::vec3 & diffuse,
-		glm::vec3 & spacluar, glm::vec3 & postion, float cutoffAngle):Light(ambient, diffuse, spacluar)
+		glm::vec3 & spacluar, glm::vec3 & postion, float cutoffInnerAngle, float cutOffOuterAngle):Light(ambient, diffuse, spacluar)
 	{
 	}
 private:
 	glm::vec3 m_position;
-	float m_cutoffAngle;
+	float m_cutoffInnerAngle{}; //内切光角
+	float m_cutoffOuterAngle{}; //外切光角
 };
-//半球光....
+//半球光
+class HemisphereLight :public Light
+{
+
+};
 #endif

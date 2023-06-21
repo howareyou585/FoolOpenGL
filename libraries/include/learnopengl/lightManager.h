@@ -1,5 +1,5 @@
-#ifndef LIGHTS_H
-#define LIGHTS_H
+#ifndef LIGHT_MANAGER
+#define LIGHT_MANAGER
 #include "light.h"
 #include <vector>
 #include <map>
