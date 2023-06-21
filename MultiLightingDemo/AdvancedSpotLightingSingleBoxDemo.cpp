@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 	glm::vec3 position = center +  (box.GetLength()*2.f)*glm::vec3(0, 0, 1.0f);
 	Camera camera(position);
 	// Section2 准备着色器程序
-	Shader shader("spot_caster.vertex", "spot_caster.frag");
+	Shader shader("advance_spot_caster.vertex", "advance_spot_caster.frag");
 	// 初始化灯光
 	//LightManager lightManager;
 	glm::vec3 ambient(0.3f, 0.3f, 0.3f);
@@ -152,8 +152,8 @@ int main(int argc, char** argv)
 		//如果将灯放到相机的位置且不需要显示灯光模型，则可以正确的渲染整个场景。
 		glm::vec3 lightPos = camera.Position;
 		glm::vec3 lightDirection = glm::normalize(currentCenter - lightPos);
-		float cutoff = glm::cos(glm::radians(5.0f));
-		float outerCutoff = glm::cos(glm::radians(7.5f));
+		float cutoff = glm::cos(glm::radians(3.5f));
+		float outerCutoff = glm::cos(glm::radians(5.0f));
 		Spotlight spotlight(ambient, diffuse, spacular, lightPos, lightDirection,cutoff, outerCutoff);
 		string strName = "light.";
 		spotlight.SetLightUniformParam(shader, strName);
@@ -164,18 +164,6 @@ int main(int argc, char** argv)
 		glActiveTexture(GL_TEXTURE0+1);
 		glBindTexture(GL_TEXTURE_2D, spacularTextureId);
 		glDrawArrays(GL_TRIANGLES, 0, nVetex);
-
-		/*lightCubeShader.use();
-		
-		glm::mat4 cubeModel(1.f);
-		
-		cubeModel = glm::translate(cubeModel, lightPos);
-		cubeModel = glm::scale(cubeModel, glm::vec3(0.15f, 0.15f, 0.15f));
-
-		lightCubeShader.setMat4("model", cubeModel);
-		lightCubeShader.setMat4("view", view);
-		lightCubeShader.setMat4("projection", projection);
-		glDrawArrays(GL_TRIANGLES, 0, nVetex);*/
 		glBindVertexArray(0);
 		glUseProgram(0);
 
