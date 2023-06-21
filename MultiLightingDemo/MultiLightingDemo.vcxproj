@@ -14,6 +14,7 @@
     <ProjectGuid>{8185B2F5-037F-4812-9DFA-CE100DB124BE}</ProjectGuid>
     <RootNamespace>MultiLightingDemo</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>LightingSpotCaster</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -69,13 +70,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="MultiLightingDemo.cpp" />
+    <ClCompile Include="SpotLightingDemo.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="multi_lighting.frag" />
-    <None Include="multi_lighting.vertex" />
-    <None Include="light_cube.frag" />
-    <None Include="light_cube.vertex" />
+    <None Include="spot_caster.frag" />
+    <None Include="spot_caster.vertex" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

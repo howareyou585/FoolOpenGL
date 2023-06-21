@@ -73,11 +73,34 @@ class Spotlight :public Light
 {
 public:
 	Spotlight(glm::vec3 & ambient, glm::vec3 & diffuse,
-		glm::vec3 & spacluar, glm::vec3 & postion, float cutoffInnerAngle, float cutOffOuterAngle):Light(ambient, diffuse, spacluar)
+		glm::vec3 & spacluar, glm::vec3 & postion, float cutoffInnerAngle=0.0f, float cutOffOuterAngle=0.0f):Light(ambient, diffuse, spacluar)
 	{
+		m_cutoffInnerAngle = cutoffInnerAngle;
+		m_cutoffOuterAngle = cutOffOuterAngle;
+	}
+	virtual ~Spotlight()
+	{
+
+	}
+	void SetCutoffInnerAngle(float angle)
+	{
+		m_cutoffInnerAngle = angle;
+	}
+	void SetCutoffOuterAngle(float angle)
+	{
+		m_cutoffOuterAngle = angle;
+	}
+	float GetCutoffInnerAngle()
+	{
+		return m_cutoffInnerAngle;
+	}
+	float GetCutoffOuterAngle()
+	{
+		return m_cutoffOuterAngle;
 	}
 private:
-	glm::vec3 m_position;
+	glm::vec3 m_position; //聚光灯的位置
+	glm::vec3 m_spotDir; //聚光的方向
 	float m_cutoffInnerAngle{}; //内切光角
 	float m_cutoffOuterAngle{}; //外切光角
 };

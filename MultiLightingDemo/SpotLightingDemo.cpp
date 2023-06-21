@@ -68,7 +68,6 @@ int main(int argc, char** argv)
 
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
 	
 	// 创建缓存对象
 	VAOBuffer vaoBuffer;
@@ -84,7 +83,9 @@ int main(int argc, char** argv)
 		nullptr, 0, vecVertexAttrib, mapVertexAttrib2Num);
 	GLuint VAOId = vaoBuffer.GetVAO();
 	//准备材质
-	GLuint textureId = TextureFromFile("container2.png", "../resources/textures");
+	GLuint diffuseTextureId = TextureFromFile("container2.png", "../resources/textures");
+	GLuint spacularTextureId = TextureFromFile("container_specular.png", "../resources/textures");
+
 	//设置相机
 	BoundingBox box;
 	int nVal = sizeof(cubeVertices) / sizeof(GLfloat);
@@ -94,12 +95,16 @@ int main(int argc, char** argv)
 		box.Merge(pnt);
 	}
 	glm::vec3 center = box.GetCenter();
-	glm::vec3 position = center +  (box.GetLength()*3.f)*glm::vec3(0, 0, 1.0f);
+	glm::vec3 position = center +  (box.GetLength()*2.f)*glm::vec3(0, 0, 1.0f);
 	Camera camera(position);
 	// Section2 准备着色器程序
-	Shader shader("multi_lighting.vertex", "multi_lighting.frag");
-	Shader lightCubeShader("light_cube.vertex", "light_cube.frag");
-	// 
+	Shader shader("spot_caster.vertex", "spot_caster.frag");
+	// 初始化灯光
+	//LightManager lightManager;
+	glm::vec3 ambient(0.3f, 0.3f, 0.3f);
+	glm::vec3 diffuse(0.8f, 0.8f, 0.8f);
+	glm::vec3 spacular(1.0f, 1.0f, 1.0f);
+	//lightManager.CreateLight(LightType::SPOT_LIGHT, ambient, diffuse, spacular);
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	// 开始游戏主循环
@@ -139,27 +144,31 @@ int main(int argc, char** argv)
 		shader.setMat4("projection", projection);
 		shader.setVec3("eyePos", camera.Position);
 	
-		
-		glm::vec3 ambient(0.3f, 0.3f, 0.3f);
-		glm::vec3 diffuse(0.8f, 0.8f, 0.8f);
-		glm::vec3 spacular(1.0f, 1.0f, 1.0f);
-
-		
 		shader.setVec3("light.ambient", ambient);
 		shader.setVec3("light.diffuse", diffuse);
 		shader.setVec3("light.spacular", spacular);
+		
 		shader.setVec3("material.ambient", ambient);
 		shader.setInt("material.diffuse", 0);
-		shader.setVec3("material.spacular", spacular);
+		shader.setInt("material.spacular", 1);
 		shader.setFloat("material.shiness", 256.0f);
-
+		//如果将灯放到相机的位置且要显示灯光模型，相机将会被灯光完全遮挡，看不到场景中的任何物体。
+		//如果将灯放到相机的位置且不需要显示灯光模型，则可以正确的渲染整个场景。
 		glm::vec3 lightPos = camera.Position;
+		//glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 		shader.setVec3("light.position", lightPos);
+		glm::vec3 lightDirection = glm::normalize(currentCenter - lightPos);
+		shader.setVec3("light.direction", lightDirection);
+		float cutoff = glm::cos(glm::radians(5.0f));
+		shader.setFloat("light.cutoff", cutoff);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textureId);
+		glBindTexture(GL_TEXTURE_2D, diffuseTextureId);
+
+		glActiveTexture(GL_TEXTURE0+1);
+		glBindTexture(GL_TEXTURE_2D, spacularTextureId);
 		glDrawArrays(GL_TRIANGLES, 0, nVetex);
 
-		lightCubeShader.use();
+		/*lightCubeShader.use();
 		
 		glm::mat4 cubeModel(1.f);
 		
@@ -169,7 +178,7 @@ int main(int argc, char** argv)
 		lightCubeShader.setMat4("model", cubeModel);
 		lightCubeShader.setMat4("view", view);
 		lightCubeShader.setMat4("projection", projection);
-		glDrawArrays(GL_TRIANGLES, 0, nVetex);
+		glDrawArrays(GL_TRIANGLES, 0, nVetex);*/
 		glBindVertexArray(0);
 		glUseProgram(0);
 
@@ -177,6 +186,8 @@ int main(int argc, char** argv)
 	}
 	// 释放资源
 	glDeleteVertexArrays(1, &VAOId);
+	GLuint vboId = vaoBuffer.GetVBO();
+	glDeleteBuffers(1, &vboId);
 	glfwTerminate();
 	return 0;
 }
