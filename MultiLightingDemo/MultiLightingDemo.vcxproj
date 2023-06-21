@@ -72,11 +72,13 @@
   <ItemGroup>
     <None Include="advance_spot_caster.frag" />
     <None Include="advance_spot_caster.vertex" />
+    <None Include="advance_spot_caster_multi_box.frag" />
+    <None Include="advance_spot_caster_multi_box.vertex" />
     <None Include="base_spot_caster.frag" />
     <None Include="base_spot_caster.vertex" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AdvancedSpotLightingSingleBoxDemo.cpp" />
+    <ClCompile Include="AdvancedSpotLightingMultiBoxDemo.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
