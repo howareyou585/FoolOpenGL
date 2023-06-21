@@ -11,7 +11,7 @@ struct Spotlight
 	vec3 diffuse;
 	vec3 spacular;
 	float cutoff;//计算完cos后的值
-	
+	float outerCutoff;
 } ;
 
 struct Material

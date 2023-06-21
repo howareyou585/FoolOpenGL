@@ -143,11 +143,7 @@ int main(int argc, char** argv)
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 		shader.setVec3("eyePos", camera.Position);
-	
-		shader.setVec3("light.ambient", ambient);
-		shader.setVec3("light.diffuse", diffuse);
-		shader.setVec3("light.spacular", spacular);
-		
+
 		shader.setVec3("material.ambient", ambient);
 		shader.setInt("material.diffuse", 0);
 		shader.setInt("material.spacular", 1);
@@ -155,12 +151,13 @@ int main(int argc, char** argv)
 		//如果将灯放到相机的位置且要显示灯光模型，相机将会被灯光完全遮挡，看不到场景中的任何物体。
 		//如果将灯放到相机的位置且不需要显示灯光模型，则可以正确的渲染整个场景。
 		glm::vec3 lightPos = camera.Position;
-		//glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
-		shader.setVec3("light.position", lightPos);
 		glm::vec3 lightDirection = glm::normalize(currentCenter - lightPos);
-		shader.setVec3("light.direction", lightDirection);
 		float cutoff = glm::cos(glm::radians(5.0f));
-		shader.setFloat("light.cutoff", cutoff);
+		float outerCutoff = glm::cos(glm::radians(7.5f));
+		Spotlight spotlight(ambient, diffuse, spacular, lightPos, lightDirection,cutoff, outerCutoff);
+		string strName = "light.";
+		spotlight.SetLightUniformParam(shader, strName);
+		//glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseTextureId);
 

@@ -1,6 +1,8 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 #include "../glm/glm.hpp"
+#include "shader.h"
+#include "Maroc.h"
 enum class LightType
 {
 	DIRECTION_LIGHT = 0,
@@ -50,6 +52,22 @@ public:
 	{
 		m_attenuatedQuadratic = val;
 	}
+	virtual bool SetLightUniformParam(Shader& shader, const string& strParaName)
+	{
+		bool bRet = false;
+		string str;
+		str = strParaName +  AMBIENT_PARAM_NAME;
+		shader.setVec3(str, m_ambient);
+		GL_INPUT_ERROR
+		str = strParaName  + DIFFUSE_PARAM_NAME;
+		shader.setVec3(str, m_diffuse);
+		GL_INPUT_ERROR
+		str = strParaName  + SPACULAR_PARAM_NAME;
+		shader.setVec3(str, m_spacular);
+		GL_INPUT_ERROR
+		bRet = true;
+		return bRet;
+	}
 protected:
 	glm::vec3 m_ambient;
 	glm::vec3 m_diffuse;
@@ -73,14 +91,36 @@ class Spotlight :public Light
 {
 public:
 	Spotlight(glm::vec3 & ambient, glm::vec3 & diffuse,
-		glm::vec3 & spacluar, glm::vec3 & postion, float cutoffInnerAngle=0.0f, float cutOffOuterAngle=0.0f):Light(ambient, diffuse, spacluar)
+		glm::vec3 & spacluar, glm::vec3 & postion, glm::vec3& direction, float cutoffInnerAngle=0.0f, float cutOffOuterAngle=0.0f):Light(ambient, diffuse, spacluar)
 	{
 		m_cutoffInnerAngle = cutoffInnerAngle;
 		m_cutoffOuterAngle = cutOffOuterAngle;
+		m_position = postion;
+		m_spotDir = direction;
+		m_spotDir = glm::normalize(m_spotDir);
 	}
 	virtual ~Spotlight()
 	{
 
+	}
+	virtual bool SetLightUniformParam(Shader& shader, const string& strParaName)
+	{
+		Light::SetLightUniformParam(shader, strParaName);
+		string str;
+		str = strParaName + POSITION_PARAM_NAME;
+		shader.setVec3(str, m_position);
+		GL_INPUT_ERROR
+		str = strParaName + DIRECTION_PARAM_NAME;
+		shader.setVec3(str, m_spotDir);
+		GL_INPUT_ERROR
+		str = strParaName + SPOT_LIGHT_CUTOFF_PARAM_NAME;
+		shader.setFloat(str, m_cutoffInnerAngle);
+		GL_INPUT_ERROR
+		str = strParaName + SPOT_LIGHT_OUTER_CUTOFF_PARAM_NAME;
+		shader.setFloat(str, m_cutoffOuterAngle);
+		GL_INPUT_ERROR
+		return true;
+	
 	}
 	void SetCutoffInnerAngle(float angle)
 	{

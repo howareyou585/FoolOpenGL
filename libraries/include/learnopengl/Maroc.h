@@ -8,15 +8,16 @@ if (error != 0)\
 }\
 }
 
-#define LIGNT_AMBIENT_PARAM_NAME  "light.ambient"
-#define LIGNT_DIFFUSE_PARAM_NAME  "light.diffuse"
-#define LIGNT_SPACULAR_PARAM_NAME "light.spacluar"
-#define LIGNT_ATTENUATION_CONSTANT_PARAM_NAME  "light.constant"
-#define LIGNT_ATTENUATION_LINEAR_PARAM_NAME    "light.linear"
-#define LIGNT_ATTENUATION_QUADRATIC_PARAM_NAME "light.quadratic"
+#define AMBIENT_PARAM_NAME  "ambient"
+#define DIFFUSE_PARAM_NAME  "diffuse"
+#define SPACULAR_PARAM_NAME "spacluar"
+#define ATTENUATION_CONSTANT_PARAM_NAME  "constant"
+#define ATTENUATION_LINEAR_PARAM_NAME    "linear"
+#define ATTENUATION_QUADRATIC_PARAM_NAME "quadratic"
+#define SHINESS_PARAM_NAME "material.shiness"
 
-#define MATERIAL_AMBIENT_PARAM_NAME "material.ambient"
-#define MATERIAL_DIFFUSE_PARAM_NAME "material.diffuse"
-#define MATERIAL_SPACULAR_PARAM_NAME "material.spacluar"
-#define MATERIAL_SHINESS_PARAM_NAME "material.shiness"
+#define POSITION_PARAM_NAME "position"
+#define DIRECTION_PARAM_NAME "direction"
+#define SPOT_LIGHT_CUTOFF_PARAM_NAME "cutoff"
+#define SPOT_LIGHT_OUTER_CUTOFF_PARAM_NAME "outerCutoff"
 #endif
