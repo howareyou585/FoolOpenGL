@@ -14,6 +14,7 @@
     <ProjectGuid>{8DA0C9D3-FC56-48F1-BEB6-88E6D3702977}</ProjectGuid>
     <RootNamespace>ShadowDemo</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>ShadowMapping</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
