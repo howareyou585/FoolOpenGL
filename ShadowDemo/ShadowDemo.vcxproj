@@ -71,11 +71,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="instance.frag" />
-    <None Include="instance.vertex" />
+    <None Include="quad.frag" />
+    <None Include="quad.vertex" />
+    <None Include="shadow_mapping_depth.frag" />
+    <None Include="shadow_mapping_depth.vertex" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="asteroids.cpp" />
+    <ClCompile Include="shadow_mapping_depth.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
