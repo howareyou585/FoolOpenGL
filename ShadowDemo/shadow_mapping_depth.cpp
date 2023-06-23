@@ -71,17 +71,23 @@ int main(int argc, char** argv)
 
 	vector<vertex_attribute> vecVertexAttrib;
 	vecVertexAttrib.push_back(vertex_attribute::position);
-	vecVertexAttrib.push_back(vertex_attribute::normal);
 	vecVertexAttrib.push_back(vertex_attribute::texcoord);
 	map< vertex_attribute, int> mapVertexAttrib2Num;
 	mapVertexAttrib2Num[vertex_attribute::position] = 3;
-	mapVertexAttrib2Num[vertex_attribute::normal] = 3;
 	mapVertexAttrib2Num[vertex_attribute::texcoord] = 2;
 	//创建plane缓存对象
 	VAOBuffer planeVaoBuffer;
-	planeVaoBuffer.BuildVAO(planeVertices, sizeof(planeVertices),
-		nullptr, 0, vecVertexAttrib, mapVertexAttrib2Num);
+	planeVaoBuffer.BuildVAO(squareVertices, sizeof(squareVertices),
+		squareIndexes, sizeof(squareIndexes), vecVertexAttrib, mapVertexAttrib2Num);
 	// 创建cube缓存对象
+	vecVertexAttrib.clear();
+	vecVertexAttrib.push_back(vertex_attribute::position);
+	vecVertexAttrib.push_back(vertex_attribute::normal);
+	vecVertexAttrib.push_back(vertex_attribute::texcoord);
+	mapVertexAttrib2Num.clear();
+	mapVertexAttrib2Num[vertex_attribute::position] = 3;
+	mapVertexAttrib2Num[vertex_attribute::normal] = 3;
+	mapVertexAttrib2Num[vertex_attribute::texcoord] = 2;
 	VAOBuffer cubeVaoBuffer;
 	cubeVaoBuffer.BuildVAO(cubeVertices2, sizeof(cubeVertices2),
 		nullptr, 0, vecVertexAttrib, mapVertexAttrib2Num);
@@ -116,7 +122,7 @@ int main(int argc, char** argv)
 	int nVal = sizeof(cubeVertices2) / sizeof(GLfloat);
 	for(int i = 0; i< nVal; i+=8)
 	{ 
-		glm::vec3 pnt(cubeVertices[i], cubeVertices[i + 1], cubeVertices[i + 2]);
+		glm::vec3 pnt(cubeVertices2[i], cubeVertices2[i + 1], cubeVertices2[i + 2]);
 		box.Merge(pnt);
 	}
 	vector<glm::mat4> vecModelMatrix;
@@ -149,7 +155,8 @@ int main(int argc, char** argv)
 	Camera camera(position);
 	glm::vec3 lightPos = center + (totalBox.GetLength())*glm::vec3(0, 0, 1.0f);
 	lightPos.y += 2.0f;
-	float nearPlane = 1.0f;
+	//glm::vec3 lightPos = position;
+	float nearPlane = 0.1f;
 	float farPlane = totalBox.GetLength()*10.f;
 	float val = totalBox.GetLength() * 2;
 	glm::mat4 lightProjection = glm::ortho(-val, val, -val, val, nearPlane, farPlane);
@@ -158,10 +165,10 @@ int main(int argc, char** argv)
 		glm::vec3(0.f, 1.0f, 0.0f));
 	
 	cubeShader.use();
-	model = glm::mat4(1.0f);
-	cubeShader.setMat4("model", model);
+	
 	cubeShader.setMat4("view", lightView);
 	cubeShader.setMat4("projection", lightProjection);
+	cubeShader.setInt("s_tex", 0);
 	cubeShader.unUse();
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
@@ -179,7 +186,14 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGTH);
 		cubeShader.use();
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, woodTexId);
+		for (int i = 0; i < vecModelMatrix.size(); i++)
+		{
+			cubeShader.setMat4("model", vecModelMatrix[i]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		
 		cubeShader.unUse();
 
 		//系统默认的framebuffer
@@ -192,7 +206,8 @@ int main(int argc, char** argv)
 		planeShader.setInt("depthMap", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthMapTextureID);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, squareIndexes);
 		planeShader.unUse();
 		planeVaoBuffer.UnBind();
 

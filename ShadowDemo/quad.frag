@@ -4,5 +4,6 @@ uniform sampler2D depthMap;
 in vec2 texcoord;
 void main()
 {
-	color = texture(depthMap, texcoord);
+	float depthVal = texture(depthMap, texcoord).r;
+	color = vec4(depthVal,depthVal,depthVal,1.0f);
 }
