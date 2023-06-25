@@ -76,8 +76,8 @@ int main(int argc, char** argv)
 	mapVertexAttrib2Num[vertex_attribute::position] = 3;
 	mapVertexAttrib2Num[vertex_attribute::texcoord] = 2;
 	//创建plane缓存对象
-	VAOBuffer planeVaoBuffer;
-	planeVaoBuffer.BuildVAO(squareVertices, sizeof(squareVertices),
+	VAOBuffer quadVaoBuffer;
+	quadVaoBuffer.BuildVAO(squareVertices, sizeof(squareVertices),
 		squareIndexes, sizeof(squareIndexes), vecVertexAttrib, mapVertexAttrib2Num);
 	// 创建cube缓存对象
 	vecVertexAttrib.clear();
@@ -91,8 +91,15 @@ int main(int argc, char** argv)
 	VAOBuffer cubeVaoBuffer;
 	cubeVaoBuffer.BuildVAO(cubeVertices2, sizeof(cubeVertices2),
 		nullptr, 0, vecVertexAttrib, mapVertexAttrib2Num);
+
+	VAOBuffer planeVaoBuffer;
+	planeVaoBuffer.BuildVAO(planeVertices, sizeof(planeVertices),
+		 nullptr, 0,
+		 vecVertexAttrib, mapVertexAttrib2Num);
+	
 	GLuint cubeVAOId = cubeVaoBuffer.GetVAO();
 	GLuint planeVAOId = planeVaoBuffer.GetVAO();
+	GLuint quadVAOId = quadVaoBuffer.GetVAO();
 
 	
 	//准备材质
@@ -109,8 +116,8 @@ int main(int argc, char** argv)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
 		SHADOW_WIDTH, SHADOW_HEIGTH,
 		0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTextureID, 0);
@@ -148,28 +155,33 @@ int main(int argc, char** argv)
 		totalBox.Merge(box.Transformed(vecModelMatrix[i]));
 	}
 	// Section2 准备着色器程序
-	Shader cubeShader("shadow_mapping_depth.vertex", "shadow_mapping_depth.frag");
-	Shader planeShader("quad.vertex", "quad.frag");
+	Shader simpleDepthShader("shadow_mapping_depth.vertex", "shadow_mapping_depth.frag");
+	Shader quadShader("quad.vertex", "quad.frag");
 	glm::vec3 center = totalBox.GetCenter();
-	glm::vec3 position = center + (totalBox.GetLength()*2.f)*glm::vec3(0, 0, 1.0f);
+	float boxLength = totalBox.GetLength();
+	glm::vec3 position = center + (boxLength *2.f)*glm::vec3(0, 0, 1.0f);
 	Camera camera(position);
-	glm::vec3 lightPos = center + (totalBox.GetLength())*glm::vec3(0, 0, 1.0f);
-	lightPos.y += 2.0f;
+	glm::vec3 lightPos = center + (boxLength)*glm::vec3(0, 0, 1.0f);
+	lightPos.y += boxLength * 0.5f;
+	lightPos.x -= boxLength * 0.5f;
 	//glm::vec3 lightPos = position;
 	float nearPlane = 0.1f;
-	float farPlane = totalBox.GetLength()*10.f;
-	float val = totalBox.GetLength() * 2;
+	float farPlane = boxLength *4.f;
+	float val = boxLength;
 	glm::mat4 lightProjection = glm::ortho(-val, val, -val, val, nearPlane, farPlane);
+	//glm::mat4 cameraProjection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
 	glm::mat4 lightView = glm::lookAt(lightPos, 
 		glm::vec3(0.f, 0.f, 0.f), 
 		glm::vec3(0.f, 1.0f, 0.0f));
 	
-	cubeShader.use();
+	simpleDepthShader.use();
 	
-	cubeShader.setMat4("view", lightView);
-	cubeShader.setMat4("projection", lightProjection);
-	cubeShader.setInt("s_tex", 0);
-	cubeShader.unUse();
+	simpleDepthShader.setMat4("view", lightView);
+	simpleDepthShader.setMat4("projection", lightProjection);
+	/*simpleDepthShader.setMat4("view", camera.GetViewMatrix());
+	simpleDepthShader.setMat4("projection", cameraProjection);*/
+	simpleDepthShader.setInt("s_tex", 0);
+	simpleDepthShader.unUse();
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	// 开始游戏主循环
@@ -180,36 +192,43 @@ int main(int argc, char** argv)
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		//用户定义的深度framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-		// 这里填写场景绘制代码
-		cubeVaoBuffer.Bind();
+		//glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGTH);
-		cubeShader.use();
+		// 这里填写场景绘制代码
+		planeVaoBuffer.Bind();
+		simpleDepthShader.use();
+		model = glm::mat4(1.f);
+		simpleDepthShader.setMat4("model", model);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTexId);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		planeVaoBuffer.UnBind();
+
+		cubeVaoBuffer.Bind();
 		for (int i = 0; i < vecModelMatrix.size(); i++)
 		{
-			cubeShader.setMat4("model", vecModelMatrix[i]);
+			simpleDepthShader.setMat4("model", vecModelMatrix[i]);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		
-		cubeShader.unUse();
+		simpleDepthShader.unUse();
 
 		//系统默认的framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-		planeVaoBuffer.Bind();
-		
-		planeShader.use();
-		planeShader.setInt("depthMap", 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, depthMapTextureID);
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, squareIndexes);
-		planeShader.unUse();
-		planeVaoBuffer.UnBind();
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+		//quadVaoBuffer.Bind();
+		//
+		//quadShader.use();
+		//quadShader.setInt("depthMap", 0);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, depthMapTextureID);
+		////glDrawArrays(GL_TRIANGLES, 0, 6);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, squareIndexes);
+		//quadShader.unUse();
+		//quadVaoBuffer.UnBind();
 
 		glfwSwapBuffers(window); // 交换缓存
 	}
@@ -217,6 +236,10 @@ int main(int argc, char** argv)
 	glDeleteVertexArrays(1, &cubeVAOId);
 	GLuint cubeVboId = cubeVaoBuffer.GetVBO();
 	glDeleteBuffers(1, &cubeVboId);
+
+	glDeleteVertexArrays(1, &quadVAOId);
+	GLuint quadVBOId = quadVaoBuffer.GetVBO();
+	glDeleteBuffers(1, &quadVBOId);
 	glfwTerminate();
 	return 0;
 }

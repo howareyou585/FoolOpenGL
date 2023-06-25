@@ -6,4 +6,5 @@ void main()
 {
 	float depthVal = texture(depthMap, texcoord).r;
 	color = vec4(depthVal,depthVal,depthVal,1.0f);
+	//color = vec4(1.0f,0.0f,0.0f,1.0f);
 }
