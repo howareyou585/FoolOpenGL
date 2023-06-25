@@ -19,7 +19,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CullFace", "CullFace\CullFa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MSAA", "MSAA\MSAA.vcxproj", "{220B7E28-BA80-4A26-8287-436C14C6688A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShadowDemo", "ShadowDemo\ShadowDemo.vcxproj", "{8DA0C9D3-FC56-48F1-BEB6-88E6D3702977}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShadowMappingDepth", "ShadowDemo\ShadowDemo.vcxproj", "{8DA0C9D3-FC56-48F1-BEB6-88E6D3702977}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IndirectDrawerDemo", "IndirectDrawerDemo\IndirectDrawerDemo.vcxproj", "{1113CC82-2BCD-4214-9DD0-CE502EF9149B}"
 EndProject
@@ -51,7 +51,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CullerIndirectDrawer", "Cul
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lightingSpcularMap", "lightSpcularMap\lightSpcularMap.vcxproj", "{5D2D84AA-FFA4-4311-B055-C63D424F0AA6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultiLightingDemo", "MultiLightingDemo\MultiLightingDemo.vcxproj", "{8185B2F5-037F-4812-9DFA-CE100DB124BE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LightingSpotCaster", "MultiLightingDemo\MultiLightingDemo.vcxproj", "{8185B2F5-037F-4812-9DFA-CE100DB124BE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShadowMappingBase", "ShadowMappingBase\ShadowMappingBase.vcxproj", "{7D4538C6-30E2-403A-A4A5-0F959BC4019B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShadowMappingAdvance", "ShadowMappingAdvance\ShadowMappingAdvance.vcxproj", "{066E94E5-1205-496C-9629-EA741510563F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -211,6 +215,18 @@ Global
 		{8185B2F5-037F-4812-9DFA-CE100DB124BE}.Release|x64.ActiveCfg = Release|Win32
 		{8185B2F5-037F-4812-9DFA-CE100DB124BE}.Release|x86.ActiveCfg = Release|Win32
 		{8185B2F5-037F-4812-9DFA-CE100DB124BE}.Release|x86.Build.0 = Release|Win32
+		{7D4538C6-30E2-403A-A4A5-0F959BC4019B}.Debug|x64.ActiveCfg = Debug|Win32
+		{7D4538C6-30E2-403A-A4A5-0F959BC4019B}.Debug|x86.ActiveCfg = Debug|Win32
+		{7D4538C6-30E2-403A-A4A5-0F959BC4019B}.Debug|x86.Build.0 = Debug|Win32
+		{7D4538C6-30E2-403A-A4A5-0F959BC4019B}.Release|x64.ActiveCfg = Release|Win32
+		{7D4538C6-30E2-403A-A4A5-0F959BC4019B}.Release|x86.ActiveCfg = Release|Win32
+		{7D4538C6-30E2-403A-A4A5-0F959BC4019B}.Release|x86.Build.0 = Release|Win32
+		{066E94E5-1205-496C-9629-EA741510563F}.Debug|x64.ActiveCfg = Debug|Win32
+		{066E94E5-1205-496C-9629-EA741510563F}.Debug|x86.ActiveCfg = Debug|Win32
+		{066E94E5-1205-496C-9629-EA741510563F}.Debug|x86.Build.0 = Debug|Win32
+		{066E94E5-1205-496C-9629-EA741510563F}.Release|x64.ActiveCfg = Release|Win32
+		{066E94E5-1205-496C-9629-EA741510563F}.Release|x86.ActiveCfg = Release|Win32
+		{066E94E5-1205-496C-9629-EA741510563F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
