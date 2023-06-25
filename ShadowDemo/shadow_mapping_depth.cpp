@@ -24,7 +24,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-
+void RenderCube(const Shader& shader, vector<glm::mat4>& vecModelMatrix);
+void RenderPlane(const Shader& shader);
+void RenderQuad(const Shader& shader);
 int main(int argc, char** argv)
 {
 	if (!glfwInit())	// 初始化glfw库
@@ -161,27 +163,27 @@ int main(int argc, char** argv)
 	float boxLength = totalBox.GetLength();
 	glm::vec3 position = center + (boxLength *2.f)*glm::vec3(0, 0, 1.0f);
 	Camera camera(position);
-	glm::vec3 lightPos = center + (boxLength)*glm::vec3(0, 0, 1.0f);
+	/*glm::vec3 lightPos = center + (boxLength)*glm::vec3(0, 0, 1.0f);
 	lightPos.y += boxLength * 0.5f;
-	lightPos.x -= boxLength * 0.5f;
-	//glm::vec3 lightPos = position;
-	float nearPlane = 0.1f;
-	float farPlane = boxLength *4.f;
-	float val = boxLength;
+	lightPos.x -= boxLength * 0.5f;*/
+	glm::vec3 lightPos = glm::vec3(-2.0f, 4.0f, -1.0f);
+	float nearPlane = 1.f;
+	float farPlane = 7.5f;
+	float val = 10.f;
 	glm::mat4 lightProjection = glm::ortho(-val, val, -val, val, nearPlane, farPlane);
 	//glm::mat4 cameraProjection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
 	glm::mat4 lightView = glm::lookAt(lightPos, 
 		glm::vec3(0.f, 0.f, 0.f), 
 		glm::vec3(0.f, 1.0f, 0.0f));
-	
+	glm::mat4 lightSpaceMatrix  = lightProjection * lightView;
+
 	simpleDepthShader.use();
-	
-	simpleDepthShader.setMat4("view", lightView);
-	simpleDepthShader.setMat4("projection", lightProjection);
-	/*simpleDepthShader.setMat4("view", camera.GetViewMatrix());
-	simpleDepthShader.setMat4("projection", cameraProjection);*/
-	simpleDepthShader.setInt("s_tex", 0);
+	simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 	simpleDepthShader.unUse();
+
+	quadShader.use();
+	quadShader.setInt("depthMap", 0);
+	quadShader.unUse();
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	// 开始游戏主循环
@@ -190,45 +192,39 @@ int main(int argc, char** argv)
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
 
 		// 清除颜色缓冲区 重置为指定颜色
-		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		//用户定义的深度framebuffer
-		//glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGTH);
 		// 这里填写场景绘制代码
 		planeVaoBuffer.Bind();
 		simpleDepthShader.use();
-		model = glm::mat4(1.f);
-		simpleDepthShader.setMat4("model", model);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTexId);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		//绘制地板
+		RenderPlane(simpleDepthShader);
 		planeVaoBuffer.UnBind();
 
 		cubeVaoBuffer.Bind();
-		for (int i = 0; i < vecModelMatrix.size(); i++)
-		{
-			simpleDepthShader.setMat4("model", vecModelMatrix[i]);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-		
+		RenderCube(simpleDepthShader, vecModelMatrix);
+		cubeVaoBuffer.UnBind();
 		simpleDepthShader.unUse();
 
 		//系统默认的framebuffer
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-		//quadVaoBuffer.Bind();
-		//
-		//quadShader.use();
-		//quadShader.setInt("depthMap", 0);
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, depthMapTextureID);
-		////glDrawArrays(GL_TRIANGLES, 0, 6);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, squareIndexes);
-		//quadShader.unUse();
-		//quadVaoBuffer.UnBind();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// reset viewport
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+		quadVaoBuffer.Bind();
+		
+		quadShader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMapTextureID);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, squareIndexes);
+		quadShader.unUse();
+		quadVaoBuffer.UnBind();
 
 		glfwSwapBuffers(window); // 交换缓存
 	}
@@ -243,6 +239,26 @@ int main(int argc, char** argv)
 	glfwTerminate();
 	return 0;
 }
+
+void RenderCube(const Shader& shader, vector<glm::mat4>& vecModelMatrix)
+{
+	for (int i = 0; i < vecModelMatrix.size(); i++)
+	{
+		shader.setMat4("model", vecModelMatrix[i]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
+}
+void RenderPlane(const Shader& shader)
+{
+	glm::mat4 model = glm::mat4(1.f);
+	shader.setMat4("model", model);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+void RenderQuad(const Shader& shader)
+{
+
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
