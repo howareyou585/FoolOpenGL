@@ -5,6 +5,6 @@ in vec2 texcoord;
 void main()
 {
 	float depthVal = texture(depthMap, texcoord).r;
-	color = vec4(depthVal,depthVal,depthVal,1.0f);
-	//color = vec4(1.0f,0.0f,0.0f,1.0f);
+	color = vec4(depthVal,depthVal,depthVal,1.0f);//·ÇºÚ¼´°×=> // orthographic
+	//color = texture(depthMap, texcoord);//ºì ºÚ
 }

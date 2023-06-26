@@ -79,7 +79,26 @@ protected:
 //平行光
 class Directionlight :public Light
 {
+public:
+	Directionlight(glm::vec3& ambient, glm::vec3& diffuse,glm::vec3& spacluar,glm::vec3& direction) :Light(ambient, diffuse, spacluar)
+	{
+		
+		m_direction = direction;
+	
+	}
+	virtual ~Directionlight()
+	{
 
+	}
+	virtual bool SetLightUniformParam(Shader& shader, const string& strParaName)
+	{
+		Light::SetLightUniformParam(shader, strParaName);
+		string str = strParaName + DIRECTION_PARAM_NAME;
+		shader.setVec3(str, m_direction);
+		return true;
+	}
+private:
+	glm::vec3 m_direction;
 };
 //点光
 class PointLight :public Light

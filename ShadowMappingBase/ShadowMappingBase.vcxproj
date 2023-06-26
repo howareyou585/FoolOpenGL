@@ -72,11 +72,10 @@
     <ClCompile Include="ShadowMappingBase.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shader.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="triangle.frag" />
-    <None Include="triangle.vertex" />
+    <None Include="shadow_mapping.frag" />
+    <None Include="shadow_mapping.vertex" />
+    <None Include="shadow_mapping_depth.frag" />
+    <None Include="shadow_mapping_depth.vertex" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
