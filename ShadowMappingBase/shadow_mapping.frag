@@ -1,4 +1,6 @@
 #version 330 core
+out vec4 color;
+
 in VS_OUT
 {
 	vec3 fragPosWorldSpace;
@@ -27,7 +29,7 @@ uniform Material material;
 uniform DirectionLight light;
 uniform sampler2D shadowMap;
 float calculateShadow(vec4 fragPosLightSpace);
-out vec4 color;
+
 void main()
 {
 	vec3 diffuse = texture(material.diffuseTexture, fs_in.textcoord).xyz;
