@@ -73,6 +73,7 @@ public:
     }
     glm::mat4 GetViewMatrix(glm::vec3& targetPos)
     {
+        Front = glm::normalize(targetPos - Position);
         return glm::lookAt(Position, targetPos, Up);
     }
     glm::mat4 GetProjectionMatrix(float radio)

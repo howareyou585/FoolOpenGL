@@ -79,6 +79,7 @@ int main(int argc, char** argv)
 	GLuint VBOId = vaoBuffer.GetVBO();
 	//加载材质
 	GLuint texId  = TextureFromFile("container.jpg", "../resources/textures");
+	GLuint texId2 = TextureFromFile("awesomeface.png", "../resources/textures");
 	// world space positions of our cubes
 	glm::vec3 cubePositions[] = {
 		glm::vec3(0.0f,  0.0f,  0.0f),
@@ -122,6 +123,7 @@ int main(int argc, char** argv)
 	Shader shader("cube.vertex", "cube.frag");
 	shader.use();
 	shader.setInt("s_texture", 0);
+	shader.setInt("s_texture2", 1);
 	shader.setMat4("projection", projectionMatrix);
 	shader.unUse();
 	int nVertex = sizeof(cubeVertices3) / (sizeof(GLuint) * 5);
@@ -143,12 +145,15 @@ int main(int argc, char** argv)
 		pnt.x = radius * glm::sin(timeValue);
 		pnt.z = radius * glm::cos(timeValue);
 		camera.SetPosition(pnt);
-		glm::mat4 viewMatrix = glm::lookAt(camera.Position, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-		//glm::mat4 viewMatrix = camera.GetViewMatrix(totalBoundingBox.GetCenter());
+		//将相机设置为看向（0，0，0）
+		//glm::mat4 viewMatrix = glm::lookAt(camera.Position, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		
+		glm::mat4 viewMatrix = camera.GetViewMatrix(glm::vec3(0.0f,0.0f,0.0f));
 		shader.setMat4("view", viewMatrix);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texId);
+		glActiveTexture(GL_TEXTURE0+1);
+		glBindTexture(GL_TEXTURE_2D, texId2);
 		for (auto j = 0; j < nModelMatrix; j++)
 		{
 			shader.setMat4("model", vecModelMatrix[j]);
