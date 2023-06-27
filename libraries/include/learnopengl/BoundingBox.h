@@ -60,11 +60,12 @@ public:
 	}
 	BoundingBox BoundingBox::Transformed(const glm::mat4& transform)
 	{
-		
 		glm::vec4 minPnt4(m_minPnt.x, m_minPnt.y, m_minPnt.z, 1.0f);
 		glm::vec4 maxPnt4(m_maxPnt.x, m_maxPnt.y, m_maxPnt.z, 1.0f);
-		minPnt4 = minPnt4 * transform;
-		maxPnt4 = maxPnt4 * transform;
+		/*minPnt4 = minPnt4 * transform;
+		maxPnt4 = maxPnt4 * transform;*/
+		minPnt4 = transform * minPnt4; // 注意：矩阵在前，向量在后
+		maxPnt4 = transform * maxPnt4; // 注意：矩阵在前，向量在后
 		glm::vec3 minPnt(minPnt4.x, minPnt4.y, minPnt4.z);
 		glm::vec3 maxPnt(maxPnt4.x, maxPnt4.y, maxPnt4.z);
 		return BoundingBox(minPnt, maxPnt);

@@ -6,7 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
-
+#include "BoundingBox.h"
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
     FORWARD,
@@ -21,6 +21,8 @@ const float PITCH       =  0.0f;
 const float SPEED       =  2.5f;
 const float SENSITIVITY =  0.1f;
 const float ZOOM        =  45.0f;
+const float FAR         = 100.0f;
+const float NEAR        = 0.1f;
 
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
@@ -40,6 +42,8 @@ public:
     float MovementSpeed;
     float MouseSensitivity;
     float Zoom;
+    float FarPlane;
+    float NearPlane;
 
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
@@ -48,6 +52,8 @@ public:
         WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
+        FarPlane = FAR;
+        NearPlane = NEAR;
         updateCameraVectors();
     }
     // constructor with scalar values
@@ -65,7 +71,31 @@ public:
     {
         return glm::lookAt(Position, Position + Front, Up);
     }
-
+    glm::mat4 GetViewMatrix(glm::vec3& targetPos)
+    {
+        return glm::lookAt(Position, targetPos, Up);
+    }
+    glm::mat4 GetProjectionMatrix(float radio)
+    {
+        return glm::perspective(glm::radians(ZOOM), radio,  NearPlane, FarPlane);
+    }
+    bool InitCamera(BoundingBox& sceneBoxBoundingBox, float factor)
+    {
+        bool bRet = false;
+        if (factor <= 0.0f)
+        {
+            return bRet;
+        }
+        auto length = sceneBoxBoundingBox.GetLength();
+        if (length <= 0)
+        {
+            return bRet;
+        }
+        glm::vec3 center = sceneBoxBoundingBox.GetCenter();
+        Position = center - Front * length * factor;
+        bRet = true;
+        return bRet;
+    }
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(Camera_Movement direction, float deltaTime)
     {
@@ -111,7 +141,10 @@ public:
         if (Zoom > 45.0f)
             Zoom = 45.0f; 
     }
-
+    void SetPosition(glm::vec3 & pnt)
+    {
+        Position = pnt;
+    }
 private:
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()
