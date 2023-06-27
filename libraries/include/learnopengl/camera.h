@@ -94,6 +94,7 @@ public:
         }
         glm::vec3 center = sceneBoxBoundingBox.GetCenter();
         Position = center - Front * length * factor;
+		//todo
         bRet = true;
         return bRet;
     }

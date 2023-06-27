@@ -71,6 +71,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPSEuler", "FPSEuler\FPSEul
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPSQuaternion", "FPSQuaternion\FPSQuaternion.vcxproj", "{593F2D30-5477-46C0-AEFF-AADB917897D8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPSKeyboard", "FPSKeyboard\FPSKeyboard.vcxproj", "{9B3E745C-620B-4B8B-9E59-62EAF748ADFA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPSMouse", "FPSMouse\FPSMouse.vcxproj", "{96680DF9-7E07-4A55-893A-DC8D36667C16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -283,6 +287,18 @@ Global
 		{593F2D30-5477-46C0-AEFF-AADB917897D8}.Release|x64.ActiveCfg = Release|Win32
 		{593F2D30-5477-46C0-AEFF-AADB917897D8}.Release|x86.ActiveCfg = Release|Win32
 		{593F2D30-5477-46C0-AEFF-AADB917897D8}.Release|x86.Build.0 = Release|Win32
+		{9B3E745C-620B-4B8B-9E59-62EAF748ADFA}.Debug|x64.ActiveCfg = Debug|Win32
+		{9B3E745C-620B-4B8B-9E59-62EAF748ADFA}.Debug|x86.ActiveCfg = Debug|Win32
+		{9B3E745C-620B-4B8B-9E59-62EAF748ADFA}.Debug|x86.Build.0 = Debug|Win32
+		{9B3E745C-620B-4B8B-9E59-62EAF748ADFA}.Release|x64.ActiveCfg = Release|Win32
+		{9B3E745C-620B-4B8B-9E59-62EAF748ADFA}.Release|x86.ActiveCfg = Release|Win32
+		{9B3E745C-620B-4B8B-9E59-62EAF748ADFA}.Release|x86.Build.0 = Release|Win32
+		{96680DF9-7E07-4A55-893A-DC8D36667C16}.Debug|x64.ActiveCfg = Debug|Win32
+		{96680DF9-7E07-4A55-893A-DC8D36667C16}.Debug|x86.ActiveCfg = Debug|Win32
+		{96680DF9-7E07-4A55-893A-DC8D36667C16}.Debug|x86.Build.0 = Debug|Win32
+		{96680DF9-7E07-4A55-893A-DC8D36667C16}.Release|x64.ActiveCfg = Release|Win32
+		{96680DF9-7E07-4A55-893A-DC8D36667C16}.Release|x86.ActiveCfg = Release|Win32
+		{96680DF9-7E07-4A55-893A-DC8D36667C16}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
