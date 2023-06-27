@@ -67,26 +67,12 @@ int main(int argc, char** argv)
 		glfwTerminate();
 		return -1;
 	}
-
-	// 设置视口参数
-	//glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-	vector<vertex_attribute> vecVertexAttrib;
-	vecVertexAttrib.push_back(vertex_attribute::position);
-	vecVertexAttrib.push_back(vertex_attribute::texcoord);
-	map< vertex_attribute, int> mapVertexAttrib2Num;
-	mapVertexAttrib2Num[vertex_attribute::position] = 3;
-	mapVertexAttrib2Num[vertex_attribute::texcoord] = 2;
-	//创建plane缓存对象
-	VAOBuffer quadVaoBuffer;
-	quadVaoBuffer.BuildVAO(squareVertices, sizeof(squareVertices),
-		squareIndexes, sizeof(squareIndexes), vecVertexAttrib, mapVertexAttrib2Num);
 	// 创建cube缓存对象
-	vecVertexAttrib.clear();
+	vector<vertex_attribute> vecVertexAttrib;
+	map< vertex_attribute, int> mapVertexAttrib2Num;
 	vecVertexAttrib.push_back(vertex_attribute::position);
 	vecVertexAttrib.push_back(vertex_attribute::normal);
 	vecVertexAttrib.push_back(vertex_attribute::texcoord);
-	mapVertexAttrib2Num.clear();
 	mapVertexAttrib2Num[vertex_attribute::position] = 3;
 	mapVertexAttrib2Num[vertex_attribute::normal] = 3;
 	mapVertexAttrib2Num[vertex_attribute::texcoord] = 2;
@@ -101,7 +87,6 @@ int main(int argc, char** argv)
 
 	GLuint cubeVAOId = cubeVaoBuffer.GetVAO();
 	GLuint planeVAOId = planeVaoBuffer.GetVAO();
-	GLuint quadVAOId = quadVaoBuffer.GetVAO();
 
 
 	//准备材质
@@ -163,7 +148,8 @@ int main(int argc, char** argv)
 	//Shader quadShader("quad.vertex", "quad.frag");
 	glm::vec3 center = totalBox.GetCenter();
 	float boxLength = totalBox.GetLength();
-	glm::vec3 position = center + (boxLength * 3.f) * glm::vec3(0, 0, 1.0f);
+	glm::vec3 position = center + (boxLength * 2.5f) * glm::vec3(0, 0, 1.0f);
+	//glm::vec3 position(0.f, 0.f, 3.0f);
 	Camera camera(position);
 	/*glm::vec3 lightPos = center + (boxLength)*glm::vec3(0, 0, 1.0f);
 	lightPos.y += boxLength * 0.5f;
@@ -190,16 +176,18 @@ int main(int argc, char** argv)
 	shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 	shadowMappingShader.setVec3("eyePos", camera.Position);
 	//设置平行灯光参数
-	glm::vec3 ambient(0.3f, 0.3f, 0.3f);
-	glm::vec3 diffuse(0.8f, 0.8f, 0.8f);
-	glm::vec3 spacular(1.0f, 1.0f, 1.0f);
+	glm::vec3 ambient(0.09f, 0.09f, 0.09f);
+	glm::vec3 diffuse(0.3f, 0.3f, 0.3f);
+	glm::vec3 spacular(0.3f, 0.3f, 0.3f);
+	/*glm::vec3 diffuse(0.8f, 0.8f, 0.8f);
+	glm::vec3 spacular(1.0f, 1.0f, 1.0f);*/
 	glm::vec3 lightDir = glm::normalize(center - lightPos);
 	Directionlight dirLight(ambient, diffuse, spacular, lightDir);
 	dirLight.SetLightUniformParam(shadowMappingShader, "light.");
 	//设置材质参数
-	shadowMappingShader.setInt("material.diffuse", 0);
+	shadowMappingShader.setVec3("light.position", lightPos);
+	shadowMappingShader.setInt("material.diffuseTexture", 0);
 	shadowMappingShader.setInt("shadowMap", 1);
-	shadowMappingShader.setVec3("material.spacular", spacular);
 	shadowMappingShader.setFloat("material.shiness", 256.0f);
 	shadowMappingShader.unUse();
 	/*quadShader.use();
@@ -259,9 +247,9 @@ int main(int argc, char** argv)
 	GLuint cubeVboId = cubeVaoBuffer.GetVBO();
 	glDeleteBuffers(1, &cubeVboId);
 
-	glDeleteVertexArrays(1, &quadVAOId);
-	GLuint quadVBOId = quadVaoBuffer.GetVBO();
-	glDeleteBuffers(1, &quadVBOId);
+	glDeleteVertexArrays(1, &planeVAOId);
+	GLuint planeVBOId = planeVaoBuffer.GetVBO();
+	glDeleteBuffers(1, &planeVBOId);
 	glfwTerminate();
 	return 0;
 }
