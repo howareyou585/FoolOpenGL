@@ -77,6 +77,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPSMouse", "FPSMouse\FPSMou
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultiThreadRender", "MultiThreadRender\MultiThreadRender.vcxproj", "{3D418F8A-6998-4704-B120-7B1A7DAE0234}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextRenderBase", "TextRenderBase\TextRenderBase.vcxproj", "{4965C0E3-D61B-46B6-9628-0057F32F41BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -307,6 +309,12 @@ Global
 		{3D418F8A-6998-4704-B120-7B1A7DAE0234}.Release|x64.ActiveCfg = Release|Win32
 		{3D418F8A-6998-4704-B120-7B1A7DAE0234}.Release|x86.ActiveCfg = Release|Win32
 		{3D418F8A-6998-4704-B120-7B1A7DAE0234}.Release|x86.Build.0 = Release|Win32
+		{4965C0E3-D61B-46B6-9628-0057F32F41BE}.Debug|x64.ActiveCfg = Debug|Win32
+		{4965C0E3-D61B-46B6-9628-0057F32F41BE}.Debug|x86.ActiveCfg = Debug|Win32
+		{4965C0E3-D61B-46B6-9628-0057F32F41BE}.Debug|x86.Build.0 = Debug|Win32
+		{4965C0E3-D61B-46B6-9628-0057F32F41BE}.Release|x64.ActiveCfg = Release|Win32
+		{4965C0E3-D61B-46B6-9628-0057F32F41BE}.Release|x86.ActiveCfg = Release|Win32
+		{4965C0E3-D61B-46B6-9628-0057F32F41BE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
