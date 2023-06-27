@@ -75,6 +75,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPSKeyboard", "FPSKeyboard\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FPSMouse", "FPSMouse\FPSMouse.vcxproj", "{96680DF9-7E07-4A55-893A-DC8D36667C16}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultiThreadRender", "MultiThreadRender\MultiThreadRender.vcxproj", "{3D418F8A-6998-4704-B120-7B1A7DAE0234}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -299,6 +301,12 @@ Global
 		{96680DF9-7E07-4A55-893A-DC8D36667C16}.Release|x64.ActiveCfg = Release|Win32
 		{96680DF9-7E07-4A55-893A-DC8D36667C16}.Release|x86.ActiveCfg = Release|Win32
 		{96680DF9-7E07-4A55-893A-DC8D36667C16}.Release|x86.Build.0 = Release|Win32
+		{3D418F8A-6998-4704-B120-7B1A7DAE0234}.Debug|x64.ActiveCfg = Debug|Win32
+		{3D418F8A-6998-4704-B120-7B1A7DAE0234}.Debug|x86.ActiveCfg = Debug|Win32
+		{3D418F8A-6998-4704-B120-7B1A7DAE0234}.Debug|x86.Build.0 = Debug|Win32
+		{3D418F8A-6998-4704-B120-7B1A7DAE0234}.Release|x64.ActiveCfg = Release|Win32
+		{3D418F8A-6998-4704-B120-7B1A7DAE0234}.Release|x86.ActiveCfg = Release|Win32
+		{3D418F8A-6998-4704-B120-7B1A7DAE0234}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
