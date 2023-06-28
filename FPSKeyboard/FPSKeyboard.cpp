@@ -130,6 +130,8 @@ int main(int argc, char** argv)
 	int nVertex = sizeof(cubeVertices3) / (sizeof(GLuint) * 5);
 	// 开始游戏主循环
 	glEnable(GL_DEPTH_TEST);
+	glm::vec3 targetPos = totalBoundingBox.GetCenter();
+	float distance = glm::length(targetPos - camera.Position);
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -146,7 +148,8 @@ int main(int argc, char** argv)
 		glBindVertexArray(VAOId);
 		shader.use();
 		//鼠标移动，镜头方向不变
-		glm::mat4 viewMatrix = camera.GetViewMatrix();
+		targetPos = camera.Position + distance * camera.Front;
+		glm::mat4 viewMatrix = camera.GetViewMatrix(targetPos);
 
 		shader.setMat4("view", viewMatrix);
 		glActiveTexture(GL_TEXTURE0);
