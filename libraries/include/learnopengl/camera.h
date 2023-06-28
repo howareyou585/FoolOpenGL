@@ -4,7 +4,8 @@
 //#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtx/quaternion.hpp"
 #include <vector>
 #include "BoundingBox.h"
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
@@ -113,6 +114,7 @@ public:
             Position -= Right * velocity;
         if (direction == RIGHT)
             Position += Right * velocity;
+        Position.y = 0;
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -163,6 +165,57 @@ private:
         // also re-calculate the Right and Up vector
         Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         Up    = glm::normalize(glm::cross(Right, Front));
+    }
+
+    glm::quat Camera::RotationBetweenVectors(glm::vec3 start, glm::vec3 dest)
+    {
+
+        start = normalize(start);
+
+        dest = normalize(dest);
+
+        float cosTheta = dot(start, dest);
+
+        glm::vec3 rotationAxis;
+
+        if (cosTheta < -1 + 0.001f) {
+
+            // special case when vectors in opposite directions:
+
+            // there is no "ideal" rotation axis
+
+            // So guess one; any will do as long as it's perpendicular to start
+
+            rotationAxis = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), start);
+
+            if (glm::length2(rotationAxis) < 0.01) // bad luck, they were parallel, try again!
+
+                rotationAxis = glm::cross(glm::vec3(1.0f, 0.0f, 0.0f), start);
+
+            rotationAxis = normalize(rotationAxis);
+
+            return glm::angleAxis(180.0f, rotationAxis);
+
+        }
+
+        rotationAxis = cross(start, dest);
+
+        float s = sqrt((1 + cosTheta) * 2);
+
+        float invs = 1 / s;
+
+        return glm::quat(
+
+            s * 0.5f,
+
+            rotationAxis.x * invs,
+
+            rotationAxis.y * invs,
+
+            rotationAxis.z * invs
+
+        );
+
     }
 };
 #endif
