@@ -95,10 +95,9 @@ public:
             return bRet;
         }
         glm::vec3 center = sceneBoxBoundingBox.GetCenter();
+		//Front = glm::normalize(center - Position);
         Position = center - Front * length * factor;
-		//todo
-        Front = glm::normalize(center-Position);
-        Right = glm::normalize(glm::cross(Front, Up));
+        //Right = glm::normalize(glm::cross(Front, Up));
         bRet = true;
         return bRet;
     }

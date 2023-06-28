@@ -69,6 +69,17 @@ public:
 		return bRet;
 	}
 protected:
+	void SetAttenuationUniformParam(Shader& shader, const string& strParaName)
+	{
+		string str;
+		str = strParaName + ATTENUATION_CONSTANT_PARAM_NAME;
+		shader.setFloat(str, m_attenuatedConstant);
+		str = strParaName + ATTENUATION_LINEAR_PARAM_NAME;
+		shader.setFloat(str, m_attenuatedLinear);
+		str = strParaName + ATTENUATION_QUADRATIC_PARAM_NAME;
+		shader.setFloat(str, m_attenuatedQuadratic);
+	}
+protected:
 	glm::vec3 m_ambient;
 	glm::vec3 m_diffuse;
 	glm::vec3 m_spacular;
@@ -103,7 +114,21 @@ private:
 //µã¹â
 class PointLight :public Light
 {
+public:
+	PointLight(glm::vec3& ambient, glm::vec3& diffuse, glm::vec3& spacluar, glm::vec3& position) :Light(ambient, diffuse, spacluar)
+	{
+		m_position = position;
+	}
+	virtual ~PointLight()
+	{
 
+	}
+	void SetPosition(glm::vec3 & position)
+	{
+		m_position = position;
+	}
+private:
+	glm::vec3 m_position;
 };
 //¾Û¹â
 class Spotlight :public Light
@@ -138,6 +163,7 @@ public:
 		str = strParaName + SPOT_LIGHT_OUTER_CUTOFF_PARAM_NAME;
 		shader.setFloat(str, m_cutoffOuterAngle);
 		GL_INPUT_ERROR
+		SetAttenuationUniformParam(shader, strParaName);
 		return true;
 	
 	}
