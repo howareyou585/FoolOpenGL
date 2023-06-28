@@ -121,8 +121,10 @@ int main(int argc, char** argv)
 		vecModelMatrix.emplace_back(modelMatirx);
 	}
 	glm::vec3 center = totalBox.GetCenter();
-	glm::vec3 position = center +  (totalBox.GetLength()*2.f)*glm::vec3(0, 0, 1.0f);
+	float radius = totalBox.GetLength()*0.6f;
+	glm::vec3 position = center + radius *glm::vec3(0, 0, 1.0f);
 	Camera camera(position);
+	
 	// Section2 准备着色器程序
 	Shader shader("advance_spot_caster_multi_box.vertex", "advance_spot_caster_multi_box.frag");
 	// 初始化灯光
@@ -134,7 +136,7 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	// 开始游戏主循环
-	GLfloat angle = 0.0f;
+	
 	int nVetex = nVal / 8; //顶点的数量
 	while (!glfwWindowShouldClose(window))
 	{
@@ -149,20 +151,7 @@ int main(int argc, char** argv)
 		shader.use();
 		//glm::mat4 model(1.f);
 		
-		angle += 0.015f;
-		if (angle > 360.f)
-		{
-			angle-=360;
-		}
-		/*glm::quat q = glm::quat(glm::vec3(angle, angle, angle));
-		model = glm::mat4_cast(q)*model;
-		BoundingBox currentBox = box.Transformed(model);
-		glm::vec3 currentCenter = box.GetCenter();*/
 		
-
-		//camera.Position = currentCenter+ (box.GetLength())*glm::vec3(0, 0, 1.0f);
-		//camera.Front = glm::normalize(currentCenter - camera.Position);
-	
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(45.0f, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
 		
@@ -176,7 +165,11 @@ int main(int argc, char** argv)
 		shader.setFloat("material.shiness", 256.0f);
 		//如果将灯放到相机的位置且要显示灯光模型，相机将会被灯光完全遮挡，看不到场景中的任何物体。
 		//如果将灯放到相机的位置且不需要显示灯光模型，则可以正确的渲染整个场景。
+		float tv = glfwGetTime();
+		
 		glm::vec3 lightPos = camera.Position;
+		lightPos.x = radius * glm::sin(tv);
+		lightPos.z = radius * fabs(glm::cos(tv));
 		glm::vec3 lightDirection = glm::normalize(center - lightPos);
 		float cutoff = glm::cos(glm::radians(3.5f));
 		float outerCutoff = glm::cos(glm::radians(5.0f));
