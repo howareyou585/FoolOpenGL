@@ -69,9 +69,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="shader.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="cube.frag" />
     <None Include="cube.vertex" />
   </ItemGroup>

@@ -77,7 +77,9 @@ public:
     }
     glm::mat4 GetProjectionMatrix(float radio)
     {
-        return glm::perspective(glm::radians(ZOOM), radio,  NearPlane, FarPlane);
+      
+        return glm::perspective(glm::radians(Zoom), radio,  NearPlane, FarPlane);
+        
     }
     bool InitCamera(BoundingBox& sceneBoxBoundingBox, float factor)
     {
