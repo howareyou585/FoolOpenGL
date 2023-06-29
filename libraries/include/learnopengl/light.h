@@ -123,6 +123,15 @@ public:
 	{
 
 	}
+	virtual bool SetLightUniformParam(Shader& shader, const string& strParaName)
+	{
+		Light::SetLightUniformParam(shader, strParaName);
+		string str;
+		str = strParaName + POSITION_PARAM_NAME;
+		SetAttenuationUniformParam(shader, strParaName);
+		return true;
+
+	}
 	void SetPosition(glm::vec3 & position)
 	{
 		m_position = position;

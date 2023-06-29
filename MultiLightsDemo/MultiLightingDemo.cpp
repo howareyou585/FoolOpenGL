@@ -93,11 +93,47 @@ int main(int argc, char** argv)
 		glm::vec3 pnt(cubeVertices[i], cubeVertices[i + 1], cubeVertices[i + 2]);
 		box.Merge(pnt);
 	}
+
+	// positions all containers
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+	BoundingBox totalCubeBoundingBox;
+	vector<glm::mat4>vecCubeModelMatrix;
+	vecCubeModelMatrix.reserve(sizeof(cubePositions) / sizeof(glm::vec3));
+	for (int i = 0; i < sizeof(cubePositions) / sizeof(glm::vec3); i++)
+	{
+		glm::mat4 tempModelMatrix(1.0f);
+		tempModelMatrix = glm::translate(tempModelMatrix, cubePositions[i]);
+		float angle = 20.0f * i;
+		tempModelMatrix = glm::rotate(tempModelMatrix, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+		auto tempModelBoundingBox = box.Transformed(tempModelMatrix);
+		totalCubeBoundingBox.Merge(tempModelBoundingBox);
+		vecCubeModelMatrix.emplace_back(tempModelMatrix);
+	}
+	// positions of the point lights
+	glm::vec3 pointLightPositions[] = {
+		glm::vec3(0.7f,  0.2f,  2.0f),
+		glm::vec3(2.3f, -3.3f, -4.0f),
+		glm::vec3(-4.0f,  2.0f, -12.0f),
+		glm::vec3(0.0f,  0.0f, -3.0f)
+	};
+
 	Camera camera;
-	camera.InitCamera(box, 2.5f);
+	camera.InitCamera(totalCubeBoundingBox, 0.8f);
 	// Section2 准备着色器程序
 	Shader shader("multi_lighting.vertex", "multi_lighting.frag");
 	Shader lightCubeShader("light_cube.vertex", "light_cube.frag");
+	//设置平行光参数
 	glm::vec3 ambimentColor (0.05f, 0.05f, 0.05f);
 	glm::vec3 diffuseColor(0.4f, 0.4f, 0.4f);
 	glm::vec3 specularColor(0.5f, 0.5f, 0.5f);
@@ -107,6 +143,24 @@ int main(int argc, char** argv)
 		specularColor, lightDir);
 	shader.use();
 	dirLight.SetLightUniformParam(shader, "directionlight.");
+	//设置点光源参数
+	ambimentColor = glm::vec3(0.05f, 0.05f, 0.05f);
+	diffuseColor = glm::vec3(0.8f, 0.8f, 0.8f);
+	specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	float constant = 1.0f;
+	float linear = 0.09f;
+	float quadratic = 0.032f;
+	vector<PointLight> vecPointLight;
+	for (auto i = 0; i < sizeof(pointLightPositions) / sizeof(glm::vec3); i++)
+	{
+		PointLight pointLight(ambimentColor, diffuseColor, specularColor, pointLightPositions[i]);
+		pointLight.SetAttenuatedConstant(constant);
+		pointLight.SetAttenuatedLinear(linear);
+		pointLight.SetAttenuatedQuadratic(quadratic);
+		string strParamName = string("pointlights[") + to_string(i) + string("].");
+		pointLight.SetLightUniformParam(shader, strParamName);
+	}
+	//设置材质参数
 	shader.setInt("material.diffuse", 0);
 	shader.setInt("material.spacular", 1);
 	shader.setFloat("material.shiness", 256.0f);
@@ -131,20 +185,22 @@ int main(int argc, char** argv)
 		glm::mat4 model(1.f);
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection = camera.GetProjectionMatrix((GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT);
-		shader.setMat4("model", model);
+		
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
-		glm::vec3 center = box.GetCenter();
-		center.y += 3.0f;
-		center.z += 0.3f;
-		shader.setVec3("eyePos", center);
+		shader.setVec3("eyePos", camera.Position);
 	
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseTextureId);
 
 		glActiveTexture(GL_TEXTURE0+1);
 		glBindTexture(GL_TEXTURE_2D, spacularTexureId);
-		glDrawArrays(GL_TRIANGLES, 0, nVertex);
+		for (int i = 0; i < vecCubeModelMatrix.size(); i++)
+		{
+			shader.setMat4("model", vecCubeModelMatrix[i]);
+			glDrawArrays(GL_TRIANGLES, 0, nVertex);
+		}
+		
 
 		/*lightCubeShader.use();
 		
