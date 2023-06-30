@@ -199,8 +199,30 @@ private:
 	float m_cutoffOuterAngle{}; //Õ‚«–π‚Ω«
 };
 //∞Î«Úπ‚
-class HemisphereLight :public Light
+class HemisphereLight:Light
 {
+public:
+	HemisphereLight(glm::vec3& topColor, glm::vec3& groundColor, glm::vec3& direction) :Light()
+	{
+		m_topColor = topColor;
+		m_groundColor = groundColor;
+		m_direction = direction;
+	}
+	virtual bool SetLightUniformParam(Shader& shader, const string& strParaName)
+	{
+		string str;
+		str = strParaName + DIRECTION_PARAM_NAME;
+		shader.setVec3(str, m_direction);
+		str = strParaName + HEMISPHERE_SKY_COLOR;
+		shader.setVec3(str, m_topColor);
+		str = strParaName + HEMISPHERE_GROUND_COLOR;
+		shader.setVec3(str, m_groundColor);
+		return true;
 
+	}
+private:
+	glm::vec3 m_topColor;
+	glm::vec3 m_groundColor;
+	glm::vec3 m_direction;
 };
 #endif

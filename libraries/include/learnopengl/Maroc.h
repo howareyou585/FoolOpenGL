@@ -20,4 +20,7 @@ if (error != 0)\
 #define DIRECTION_PARAM_NAME "direction"
 #define SPOT_LIGHT_CUTOFF_PARAM_NAME "cutoff"
 #define SPOT_LIGHT_OUTER_CUTOFF_PARAM_NAME "outerCutoff"
+
+#define HEMISPHERE_SKY_COLOR "skyColor"
+#define HEMISPHERE_GROUND_COLOR "groundColor"
 #endif
