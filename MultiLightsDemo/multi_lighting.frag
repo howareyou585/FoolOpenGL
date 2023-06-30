@@ -48,7 +48,7 @@ uniform Material material;
 uniform DirctionLight directionlight;
 uniform PointLight pointlights[POINT_NUM];
 uniform SpotLight  spotlight;
-
+uniform bool  enableAttenuation;
 
 vec3 calcDirectionLight(DirctionLight dirLight, vec3 nor, vec3 viewDir);
 vec3 calcSpotLight(SpotLight spotLight, vec3 nor, vec3 fragPos, vec3 viewDir);
@@ -117,9 +117,12 @@ vec3 calcSpotLight(SpotLight light, vec3 nor, vec3 fragPos,vec3 viewDir)
 	vec3 spacularColor = light.spacular*mSpacular*spacularFator;
 	vec3 result = ambientColor + diffuseColor*intensity + spacularColor*intensity;
 	//计算衰减值
-	float distance =  length(light.position - fragPos);
-	float attenuation  = 1.0f/(light.constant+light.linear*distance+light.quadratic*distance*distance);
-	result *= attenuation;
+	if(enableAttenuation)
+	{
+		float distance =  length(light.position - fragPos);
+		float attenuation  = 1.0f/(light.constant+light.linear*distance+light.quadratic*distance*distance);
+		result *= attenuation;
+	}
 	outColor = result;
 	}
 	else
@@ -147,8 +150,12 @@ vec3 calcPointLight(PointLight light, vec3 nor, vec3 fragPos, vec3 viewDir)
 	float spacularFator = pow(max(dot(halfDir, nor), 0.0), material.shiness);
 	vec3 spacularColor = light.spacular*spacular*spacularFator;
 	//计算衰减值
-	float distance =  length(light.position - fragPos);
-	float attenuation  = 1.0f/(light.constant+light.linear*distance+light.quadratic*distance*distance);
+	float attenuation = 1.0f;
+	if(enableAttenuation)
+	{
+		float distance =  length(light.position - fragPos);
+		attenuation  = 1.0f/(light.constant+light.linear*distance+light.quadratic*distance*distance);
+	}
 	vec3 outColor = ambientColor*attenuation + diffuseColor* attenuation+ spacularColor*attenuation;
 	return outColor;
 }

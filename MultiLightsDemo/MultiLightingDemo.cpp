@@ -23,6 +23,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
+bool bEnableAttenuation = true;
 
 int main(int argc, char** argv)
 {
@@ -216,6 +217,8 @@ int main(int argc, char** argv)
 
 		glActiveTexture(GL_TEXTURE0+1);
 		glBindTexture(GL_TEXTURE_2D, spacularTexureId);
+
+		shader.setBool("enableAttenuation", bEnableAttenuation);
 		for (int i = 0; i < vecCubeModelMatrix.size(); i++)
 		{
 			shader.setMat4("model", vecCubeModelMatrix[i]);
@@ -249,5 +252,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
+	}
+	else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+	{
+		bEnableAttenuation = !bEnableAttenuation;
 	}
 }
