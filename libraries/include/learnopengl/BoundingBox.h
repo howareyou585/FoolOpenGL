@@ -5,12 +5,22 @@
 class BoundingBox
 {
 public:
-	BoundingBox():m_minPnt(0.f, 0.f, 0.f),m_maxPnt(0.f, 0.f, 0.f)
+	BoundingBox():m_minPnt(0.f, 0.f, 0.f),m_maxPnt(0.f, 0.f, 0.f),m_defined(false)
 	{}
 	BoundingBox(glm::vec3& minPnt, glm::vec3& maxPnt)
 	{
 		m_minPnt = minPnt;
 		m_maxPnt = maxPnt;
+		m_defined = true;
+	}
+	BoundingBox(const glm::vec3* vertices, unsigned count) :
+		m_defined(false)
+	{
+		Define(vertices, count);
+	}
+	BoundingBox(const BoundingBox& box) :
+		m_minPnt(box.m_minPnt), m_maxPnt(box.m_maxPnt), m_defined(box.m_defined)
+	{
 	}
 	glm::vec3 GetCenter()
 	{
@@ -58,6 +68,42 @@ public:
 		if (box.m_maxPnt.z > m_maxPnt.z)
 			m_maxPnt.z = box.m_maxPnt.z;
 	}
+	/**
+			* @brief Merge a point.
+			*
+			* @param point
+			*/
+	void Merge(const glm::vec3& point)
+	{
+		/*if (!m_defined)
+		{
+			m_minPnt = m_maxPnt = point;
+			m_defined = true;
+			return;
+		}*/
+
+		if (point.x < m_minPnt.x) m_minPnt.x = point.x;
+		if (point.y < m_minPnt.y) m_minPnt.y = point.y;
+		if (point.z < m_minPnt.z) m_minPnt.z = point.z;
+		if (point.x > m_maxPnt.x) m_maxPnt.x = point.x;
+		if (point.y > m_maxPnt.y) m_maxPnt.y = point.y;
+		if (point.z > m_maxPnt.z) m_maxPnt.z = point.z;
+	}
+
+	void Merge(const glm::vec3* vertices, unsigned count)
+	{
+		while (count--)
+			Merge(*vertices++);
+	}
+
+	void BoundingBox::Define(const glm::vec3 * vertices, unsigned count)
+	{
+		m_defined = false;
+		if (!count)
+			return;
+		Merge(vertices, count);
+		m_defined = true;
+	}
 	BoundingBox BoundingBox::Transformed(const glm::mat4& transform)
 	{
 		glm::vec4 minPnt4(m_minPnt.x, m_minPnt.y, m_minPnt.z, 1.0f);
@@ -82,6 +128,7 @@ public:
 public:
 	glm::vec3 m_minPnt;
 	glm::vec3 m_maxPnt;
+	bool m_defined{false};
 };
 
 #endif
