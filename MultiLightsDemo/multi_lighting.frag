@@ -63,6 +63,7 @@ void main()
 	{
 		result+= calcPointLight(pointlights[i],nor,fragPos,eyeDir);
 	}
+	result+= calcSpotLight(spotlight,nor, fragPos, eyeDir);
 	color = vec4(result,1.0f);
 	//color = vec4(1.0f, 0.0f, 0.0f,1.0f);
 }

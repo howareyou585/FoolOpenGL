@@ -68,27 +68,6 @@ public:
 		if (box.m_maxPnt.z > m_maxPnt.z)
 			m_maxPnt.z = box.m_maxPnt.z;
 	}
-	/**
-			* @brief Merge a point.
-			*
-			* @param point
-			*/
-	void Merge(const glm::vec3& point)
-	{
-		/*if (!m_defined)
-		{
-			m_minPnt = m_maxPnt = point;
-			m_defined = true;
-			return;
-		}*/
-
-		if (point.x < m_minPnt.x) m_minPnt.x = point.x;
-		if (point.y < m_minPnt.y) m_minPnt.y = point.y;
-		if (point.z < m_minPnt.z) m_minPnt.z = point.z;
-		if (point.x > m_maxPnt.x) m_maxPnt.x = point.x;
-		if (point.y > m_maxPnt.y) m_maxPnt.y = point.y;
-		if (point.z > m_maxPnt.z) m_maxPnt.z = point.z;
-	}
 
 	void Merge(const glm::vec3* vertices, unsigned count)
 	{
@@ -125,9 +104,11 @@ public:
 	{
 		return m_maxPnt - m_minPnt;
 	}
+	bool IsDefined() { return m_defined; }
 public:
 	glm::vec3 m_minPnt;
 	glm::vec3 m_maxPnt;
+private:
 	bool m_defined{false};
 };
 

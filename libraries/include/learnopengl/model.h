@@ -32,8 +32,9 @@ public:
     vector<Mesh>    meshes;
     string directory;
     bool gammaCorrection;
-	BoundingBox m_boudingBox;
-
+private:
+    BoundingBox m_boudingBox;
+    glm::mat4   m_plcMatrix;
     // constructor, expects a filepath to a 3D model.
     Model(string const &path, bool gamma = false) : gammaCorrection(gamma)
     {
@@ -46,36 +47,43 @@ public:
         for(unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].Draw(shader);
     }
+    
 	BoundingBox& Model::GetBoundingBox()
 	{
-		float len = 0;
-		glm::vec3 minPnt;
-		glm::vec3 maxPnt;
-		for (auto mesh : meshes)
-		{
-			auto& vecVertex = mesh.vertices;
-			for (auto &vertex : vecVertex)
-			{
-				auto& point = vertex.Position;
-				if (point.x < minPnt.x)
-					minPnt.x = point.x;
-				if (point.y < minPnt.y)
-					minPnt.y = point.y;
-				if (point.z < minPnt.z)
-					minPnt.z = point.z;
-				if (point.x > maxPnt.x)
-					maxPnt.x = point.x;
-				if (point.y > maxPnt.y)
-					maxPnt.y = point.y;
-				if (point.z > maxPnt.z)
-					maxPnt.z = point.z;
-			}
-		}
-		m_boudingBox.m_minPnt = minPnt;
-		m_boudingBox.m_maxPnt = maxPnt;
-		return m_boudingBox;
+        if (!m_boudingBox.IsDefined())
+        {
+            ComputeBoundingBox();
+        }
+        return m_boudingBox;
 	}
 private:
+    void ComputeBoundingBox()
+    {
+        glm::vec3 minPnt;
+        glm::vec3 maxPnt;
+        for (auto mesh : meshes)
+        {
+            auto& vecVertex = mesh.vertices;
+            for (auto& vertex : vecVertex)
+            {
+                auto& point = vertex.Position;
+                if (point.x < minPnt.x)
+                    minPnt.x = point.x;
+                if (point.y < minPnt.y)
+                    minPnt.y = point.y;
+                if (point.z < minPnt.z)
+                    minPnt.z = point.z;
+                if (point.x > maxPnt.x)
+                    maxPnt.x = point.x;
+                if (point.y > maxPnt.y)
+                    maxPnt.y = point.y;
+                if (point.z > maxPnt.z)
+                    maxPnt.z = point.z;
+            }
+        }
+        m_boudingBox.m_minPnt = minPnt;
+        m_boudingBox.m_maxPnt = maxPnt;
+    }
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
     void loadModel(string const &path)
     {

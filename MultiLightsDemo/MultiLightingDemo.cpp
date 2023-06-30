@@ -160,12 +160,26 @@ int main(int argc, char** argv)
 		string strParamName = string("pointlights[") + to_string(i) + string("].");
 		pointLight.SetLightUniformParam(shader, strParamName);
 	}
+	//设置聚光灯的参数
+	 // spotLight
+	ambimentColor = glm::vec3(0.0f, 0.0f, 0.0f);
+	diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	float cutOff = glm::cos(glm::radians(12.5f));
+	float outerCutOff = glm::cos(glm::radians(15.0f));
+	//glm::vec3 spotPosition = camera.Position + camera.Front * 2.0f;
+	Spotlight spotlight(ambimentColor, diffuseColor, specularColor, camera.Position, camera.Front, cutOff, outerCutOff);
+	spotlight.SetAttenuatedConstant(constant);
+	spotlight.SetAttenuatedLinear(linear);
+	spotlight.SetAttenuatedQuadratic(quadratic);
+	spotlight.SetLightUniformParam(shader, "spotlight.");
 	//设置材质参数
 	shader.setInt("material.diffuse", 0);
 	shader.setInt("material.spacular", 1);
 	shader.setFloat("material.shiness", 256.0f);
 	shader.unUse();
 
+	float raduis = glm::length(camera.Position - totalCubeBoundingBox.GetCenter());
 	// 
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
@@ -189,7 +203,14 @@ int main(int argc, char** argv)
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 		shader.setVec3("eyePos", camera.Position);
-	
+		
+		float tv = glfwGetTime();
+
+		glm::vec3 lightPos = camera.Position;
+		lightPos.x = raduis * glm::sin(tv);
+		lightPos.z = raduis * fabs(glm::cos(tv));
+		shader.setVec3("spotlight.position", lightPos);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseTextureId);
 
