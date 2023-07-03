@@ -17,10 +17,13 @@
 // 键盘回调函数原型声明
 //void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow *window, Camera & camera);
+void mouseClick_callback(GLFWwindow* window, int button, int action, int mods);
+glm::vec3 GetWorldPosFromViewport(int winX, int winY);
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
 float deltaTime = 0.0f; // 当前帧与上一帧的时间差
 float lastFrame = 0.0f; // 上一帧的时间
+Camera camera;
 int main(int argc, char** argv)
 {
 	
@@ -36,6 +39,7 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	
 
 	// 创建窗口
 	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT,
@@ -46,6 +50,7 @@ int main(int argc, char** argv)
 		glfwTerminate();
 		return -1;
 	}
+	glfwSetMouseButtonCallback(window, mouseClick_callback);
 	// 创建的窗口的context指定为当前context
 	glfwMakeContextCurrent(window);
 
@@ -116,7 +121,7 @@ int main(int argc, char** argv)
 		vecModelMatrix.emplace_back(model);
 	}
 	//float raduis = totalBoundingBox.GetLength()*0.8f;
-	Camera camera;
+	
 	camera.InitCamera(totalBoundingBox,0.8f);
 	float radius = totalBoundingBox.GetLength() * 0.8f;
 	glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
@@ -173,13 +178,15 @@ int main(int argc, char** argv)
 	glfwTerminate();
 	return 0;
 }
-//void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-//{
-//	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-//	{
-//		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
-//	}
-//}
+void mouseClick_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	if ((action == GLFW_PRESS) && (button == GLFW_MOUSE_BUTTON_RIGHT))
+	{
+		double winX{}, winY{};
+		glfwGetCursorPos(window, &winX, &winY);
+		glm::vec3 worldPosition = GetWorldPosFromViewport(winX, winY);
+	}
+}
 void processInput(GLFWwindow *ptrWindow, Camera & camera)
 {
 	if (!ptrWindow)
@@ -221,4 +228,34 @@ void processInput(GLFWwindow *ptrWindow, Camera & camera)
 	{
 		camera.ProcessKeyboard(direction, deltaTime);
 	}
+}
+glm::vec3 GetWorldPosFromViewport(int winX, int winY)
+{
+	float winZ{};
+	glReadPixels((int)winX, (int)(WINDOW_HEIGHT - winY), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
+
+	float x = 2.f * winX / WINDOW_WIDTH - 1.0f; // 将屏幕坐标---->[-1.0f,1.0f]坐标中
+	float y = 1.f - 2.f * winY / WINDOW_HEIGHT; // 将屏幕坐标---->[-1.0f,1.0f]坐标中
+	float z = winZ * 2.f - 1.f;//将坐标从[0,1] ------->[-1.0f,1.0]
+	glm::vec3 worldPosition(0.f, 0.f, 0.f);
+	if (winZ < 1.0f)
+	{
+		glm::vec4 tempPosition;
+		float w = (camera.NearPlane * camera.FarPlane) / (camera.NearPlane * winZ - camera.FarPlane * winZ + camera.FarPlane);
+		tempPosition = glm::vec4(x, y, z, 1.0f);
+		tempPosition *= w;
+		glm::mat4 projectionMatrix = camera.GetProjectionMatrix(((float)WINDOW_WIDTH) / WINDOW_HEIGHT);
+		glm::mat4 viewMatrix = camera.GetViewMatrix();
+		tempPosition = glm::inverse(viewMatrix) * glm::inverse(projectionMatrix) * tempPosition;
+		worldPosition.x = tempPosition.x;
+		worldPosition.y = tempPosition.y;
+		worldPosition.z = tempPosition.z;
+		std::cout << "x:" << tempPosition.x << ",y:" << tempPosition.y << ",z:" << tempPosition.z << std::endl;
+	}
+	else
+	{
+		std::cout << "没有像素选中。" << endl;
+	}
+
+	return worldPosition;
 }
