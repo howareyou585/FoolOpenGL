@@ -8,6 +8,7 @@
 #include "glm/gtx/quaternion.hpp"
 #include <vector>
 #include "BoundingBox.h"
+#include "Ray.h"
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
     FORWARD,
@@ -164,6 +165,21 @@ private:
         // also re-calculate the Right and Up vector
         Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         Up    = glm::normalize(glm::cross(Right, Front));
+    }
+
+    Ray GetRayFromScreenCoord(float x, float y)
+    {
+        //glm::mat4 viewMulpyProjectionInvMatrix = glm::inverse(GetProjectionMatrix() * GetViewMatrix());
+        //将坐标(x,y)从[0,1] 变换到[-1,1]
+        //float rx = 2.f * x - 1.f;
+        //float ry = 1.f - 2.f * y;
+        ////计算射线的
+        //glm::vec3 nearPnt(rx, ry, 0.f);
+        //glm::vec3 farPnt(rx, ry, 1.f);
+        //nearPnt = viewMulpyProjectionInvMatrix * nearPnt
+        //glm::vec3 direction = glm(farPnt - nearPnt);
+        Ray retRay;
+        return retRay;
     }
 
     glm::quat Camera::RotationBetweenVectors(glm::vec3 start, glm::vec3 dest)
