@@ -2,8 +2,8 @@
 
 out vec4 color;
 in vec2 TextCoord;
-uniform sampler2D text;
+uniform sampler2D txt;
 void main()
 {
-	color = texture(text, TextCoord);
+	color = texture(txt, TextCoord);
 }

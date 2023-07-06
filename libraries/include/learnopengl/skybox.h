@@ -9,12 +9,12 @@ using namespace std;
 class SkyBox
 {
 public:
-	SkyBox(const vector<string>& vecFile)
+	SkyBox(vector<string>& vecFile)
 	{
 		m_vecFile.swap(vecFile);
 	}
 	
-	virtual ~SkyBox();
+	virtual ~SkyBox() {}
 	unsigned int LoadCubeMap()
 	{
 		unsigned int textureId;
@@ -31,14 +31,23 @@ public:
 				break;
 			}
 			int  nrComponents;
-			int  width = 0; height = 0;
-			unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+			int  width = 0, height = 0;
+			unsigned char* data = stbi_load(m_vecFile[i].c_str(), &width, &height, &nrComponents, 0);
 			if (data)
 			{
+				GLenum format;
+				if (nrComponents == 1)
+					format = GL_RED;
+				else if (nrComponents == 3)
+					format = GL_RGB;
+				else if (nrComponents == 4)
+					format = GL_RGBA;
+
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_REPEAT);
+				//此次不能用GL_REPEAT，如果使用GL_REPEAT，在面的连接处会有白线
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				stbi_image_free(data);
@@ -55,7 +64,7 @@ public:
 	}
 public:
 	// 指定包围盒的顶点属性 位置
-	GLfloat m_vertices[] = {
+	GLfloat m_vertices[108] = {
 		// 背面
 		-1.0f, 1.0f, -1.0f,		// A
 		-1.0f, -1.0f, -1.0f,	// B
@@ -105,7 +114,7 @@ public:
 		-1.0f, -1.0f, -1.0f,  // B
 	};
 private:
-	vector<string> m_vecFile;
+	std::vector<string> m_vecFile;
 	unsigned int m_textureId;
 };
 #endif
