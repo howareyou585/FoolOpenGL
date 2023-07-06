@@ -78,12 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SkyBox.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="texture.h" />
+    <ClCompile Include="SkyBoxDemo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="scene.frag" />

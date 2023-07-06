@@ -7,7 +7,7 @@
 #include <vector>
 
 // 包含着色器加载库
-#include "shader.h"
+#include "learnopengl/shader.h"
 
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
