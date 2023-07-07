@@ -126,17 +126,18 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);//深度测试
 	//glEnable(GL_CULL_FACE);//剔除面
 	// 开始游戏主循环
-	glm::mat4 projection = camera.GetProjectionMatrix((GLfloat)WINDOW_WIDTH/(GLfloat)WINDOW_HEIGHT);
 	skyboxShader.use();
-	skyboxShader.setMat4("projection", projection);
+	//skyboxShader.setMat4("projection", projection);
 	skyboxShader.setInt("skybox", 0);
 	skyboxShader.unUse();
 
 	cubeShader.use();
-	cubeShader.setMat4("projection", projection);
+	//cubeShader.setMat4("projection", projection);
 	cubeShader.setInt("txt", 0);
 	cubeShader.unUse();
-	
+	glm::mat4 modelMatrix(1.0f);
+	BoundingBox tmpbbox = bbox.Transformed(modelMatrix);
+	camera.Position = tmpbbox.GetCenter() - camera.Front * length;
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -148,13 +149,18 @@ int main(int argc, char** argv)
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+		
 		skyboxVAOBuffer.Bind();
 		skyboxShader.use();
 		glDepthMask(false);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapId);
-		glm::mat4 viewMatrix = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+		glm::mat4 view = camera.GetViewMatrix();
+		glm::mat4 viewMatrix = glm::mat4(glm::mat3(view));
 		skyboxShader.setMat4("view", viewMatrix);
+		
+		glm::mat4 projection = camera.GetProjectionMatrix((GLfloat)WINDOW_WIDTH / (GLfloat)WINDOW_HEIGHT,ZOOM);
+		skyboxShader.setMat4("projection", projection);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		skyboxShader.unUse();
@@ -166,13 +172,11 @@ int main(int argc, char** argv)
 		cubeShader.use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTextureId);
-		glm::mat4 modelMatrix(1.0f);
-		BoundingBox tmpbbox = bbox.Transformed(modelMatrix);
-		camera.Position = tmpbbox.GetCenter() - camera.Front*length;
+		
 		cubeShader.setMat4("model", modelMatrix);
-
-		viewMatrix = camera.GetViewMatrix();
-		cubeShader.setMat4("view", viewMatrix);
+		cubeShader.setMat4("view",  view);
+		projection = camera.GetProjectionMatrix((GLfloat)WINDOW_WIDTH / (GLfloat)WINDOW_HEIGHT);
+		cubeShader.setMat4("projection", projection);
 	
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		cubeShader.unUse();
