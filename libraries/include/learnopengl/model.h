@@ -35,6 +35,7 @@ public:
 private:
     BoundingBox m_boudingBox;
     glm::mat4   m_plcMatrix;
+public:
     // constructor, expects a filepath to a 3D model.
     Model(string const &path, bool gamma = false) : gammaCorrection(gamma)
     {
