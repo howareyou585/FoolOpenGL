@@ -81,6 +81,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextRenderBase", "TextRende
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultiLightsDemo", "MultiLightsDemo\MultiLightsDemo.vcxproj", "{3A667AE7-7534-4BC3-8D30-9703EDB5391E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SkyBoxLastRender", "SkyBoxLastRender\SkyBoxLastRender.vcxproj", "{9D5646F8-8AA6-4B6B-A515-CE5CA5472691}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -323,6 +325,12 @@ Global
 		{3A667AE7-7534-4BC3-8D30-9703EDB5391E}.Release|x64.ActiveCfg = Release|Win32
 		{3A667AE7-7534-4BC3-8D30-9703EDB5391E}.Release|x86.ActiveCfg = Release|Win32
 		{3A667AE7-7534-4BC3-8D30-9703EDB5391E}.Release|x86.Build.0 = Release|Win32
+		{9D5646F8-8AA6-4B6B-A515-CE5CA5472691}.Debug|x64.ActiveCfg = Debug|Win32
+		{9D5646F8-8AA6-4B6B-A515-CE5CA5472691}.Debug|x86.ActiveCfg = Debug|Win32
+		{9D5646F8-8AA6-4B6B-A515-CE5CA5472691}.Debug|x86.Build.0 = Debug|Win32
+		{9D5646F8-8AA6-4B6B-A515-CE5CA5472691}.Release|x64.ActiveCfg = Release|Win32
+		{9D5646F8-8AA6-4B6B-A515-CE5CA5472691}.Release|x86.ActiveCfg = Release|Win32
+		{9D5646F8-8AA6-4B6B-A515-CE5CA5472691}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
