@@ -74,7 +74,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="GeometryShader.frag" />
-    <None Include="GeometryShader.gs" />
+    <None Include="HouseGeometryShader.gs" />
+    <None Include="LineGeometryShader.gs" />
+    <None Include="PointGeometryShader.gs" />
     <None Include="GeometryShader.vertex" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

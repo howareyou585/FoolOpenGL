@@ -15,7 +15,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-
+//map<bool, Shader*> mapState2Shader;
+shared_ptr<Shader> pointShader;
+shared_ptr<Shader> lineShader;
+shared_ptr<Shader> houseShader ;
+shared_ptr<Shader> shader;
 int main(int argc, char** argv)
 {
 	
@@ -83,8 +87,10 @@ int main(int argc, char** argv)
 	auto vaoId = vaoBuffer.GetVAO();
 	auto vboId = vaoBuffer.GetVBO();
 	// Section2 准备着色器程序
-	Shader shader("GeometryShader.vertex", "GeometryShader.frag","GeometryShader.gs");
-
+	pointShader = make_shared<Shader>("GeometryShader.vertex", "GeometryShader.frag", "PointGeometryShader.gs");
+	lineShader = make_shared<Shader>("GeometryShader.vertex", "GeometryShader.frag", "LineGeometryShader.gs");
+	glPointSize(10.0f);
+	shader = lineShader;
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -96,7 +102,7 @@ int main(int argc, char** argv)
 
 		// 这里填写场景绘制代码
 		glBindVertexArray(vaoId);
-		shader.use();
+		shader->use();
 		glDrawArrays(GL_POINTS, 0, 4);
 
 		glBindVertexArray(0);
@@ -116,4 +122,5 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
 	}
+	
 }
