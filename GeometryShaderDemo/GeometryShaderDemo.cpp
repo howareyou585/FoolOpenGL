@@ -89,8 +89,9 @@ int main(int argc, char** argv)
 	// Section2 准备着色器程序
 	pointShader = make_shared<Shader>("GeometryShader.vertex", "GeometryShader.frag", "PointGeometryShader.gs");
 	lineShader = make_shared<Shader>("GeometryShader.vertex", "GeometryShader.frag", "LineGeometryShader.gs");
+	houseShader = make_shared<Shader>("GeometryShader.vertex", "GeometryShader.frag", "HouseGeometryShader.gs");
 	glPointSize(10.0f);
-	shader = lineShader;
+	shader = pointShader;
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -122,5 +123,17 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
 	}
-	
+	else if (key == GLFW_KEY_P && action == GLFW_PRESS)
+	{
+		
+		shader = pointShader;
+	}
+	else if (key == GLFW_KEY_L && action == GLFW_PRESS)
+	{
+		shader = lineShader;
+	}
+	else if (key == GLFW_KEY_H && action == GLFW_PRESS)
+	{
+		shader = houseShader;
+	}
 }
