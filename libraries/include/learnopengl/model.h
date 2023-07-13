@@ -48,7 +48,11 @@ public:
         for(unsigned int i = 0; i < meshes.size(); i++)
             meshes[i].Draw(shader);
     }
-    
+    void MultiInstanceDraw(Shader& shader, int count)
+    {
+        for (unsigned int i = 0; i < meshes.size(); i++)
+            meshes[i].MultiInstanceDraw(shader, count);
+    }
 	BoundingBox& Model::GetBoundingBox()
 	{
         if (!m_boudingBox.IsDefined())

@@ -20,6 +20,7 @@ shared_ptr<Shader> pointShader;
 shared_ptr<Shader> lineShader;
 shared_ptr<Shader> houseShader ;
 shared_ptr<Shader> shader;
+bool bSnowing = false;
 int main(int argc, char** argv)
 {
 	
@@ -104,6 +105,10 @@ int main(int argc, char** argv)
 		// 这里填写场景绘制代码
 		glBindVertexArray(vaoId);
 		shader->use();
+		if (shader == houseShader)
+		{
+			shader->setBool("snowing", bSnowing);
+		}
 		glDrawArrays(GL_POINTS, 0, 4);
 
 		glBindVertexArray(0);
@@ -135,5 +140,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	else if (key == GLFW_KEY_H && action == GLFW_PRESS)
 	{
 		shader = houseShader;
+	}
+	else if (key == GLFW_KEY_N && action == GLFW_PRESS)
+	{
+		bSnowing = !bSnowing;
 	}
 }
