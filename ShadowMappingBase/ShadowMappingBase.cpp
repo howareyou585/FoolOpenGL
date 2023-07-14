@@ -20,10 +20,18 @@
 #include "learnopengl/light.h"
 #include "learnopengl/lightManager.h"
 // 键盘回调函数原型声明
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void processInput(GLFWwindow* window, Camera& camera);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
+float deltaTime = 0.0f; // 当前帧与上一帧的时间差
+float lastFrame = 0.0f; // 上一帧的时间
+float lastX = WINDOW_WIDTH / 2.0f;
+float lastY = WINDOW_HEIGHT / 2.0f;
+bool  bFirstMove = true;
+Camera camera;
 void RenderCube(const Shader& shader, vector<glm::mat4>& vecModelMatrix);
 void RenderPlane(const Shader& shader);
 void RenderQuad(const Shader& shader);
@@ -55,8 +63,17 @@ int main(int argc, char** argv)
 	glfwMakeContextCurrent(window);
 
 	// 注册窗口键盘事件回调函数
-	glfwSetKeyCallback(window, key_callback);
-
+	// 注册窗口鼠标事件回调函数
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+	//首先我们要告诉GLFW，它应该隐藏光标，并捕捉(Capture)它。
+	//捕捉光标表示的是，如果焦点在你的程序上
+	//（译注：即表示你正在操作这个程序，Windows中拥有焦点的程序标题栏通常是有颜色的那个，
+	//而失去焦点的程序标题栏则是灰色的），光标应该停留在窗口中（除非程序失去焦点或者退出）。
+	//我们可以用一个简单地配置调用来完成：
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//在调用这个函数之后，无论我们怎么去移动鼠标，光标都不会显示了，
+	// 它也不会离开窗口。对于FPS摄像机系统来说非常完美。
 	// 初始化GLEW 获取OpenGL函数
 	glewExperimental = GL_TRUE; // 让glew获取所有拓展函数
 	GLenum status = glewInit();
@@ -150,7 +167,7 @@ int main(int argc, char** argv)
 	float boxLength = totalBox.GetLength();
 	glm::vec3 position = center + (boxLength * 2.5f) * glm::vec3(0, 0, 1.0f);
 	//glm::vec3 position(0.f, 0.f, 3.0f);
-	Camera camera(position);
+	camera.SetPosition (position);
 	/*glm::vec3 lightPos = center + (boxLength)*glm::vec3(0, 0, 1.0f);
 	lightPos.y += boxLength * 0.5f;
 	lightPos.x -= boxLength * 0.5f;*/
@@ -198,8 +215,11 @@ int main(int argc, char** argv)
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
+		processInput(window, camera);
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
-
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame; // 上一帧的时间
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		//用户定义的深度framebuffer
@@ -207,6 +227,7 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGTH);
 		// 这里填写场景绘制代码
+		//glCullFace(GL_FRONT); //只对封闭的模型有效果，开放的模型没有效果
 		planeVaoBuffer.Bind();
 		simpleDepthShader.use();
 		glActiveTexture(GL_TEXTURE0);
@@ -219,7 +240,7 @@ int main(int argc, char** argv)
 		RenderCube(simpleDepthShader, vecModelMatrix);
 		cubeVaoBuffer.UnBind();
 		simpleDepthShader.unUse();
-
+		//glCullFace(GL_BACK); //只对封闭的模型有效果，开放的模型没有效果
 		//系统默认的framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		// reset viewport
@@ -272,11 +293,69 @@ void RenderQuad(const Shader& shader)
 {
 
 }
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void processInput(GLFWwindow* ptrWindow, Camera& camera)
 {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	if (!ptrWindow)
 	{
-		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
+		return;
 	}
+	Camera_Movement direction;
+	bool bMove = false;
+	if (glfwGetKey(ptrWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(ptrWindow, true);
+
+	}
+	else if (glfwGetKey(ptrWindow, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		direction = Camera_Movement::FORWARD;
+		bMove = true;
+		//camera.ProcessKeyboard()
+	}
+	else if (glfwGetKey(ptrWindow, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		direction = Camera_Movement::BACKWARD;
+		bMove = true;
+		//camera.ProcessKeyboard()
+	}
+	else if (glfwGetKey(ptrWindow, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		direction = Camera_Movement::LEFT;
+		bMove = true;
+		//camera.ProcessKeyboard()
+	}
+	else if (glfwGetKey(ptrWindow, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		direction = Camera_Movement::RIGHT;
+		bMove = true;
+		//camera.ProcessKeyboard()
+	}
+	if (bMove)
+	{
+		camera.ProcessKeyboard(direction, deltaTime);
+	}
+}
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+	if (bFirstMove)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		bFirstMove = false;
+	}
+
+	float offsetX = xpos - lastX;
+	float offsetY = lastY - ypos; // y 坐标往下越来越大。
+	//std::cout << "lastY="<<lastY <<",ypos =" <<ypos<< ",offsetY =" <<offsetY << endl;
+	//std::cout << "offsetX=" << offsetX << ",offsetY=" << offsetY << std::endl;
+	lastX = xpos;
+	lastY = ypos;
+	camera.ProcessMouseMovement(offsetX, offsetY);
+}
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	//std::cout << "xoffset=" << xoffset << ",yoffset=" << yoffset << std::endl;
+	camera.ProcessMouseScroll(yoffset);
 }
