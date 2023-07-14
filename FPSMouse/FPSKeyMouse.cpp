@@ -146,8 +146,12 @@ int main(int argc, char** argv)
 	int nVertex = sizeof(cubeVertices3) / (sizeof(GLuint) * 5);
 	// 开始游戏主循环
 	glEnable(GL_DEPTH_TEST);
+	//glCullFace(GL_BACK);
 	glm::vec3 targetPos = totalBoundingBox.GetCenter();
 	float distance = glm::length(targetPos - camera.Position);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glLineWidth(5.0f);
+	//glEnable(GL_LINE_SMOOTH);
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
