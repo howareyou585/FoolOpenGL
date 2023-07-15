@@ -150,8 +150,15 @@ int main(int argc, char** argv)
 	glm::vec3 targetPos = totalBoundingBox.GetCenter();
 	float distance = glm::length(targetPos - camera.Position);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//glLineWidth(5.0f);
+	//glLineWidth(2.0f);
+	////启用反走样
+	//glEnable(GL_BLEND);
 	//glEnable(GL_LINE_SMOOTH);
+	//glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_LINE_STIPPLE); 启动虚线模式
+	//glLineStipple(1, 0x24FF);
+
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -181,7 +188,8 @@ int main(int argc, char** argv)
 		for (auto j = 0; j < nModelMatrix; j++)
 		{
 			shader.setMat4("model", vecModelMatrix[j]);
-			glDrawArrays(GL_TRIANGLES, 0, nVertex);
+			//glDrawArrays(GL_TRIANGLES, 0, nVertex);
+			glDrawArrays(GL_LINES, 0, nVertex);
 		}
 		shader.unUse();
 		glBindVertexArray(0);

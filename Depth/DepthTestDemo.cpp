@@ -147,8 +147,8 @@ int main(int argc, char** argv)
 	}
 	//float raduis = totalBoundingBox.GetLength()*0.8f;
 	
-	camera.InitCamera(totalBoundingBox,1.8f);
-	float radius = totalBoundingBox.GetLength() * 1.8f;
+	camera.InitCamera(totalBoundingBox,0.8);
+	float radius = totalBoundingBox.GetLength() * 0.8;
 	
 	// Section2 准备着色器程序
 	Shader shader("depth_test.vertex", "depth_test.frag");
@@ -200,6 +200,8 @@ int main(int argc, char** argv)
 		
 		glBindVertexArray(planeVAOId);
 		glActiveTexture(GL_TEXTURE0);
+		glm::mat4 model(1.0f);
+		shader.setMat4("model", model);
 		glBindTexture(GL_TEXTURE_2D, planeTexId);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		shader.unUse();
@@ -210,7 +212,9 @@ int main(int argc, char** argv)
 	}
 	// 释放资源
 	glDeleteVertexArrays(1, &cubeVAOId);
+	glDeleteVertexArrays(1, &planeVAOId);
 	glDeleteBuffers(1, &cubeVBOId);
+	glDeleteBuffers(1, &planeVBOId);
 	glfwTerminate();
 	return 0;
 }
