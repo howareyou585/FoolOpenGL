@@ -13,9 +13,10 @@
   <ItemGroup>
     <None Include="depth_test.frag" />
     <None Include="depth_test.vertex" />
+    <None Include="outline.frag" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DepthTestDemo.cpp" />
+    <ClCompile Include="Stencil_testing.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5D6FBFE7-6FAE-4C50-858D-9FC6570E4F1D}</ProjectGuid>
