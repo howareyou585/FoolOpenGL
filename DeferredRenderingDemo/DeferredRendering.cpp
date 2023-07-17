@@ -25,9 +25,13 @@ float lastX = WINDOW_WIDTH / 2.0f;
 float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
 Camera camera;
+
+GLuint quadVAOId = 0, quadVBOId = 0;
+bool PrepareQuadBuffer();
+void RenderQuad();
+
 int main(int argc, char** argv)
 {
-	
 	if (!glfwInit())	// 初始化glfw库
 	{
 		std::cout << "Error::GLFW could not initialize GLFW!" << std::endl;
@@ -101,18 +105,18 @@ int main(int argc, char** argv)
 	camera.InitCamera(sceneBoundingBox, 1.8f);
 	auto length = sceneBoundingBox.GetLength() * 1.8f;
 	// Section2 准备着色器程序
-	Shader shader("deferred_shading.vertex", "deferred_shading.frag");
+	Shader shaderGeometryPass("deferred_shading.vertex", "deferred_shading.frag");
 	glm::vec3 ambient(0.3f, 0.3f, 0.3f);
 	glm::vec3 diffuse(0.8f, 0.8f, 0.8f);
 	glm::vec3 spacular(1.0f, 1.0f, 1.0f);
-	shader.use();
-	shader.setVec3("light.ambient", ambient);
-	shader.setVec3("light.diffuse", diffuse);
-	shader.setVec3("light.spacular", spacular);
-	shader.setVec3("material.ambient", ambient);
-	shader.setVec3("spacular", spacular);
-	shader.setFloat("shiness", 256.0f);
-	shader.unUse();
+	shaderGeometryPass.use();
+	shaderGeometryPass.setVec3("light.ambient", ambient);
+	shaderGeometryPass.setVec3("light.diffuse", diffuse);
+	shaderGeometryPass.setVec3("light.spacular", spacular);
+	shaderGeometryPass.setVec3("material.ambient", ambient);
+	shaderGeometryPass.setVec3("spacular", spacular);
+	shaderGeometryPass.setFloat("shiness", 256.0f);
+	shaderGeometryPass.unUse();
 
 	glEnable(GL_DEPTH_TEST);
 	// 开始游戏主循环
@@ -130,25 +134,25 @@ int main(int argc, char** argv)
 
 		// 这里填写场景绘制代码
 		//glBindVertexArray(VAOId);
-		shader.use();
+		shaderGeometryPass.use();
 		/*glm::mat4 modelMatrix(1.0f);
 		shader.setMat4("model", modelMatrix);*/
 		glm::mat4 viewMatrix = camera.GetViewMatrix();
-		shader.setMat4("view", viewMatrix);
+		shaderGeometryPass.setMat4("view", viewMatrix);
 		glm::mat4 projection = camera.GetProjectionMatrix((GLfloat)(WINDOW_WIDTH) / (GLfloat)(WINDOW_HEIGHT));
-		shader.setMat4("projection", projection);
+		shaderGeometryPass.setMat4("projection", projection);
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		shader.setVec3("eyePos", camera.Position);
+		shaderGeometryPass.setVec3("eyePos", camera.Position);
 		float angle = glfwGetTime();
 		
-		shader.setVec3("light.position",glm::vec3(length *glm::sin(angle),
+		shaderGeometryPass.setVec3("light.position",glm::vec3(length *glm::sin(angle),
 			camera.Position.y, length*glm::cos(angle)));
 		for (auto i = 0; i < objectPositions.size(); i++)
 		{
 			glm::mat4 modelMatrix(1.0f);
 			modelMatrix = glm::translate(modelMatrix, objectPositions[i]);
-			shader.setMat4("model", modelMatrix);
-			nanosuit.Draw(shader);
+			shaderGeometryPass.setMat4("model", modelMatrix);
+			nanosuit.Draw(shaderGeometryPass);
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
@@ -161,6 +165,17 @@ int main(int argc, char** argv)
 	glDeleteBuffers(1, &VBOId);*/
 	glfwTerminate();
 	return 0;
+}
+//准备Quad Buffer，将FrameBuffer中的内容填充到quad中。
+bool PrepareQuadBuffer()
+{
+	bool bRet = false;
+	bRet = true;
+	return bRet;
+}
+
+void RenderQuad()
+{
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
