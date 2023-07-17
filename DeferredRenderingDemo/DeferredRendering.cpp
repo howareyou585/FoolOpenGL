@@ -12,6 +12,7 @@
 #include "learnopengl/model.h"
 #include "learnopengl/filesystem.h"
 #include "learnopengl/camera.h"
+#include "learnopengl/fboBuffer.h"
 
 // 键盘回调函数原型声明
 void processInput(GLFWwindow* window, Camera& camera);
@@ -117,6 +118,12 @@ int main(int argc, char** argv)
 	shaderGeometryPass.setVec3("spacular", spacular);
 	shaderGeometryPass.setFloat("shiness", 256.0f);
 	shaderGeometryPass.unUse();
+
+	map<GLenum, AttachmentType> mapColorAttachment;
+	mapColorAttachment[GL_COLOR_ATTACHMENT0] = AttachmentType::Texture;
+	mapColorAttachment[GL_COLOR_ATTACHMENT1] = AttachmentType::Texture;
+	mapColorAttachment[GL_COLOR_ATTACHMENT2] = AttachmentType::Texture;
+	FBOBuffer fboBuffer(mapColorAttachment, true, false);
 
 	glEnable(GL_DEPTH_TEST);
 	// 开始游戏主循环
