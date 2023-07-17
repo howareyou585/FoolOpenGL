@@ -23,12 +23,20 @@ public:
 	bool Create()
 	{
 		bool bRet = false;
+		
 		glGenFramebuffers(1, &m_fboId);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-		GLuint gPostion = 0;
-		GLuint gNormal = 0;
-		GLuint gAlbedoSpace = 0;
-		//todo
+		vector<GLenum> vecAttachment;
+		vecAttachment.reserve(m_mapColorAttachment.size());
+		for (auto it = m_mapColorAttachment.begin(); it != m_mapColorAttachment.end(); it++)
+		{
+			GLuint textureId{};
+			glGenTextures(1, &textureId);
+			glBindTexture(GL_TEXTURE_2D, textureId);
+			//glTexImage2D(GL_TEXTURE_2D,0, GL_RGBA,)
+			glFramebufferTexture2D()
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		return bRet;
 	}
@@ -50,5 +58,7 @@ private:
 	map<GLenum, AttachmentType> m_mapColorAttachment;
 	bool m_bAttachedDepth{};
 	bool m_bAttachedStencil{};
+	int  m_width{};
+	int  m_height{};
 };
 #endif
