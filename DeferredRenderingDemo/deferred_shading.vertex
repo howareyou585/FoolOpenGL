@@ -3,7 +3,7 @@
 layout(location = 0) in vec3 apos;
 layout(location = 1) in vec3 anormal;
 layout(location = 2) in vec2 atex;
-layout(location = 3) in mat4 aInsMatrix;
+uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 out vec2 texcoord;
@@ -12,8 +12,8 @@ out vec3 fragPos;
 void main()
 {
 	texcoord = atex;
-	fragPos = vec3((aInsMatrix*vec4(apos,1.0)));
-	mat3 normalMatrix = mat3(transpose(inverse(aInsMatrix)));
+	fragPos = vec3((model*vec4(apos,1.0)));
+	mat3 normalMatrix = mat3(transpose(inverse(model)));
 	normalDir = normalize(normalMatrix * anormal); 
-	gl_Position = projection* view* aInsMatrix* vec4(apos, 1.0);
+	gl_Position = projection* view* model* vec4(apos, 1.0);
 }

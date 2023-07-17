@@ -19,7 +19,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);// 定义程序常量
 void UpdateInstanceMatrix(vector<glm::mat4>& vecInsMatrix);
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-const int AMOUNT = 100;
 float deltaTime = 0.0f; // 当前帧与上一帧的时间差
 float lastFrame = 0.0f; // 上一帧的时间
 float lastX = WINDOW_WIDTH / 2.0f;
@@ -80,37 +79,27 @@ int main(int argc, char** argv)
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置
 	Model nanosuit(FileSystem::getPath("Model/nanosuit/nanosuit.obj"));
-	// 创建缓存对象
-	//GLuint VAOId =0, VBOId = 0;
-	GLuint insMatrixVBOId;
-	glGenBuffers(1, &insMatrixVBOId);
-	glBindBuffer(GL_ARRAY_BUFFER, insMatrixVBOId);
-	glBufferData(GL_ARRAY_BUFFER, AMOUNT * sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW);
-	for (auto& mesh : nanosuit.meshes)
-	{
-		glBindVertexArray(mesh.VAO);
-		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)0);
-		glEnableVertexAttribArray(3);
-		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 4));
-		glEnableVertexAttribArray(4);
-		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 8));
-		glEnableVertexAttribArray(5);
-		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 12));
-		glEnableVertexAttribArray(6);
-
-		glVertexAttribDivisor(3, 1);
-		glVertexAttribDivisor(4, 1);
-		glVertexAttribDivisor(5, 1);
-		glVertexAttribDivisor(6, 1);
-		glBindVertexArray(mesh.VAO);
-	}
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	std::vector<glm::vec3> objectPositions;
+	objectPositions.push_back(glm::vec3(-10.0, -10.0, -10.0));
+	objectPositions.push_back(glm::vec3(0.0, -10.0, -10.0));
+	objectPositions.push_back(glm::vec3(10.0, -10.0, -10.0));
+	objectPositions.push_back(glm::vec3(-10.0, -10.0, 0.0));
+	objectPositions.push_back(glm::vec3(0.0, -10.0, 0.0));
+	objectPositions.push_back(glm::vec3(10.0, -10.0, 0.0));
+	objectPositions.push_back(glm::vec3(-10.0, -10.0, 10.0));
+	objectPositions.push_back(glm::vec3(0.0, -10.0, 10.0));
+	objectPositions.push_back(glm::vec3(10.0, -10.0, 10.0));
+	BoundingBox sceneBoundingBox;
 	BoundingBox& box = nanosuit.GetBoundingBox();
-	glm::vec3 position = box.GetCenter();
-	float length = box.GetLength()*200;
-	position = position + length * glm::vec3(0.f, 0.f, 1.f);
-	camera.SetPosition(position);
-	
+	glm::mat4 modelMatrix(1.0f);
+	for (auto& item : objectPositions)
+	{
+		glm::mat4 tempModelMatrix = glm::translate(modelMatrix, item);
+		BoundingBox tempBoundingBox = box.Transformed(tempModelMatrix);
+		sceneBoundingBox.Merge(tempBoundingBox);
+	}
+	camera.InitCamera(sceneBoundingBox, 1.8f);
+	auto length = sceneBoundingBox.GetLength() * 1.8f;
 	// Section2 准备着色器程序
 	Shader shader("deferred_shading.vertex", "deferred_shading.frag");
 	glm::vec3 ambient(0.3f, 0.3f, 0.3f);
@@ -124,8 +113,7 @@ int main(int argc, char** argv)
 	shader.setVec3("spacular", spacular);
 	shader.setFloat("shiness", 256.0f);
 	shader.unUse();
-	vector<glm::mat4> vecInsMatrix;
-	vecInsMatrix.reserve(AMOUNT);
+
 	glEnable(GL_DEPTH_TEST);
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
@@ -140,10 +128,6 @@ int main(int argc, char** argv)
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-		UpdateInstanceMatrix(vecInsMatrix);
-		glBindBuffer(GL_ARRAY_BUFFER, insMatrixVBOId);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, vecInsMatrix.size() * sizeof(glm::mat4), vecInsMatrix.data());
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		// 这里填写场景绘制代码
 		//glBindVertexArray(VAOId);
 		shader.use();
@@ -159,8 +143,13 @@ int main(int argc, char** argv)
 		
 		shader.setVec3("light.position",glm::vec3(length *glm::sin(angle),
 			camera.Position.y, length*glm::cos(angle)));
-		nanosuit.MultiInstanceDraw(shader, AMOUNT);
-		//nanosuit.Draw(shader);
+		for (auto i = 0; i < objectPositions.size(); i++)
+		{
+			glm::mat4 modelMatrix(1.0f);
+			modelMatrix = glm::translate(modelMatrix, objectPositions[i]);
+			shader.setMat4("model", modelMatrix);
+			nanosuit.Draw(shader);
+		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);
@@ -172,36 +161,6 @@ int main(int argc, char** argv)
 	glDeleteBuffers(1, &VBOId);*/
 	glfwTerminate();
 	return 0;
-}
-
-void UpdateInstanceMatrix(vector<glm::mat4>& vecInsMatrix)
-{
-	vector<glm::mat4>().swap(vecInsMatrix);
-	srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
-	float radius = 500.0;
-	float offset = 25.0f;
-	for (unsigned int i = 0; i < AMOUNT; i++)
-	{
-		glm::mat4 model = glm::mat4(1.0f);
-		// 1. translation: displace along circle with 'radius' in range [-offset, offset]
-		float angle = (float)i / (float)AMOUNT * 360.0f;
-		float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-		float x = sin(angle) * radius + displacement;
-		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-		float y = displacement * 0.4f; // keep height of asteroid field smaller compared to width of x and z
-		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-		float z = cos(angle) * radius + displacement;
-		model = glm::translate(model, glm::vec3(x, y, z));
-
-		// 2. scale: Scale between 0.05 and 0.25f
-		float scale = static_cast<float>((rand() % 20) / 100.0 + 0.05);
-		model = glm::scale(model, glm::vec3(scale));
-
-		// 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
-		float rotAngle = static_cast<float>((rand() % 360));
-		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
-		vecInsMatrix.emplace_back(model);
-	}
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
