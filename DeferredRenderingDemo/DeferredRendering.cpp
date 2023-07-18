@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置
-	Model nanosuit(FileSystem::getPath("Model/nanosuit/nanosuit.obj"));
+	Model nanosuit(FileSystem::getPath("Model/backpack/backpack.obj"));
 	std::vector<glm::vec3> objectPositions;
 	objectPositions.push_back(glm::vec3(-10.0, -10.0, -10.0));
 	objectPositions.push_back(glm::vec3(0.0, -10.0, -10.0));

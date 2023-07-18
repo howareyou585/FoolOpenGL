@@ -34,8 +34,8 @@ public:
 			glGenTextures(1, &textureId);
 			glBindTexture(GL_TEXTURE_2D, textureId);
 			//glTexImage2D(GL_TEXTURE_2D,0, GL_RGBA,)
-			glFramebufferTexture2D()
-			glBindTexture(GL_TEXTURE_2D, 0);
+		/*	glFramebufferTexture2D()
+			glBindTexture(GL_TEXTURE_2D, 0);*/
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		return bRet;
