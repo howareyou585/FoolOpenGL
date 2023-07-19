@@ -80,7 +80,7 @@
     <None Include="UpdateIndirectDrawCmd.vertex" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AsteroidsUpdateIndirctDrawCommand.cpp" />
+    <ClCompile Include="AsteroidsUpdateIndirctDrawCommand2.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
