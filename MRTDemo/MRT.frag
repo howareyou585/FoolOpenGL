@@ -10,18 +10,18 @@ void main()
 {
 	if(texCoord.x<0.5 && texCoord.y<0.5)
 	{
-		color = texture(tex0,texCoord);
+		color = texture(tex0,texCoord); //Ô­É«
 	}
 	else if(texCoord.x>0.5 && texCoord.y<0.5)
 	{
-		color = texture(tex1,texCoord);
+		color = texture(tex1,texCoord); //ºì
 	}
 	else if(texCoord.x<0.5 && texCoord.y>0.5)
 	{
-		color = texture(tex2,texCoord);
+		color = texture(tex2,texCoord); //ÂÌ
 	}
 	else //if(texCoord.x>0.5 && texCoord.y>0.5)
 	{
-		color = texture(tex3,texCoord);
+		color = texture(tex3,texCoord);//À¶
 	}
 }
