@@ -16,6 +16,8 @@
   <ItemGroup>
     <None Include="deferred_shading.frag" />
     <None Include="deferred_shading.vertex" />
+    <None Include="g_buufer.frag" />
+    <None Include="g_buufer.vertex" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C648DDB0-A780-4396-8427-A3880BEFFB83}</ProjectGuid>

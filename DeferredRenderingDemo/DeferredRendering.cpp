@@ -106,25 +106,80 @@ int main(int argc, char** argv)
 	camera.InitCamera(sceneBoundingBox, 1.8f);
 	auto length = sceneBoundingBox.GetLength() * 1.8f;
 	// Section2 准备着色器程序
-	Shader shaderGeometryPass("deferred_shading.vertex", "deferred_shading.frag");
+	Shader shaderGeometryPass("g_buffer.vertex", "g_buffer.frag");
+	Shader shaderLightingPass("deferred_shading.vertex", "deferred_shading.frag");
 	glm::vec3 ambient(0.3f, 0.3f, 0.3f);
 	glm::vec3 diffuse(0.8f, 0.8f, 0.8f);
 	glm::vec3 spacular(1.0f, 1.0f, 1.0f);
-	shaderGeometryPass.use();
-	shaderGeometryPass.setVec3("light.ambient", ambient);
-	shaderGeometryPass.setVec3("light.diffuse", diffuse);
-	shaderGeometryPass.setVec3("light.spacular", spacular);
-	shaderGeometryPass.setVec3("material.ambient", ambient);
-	shaderGeometryPass.setVec3("spacular", spacular);
-	shaderGeometryPass.setFloat("shiness", 256.0f);
-	shaderGeometryPass.unUse();
+	shaderLightingPass.use();
+	shaderLightingPass.setVec3("light.ambient", ambient);
+	shaderLightingPass.setVec3("light.diffuse", diffuse);
+	shaderLightingPass.setVec3("light.spacular", spacular);
+	shaderLightingPass.setVec3("material.ambient", ambient);
+	shaderLightingPass.setVec3("spacular", spacular);
+	shaderLightingPass.setFloat("shiness", 256.0f);
+	shaderLightingPass.unUse();
 
-	map<GLenum, AttachmentType> mapColorAttachment;
+	/*map<GLenum, AttachmentType> mapColorAttachment;
 	mapColorAttachment[GL_COLOR_ATTACHMENT0] = AttachmentType::Texture;
 	mapColorAttachment[GL_COLOR_ATTACHMENT1] = AttachmentType::Texture;
 	mapColorAttachment[GL_COLOR_ATTACHMENT2] = AttachmentType::Texture;
-	FBOBuffer fboBuffer(mapColorAttachment, true, false);
+	FBOBuffer fboBuffer(mapColorAttachment, true, false);*/
+	//Set up G-Buffer 
+	//3 textures
+	//1.position(RGB)
+	//2.color(RGB)+shiness(A)
+	//3.normal(RGB)
+	GLuint gBufferFrameBufferId;
+	glGenFramebuffers(1, &gBufferFrameBufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, gBufferFrameBufferId);
+	//positon color buffer
+	GLuint gPositionTextureId;
+	glGenTextures(1, &gPositionTextureId);
+	glBindTexture(GL_TEXTURE_2D, gPositionTextureId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPositionTextureId, 0);
+	
+	//normal color buffer
+	GLuint gNormalTextureId;
+	glGenTextures(1, &gNormalTextureId);
+	glBindTexture(GL_TEXTURE_2D, gNormalTextureId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormalTextureId, 0);
+	// color + shiness color buffer
+	GLuint gAlbedoSpecTextureId;
+	glGenTextures(1, &gAlbedoSpecTextureId);
+	glBindTexture(GL_TEXTURE_2D, gAlbedoSpecTextureId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpecTextureId, 0);
+	
+	GLenum attachments[3] = { GL_COLOR_ATTACHMENT0 ,GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, attachments);
 
+	GLuint rboDepthId;
+	glGenRenderbuffers(1, &rboDepthId);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepthId);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepthId);
+	// - Finally check if framebuffer is complete
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "Framebuffer not complete!" << std::endl;
+		return -1;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glEnable(GL_DEPTH_TEST);
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
@@ -134,11 +189,12 @@ int main(int argc, char** argv)
 		lastFrame = currentFrame; // 上一帧的时间
 		processInput(window, camera);
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
-
-		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
+		glBindFramebuffer(GL_FRAMEBUFFER, gBufferFrameBufferId);
+		// 清除颜色缓冲区 重置为指定颜色
+		
+		
+		
 		// 这里填写场景绘制代码
 		//glBindVertexArray(VAOId);
 		shaderGeometryPass.use();
@@ -149,11 +205,7 @@ int main(int argc, char** argv)
 		glm::mat4 projection = camera.GetProjectionMatrix((GLfloat)(WINDOW_WIDTH) / (GLfloat)(WINDOW_HEIGHT));
 		shaderGeometryPass.setMat4("projection", projection);
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		shaderGeometryPass.setVec3("eyePos", camera.Position);
-		float angle = glfwGetTime();
 		
-		shaderGeometryPass.setVec3("light.position",glm::vec3(length *glm::sin(angle),
-			camera.Position.y, length*glm::cos(angle)));
 		for (auto i = 0; i < objectPositions.size(); i++)
 		{
 			glm::mat4 modelMatrix(1.0f);
@@ -161,6 +213,14 @@ int main(int argc, char** argv)
 			shaderGeometryPass.setMat4("model", modelMatrix);
 			nanosuit.Draw(shaderGeometryPass);
 		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		/*shaderGeometryPass.setVec3("eyePos", camera.Position);
+		float angle = glfwGetTime();
+
+		shaderGeometryPass.setVec3("light.position", glm::vec3(length * glm::sin(angle),
+			camera.Position.y, length * glm::cos(angle)));*/
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);

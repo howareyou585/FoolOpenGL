@@ -16,11 +16,11 @@ void main()
 	{
 		color = texture(tex1,texCoord);
 	}
-	else if(texCoord.x>0.5 && texCoord.y>0.5)
+	else if(texCoord.x<0.5 && texCoord.y>0.5)
 	{
 		color = texture(tex2,texCoord);
 	}
-	else
+	else //if(texCoord.x>0.5 && texCoord.y>0.5)
 	{
 		color = texture(tex3,texCoord);
 	}
