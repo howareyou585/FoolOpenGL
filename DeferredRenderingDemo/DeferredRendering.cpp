@@ -13,6 +13,9 @@
 #include "learnopengl/filesystem.h"
 #include "learnopengl/camera.h"
 #include "learnopengl/fboBuffer.h"
+#include "learnopengl/vaobuffer.h"
+#include "learnopengl/vertexset.h"
+#include "learnopengl/light.h"
 
 // 键盘回调函数原型声明
 void processInput(GLFWwindow* window, Camera& camera);
@@ -80,7 +83,8 @@ int main(int argc, char** argv)
 
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
+	PrepareQuadBuffer();
+	
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置
 	Model nanosuit(FileSystem::getPath("Model/backpack/backpack.obj"));
@@ -181,6 +185,12 @@ int main(int argc, char** argv)
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
+	shaderLightingPass.use();
+	shaderLightingPass.setInt("gPosition", 0);
+	shaderLightingPass.setInt("gNormal", 1);
+	shaderLightingPass.setInt("gAlbedoSpec", 2);
+	shaderLightingPass.unUse();
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -189,12 +199,11 @@ int main(int argc, char** argv)
 		lastFrame = currentFrame; // 上一帧的时间
 		processInput(window, camera);
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
-		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
+		
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER, gBufferFrameBufferId);
 		// 清除颜色缓冲区 重置为指定颜色
-		
-		
-		
+	
 		// 这里填写场景绘制代码
 		//glBindVertexArray(VAOId);
 		shaderGeometryPass.use();
@@ -215,12 +224,55 @@ int main(int argc, char** argv)
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//2.Lighing Pass:calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		/*shaderGeometryPass.setVec3("eyePos", camera.Position);
-		float angle = glfwGetTime();
+		
+		//设置点光源参数
 
-		shaderGeometryPass.setVec3("light.position", glm::vec3(length * glm::sin(angle),
-			camera.Position.y, length * glm::cos(angle)));*/
+		const GLuint NR_LIGHTS = 32;
+		std::vector<glm::vec3> lightPositions;
+		std::vector<glm::vec3> lightAmbientColors;
+		std::vector<glm::vec3> lightDiffuseColors;
+		std::vector<glm::vec3> lightSpecularColors;
+		srand(13);
+		for (GLuint i = 0; i < NR_LIGHTS; i++)
+		{
+			// Calculate slightly random offsets
+			GLfloat xPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
+			GLfloat yPos = ((rand() % 100) / 100.0) * 6.0 - 4.0;
+			GLfloat zPos = ((rand() % 100) / 100.0) * 6.0 - 3.0;
+			lightPositions.push_back(glm::vec3(xPos, yPos, zPos));
+			// Also calculate random color
+			GLfloat rColor = ((rand() % 100) / 200.0f) + 0.5; // Between 0.5 and 1.0
+			GLfloat gColor = ((rand() % 100) / 200.0f) + 0.5; // Between 0.5 and 1.0
+			GLfloat bColor = ((rand() % 100) / 200.0f) + 0.5; // Between 0.5 and 1.0
+			lightAmbientColors.push_back(glm::vec3(rColor*0.2, gColor*0.2, bColor*0.2));
+			lightDiffuseColors.push_back(glm::vec3(rColor * 0.8, gColor * 0.8, bColor * 0.8));
+			lightSpecularColors.push_back(glm::vec3(rColor, gColor, bColor));
+		}
+
+		shaderLightingPass.use();
+		float constant = 1.0f;
+		float linear = 0.09f;
+		float quadratic = 0.032f;
+		vector<PointLight> vecPointLight;
+		for (auto i = 0; i < sizeof(lightPositions) / sizeof(glm::vec3); i++)
+		{
+			PointLight pointLight(lightAmbientColors[i], lightDiffuseColors[i], lightSpecularColors[i], lightPositions[i]);
+			pointLight.SetAttenuatedConstant(constant);
+			pointLight.SetAttenuatedLinear(linear);
+			pointLight.SetAttenuatedQuadratic(quadratic);
+			string strParamName = string("lights[") + to_string(i) + string("].");
+			pointLight.SetLightUniformParam(shaderLightingPass, strParamName);
+		}
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, gPositionTextureId);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, gNormalTextureId);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, gAlbedoSpecTextureId);
+		RenderQuad();
+		shaderLightingPass.unUse();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);
@@ -237,12 +289,26 @@ int main(int argc, char** argv)
 bool PrepareQuadBuffer()
 {
 	bool bRet = false;
+	vector<vertex_attribute> vecAttrib;
+	map<vertex_attribute, int> mapAttrib2Size;
+	vecAttrib.emplace_back(vertex_attribute::position);
+	vecAttrib.emplace_back(vertex_attribute::texcoord);
+	mapAttrib2Size[vertex_attribute::position] = 3;
+	mapAttrib2Size[vertex_attribute::texcoord] = 2;
+	VAOBuffer quadVaoBuffer;
+	quadVaoBuffer.BuildVAO(squareVertices, sizeof(squareVertices), squareIndexes, sizeof(squareIndexes), vecAttrib, mapAttrib2Size);
+	// 创建缓存对象
+	quadVAOId = quadVaoBuffer.GetVAO();
+	quadVBOId = quadVaoBuffer.GetVBO();
 	bRet = true;
 	return bRet;
 }
 
 void RenderQuad()
 {
+	glBindVertexArray(quadVAOId);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, squareIndexes);
+	glBindVertexArray(0);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

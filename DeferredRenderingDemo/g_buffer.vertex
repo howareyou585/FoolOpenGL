@@ -1,7 +1,7 @@
 #version 330 core
 layout(location = 0) in vec3 aposition;
-layout(location = 1) in vec3 anoraml;
-layout(location = 1) in vec2 atexcoord;
+layout(location = 1) in vec3 anormal;
+layout(location = 2) in vec2 atexcoord;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
