@@ -12,7 +12,7 @@ void main()
 {
 	postionColor = vec4(fragPos,1.0);
 	normalColor = vec4(normal,1.0);
-	vec3 diffuseColor = texture(texture_diffuse1,texCoord).rgb;
-	float shiness = texture(texture_spacular1,texCoord).r;
-	albedoSpecColor = vec4(diffuseColor,shiness);
+	albedoSpecColor.rgb = texture(texture_diffuse1,texCoord).rgb;
+	albedoSpecColor.a = texture(texture_spacular1,texCoord).r;
+	
 }
