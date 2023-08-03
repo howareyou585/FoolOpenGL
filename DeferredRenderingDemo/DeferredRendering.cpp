@@ -31,7 +31,9 @@ bool  bFirstMove = true;
 Camera camera;
 
 GLuint quadVAOId = 0, quadVBOId = 0;
+GLuint cubeVAOId = 0, cubeVBOId = 0;
 bool PrepareQuadBuffer();
+bool PrepareCubeBuffer();
 void RenderQuad();
 
 int main(int argc, char** argv)
@@ -84,6 +86,7 @@ int main(int argc, char** argv)
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	PrepareQuadBuffer();
+	PrepareCubeBuffer();
 	
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置
@@ -108,17 +111,15 @@ int main(int argc, char** argv)
 		BoundingBox tempBoundingBox = box.Transformed(tempModelMatrix);
 		sceneBoundingBox.Merge(tempBoundingBox);
 	}
-	camera.InitCamera(sceneBoundingBox, 1.8f);
-	auto length = sceneBoundingBox.GetLength() * 1.8f;
+	camera.InitCamera(sceneBoundingBox, 0.8f);
+	auto length = sceneBoundingBox.GetLength() * 0.8f;
 	// Section2 准备着色器程序
 	Shader shaderGeometryPass("g_buffer.vertex", "g_buffer.frag");
 	Shader shaderLightingPass("deferred_shading.vertex", "deferred_shading.frag");
-
+	Shader shaderLightBox("light_box.vertex", "light_box.frag");
 	const GLuint NR_LIGHTS = 32;
 	std::vector<glm::vec3> lightPositions;
-	std::vector<glm::vec3> lightAmbientColors;
-	std::vector<glm::vec3> lightDiffuseColors;
-	std::vector<glm::vec3> lightSpecularColors;
+	std::vector<glm::vec3> lightColors;
 	srand(13);
 	for (GLuint i = 0; i < NR_LIGHTS; i++)
 	{
@@ -131,9 +132,7 @@ int main(int argc, char** argv)
 		GLfloat rColor = ((rand() % 100) / 200.0f) + 0.5; // Between 0.5 and 1.0
 		GLfloat gColor = ((rand() % 100) / 200.0f) + 0.5; // Between 0.5 and 1.0
 		GLfloat bColor = ((rand() % 100) / 200.0f) + 0.5; // Between 0.5 and 1.0
-		lightAmbientColors.push_back(glm::vec3(rColor * 0.2, gColor * 0.2, bColor * 0.2));
-		lightDiffuseColors.push_back(glm::vec3(rColor * 0.8, gColor * 0.8, bColor * 0.8));
-		lightSpecularColors.push_back(glm::vec3(rColor, gColor, bColor));
+		lightColors.push_back(glm::vec3(rColor, gColor, bColor));
 	}
 	float constant = 1.0f;
 	float linear = 0.09f;
@@ -143,13 +142,24 @@ int main(int argc, char** argv)
 	
 	for (auto i = 0; i < lightPositions.size(); i++)
 	{
-		PointLight pointLight(lightAmbientColors[i], lightDiffuseColors[i], lightSpecularColors[i], lightPositions[i]);
+		/*PointLight pointLight(lightAmbientColors[i], lightDiffuseColors[i], lightSpecularColors[i], lightPositions[i]);
 		pointLight.SetAttenuatedConstant(constant);
 		pointLight.SetAttenuatedLinear(linear);
-		pointLight.SetAttenuatedQuadratic(quadratic);
+		pointLight.SetAttenuatedQuadratic(quadratic);*/
 		string strParamName = string("lights[") + to_string(i) + string("].");
-		pointLight.SetLightUniformParam(shaderLightingPass, strParamName);
-		vecPointLight.emplace_back(pointLight);
+		string str = strParamName + POSITION_PARAM_NAME;
+		shaderLightingPass.setVec3(str, lightPositions[i]);
+		str = strParamName + ATTENUATION_CONSTANT_PARAM_NAME;
+		shaderLightingPass.setFloat(str, constant);
+
+		str = strParamName + ATTENUATION_LINEAR_PARAM_NAME;
+		shaderLightingPass.setFloat(str, linear);
+
+		str = strParamName + ATTENUATION_QUADRATIC_PARAM_NAME;
+		shaderLightingPass.setFloat(str, quadratic);
+
+		str = strParamName + "color";
+		shaderLightingPass.setVec3(str, lightColors[i]);
 	}
 	shaderLightingPass.unUse();
 	/*map<GLenum, AttachmentType> mapColorAttachment;
@@ -287,6 +297,23 @@ int main(int argc, char** argv)
 		shaderLightingPass.setVec3("eyePos", camera.Position);
 		RenderQuad();
 		shaderLightingPass.unUse();
+
+		glBindVertexArray(cubeVAOId);
+		shaderLightBox.use();
+		shaderLightBox.setMat4("viewMatrix", viewMatrix);
+		shaderLightBox.setMat4("projectionMatrix", projection);
+		
+		for (auto i = 0; i < lightPositions.size(); i++)
+		{
+			glm::mat4 modelMatrix(1.0f);
+			modelMatrix = glm::translate(modelMatrix, lightPositions[i]);
+			modelMatrix = glm::scale(modelMatrix, glm::vec3(0.25f, 0.125f, 0.125f));
+			shaderLightBox.setMat4("modelMatrix", modelMatrix);
+			shaderLightBox.setVec3("lightColor", lightColors[i]);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		
+		shaderLightBox.unUse();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);
@@ -317,7 +344,23 @@ bool PrepareQuadBuffer()
 	bRet = true;
 	return bRet;
 }
-
+bool PrepareCubeBuffer()
+{
+	bool bRet = false;
+	vector<vertex_attribute> vecAttrib;
+	map<vertex_attribute, int> mapAttrib2Size;
+	vecAttrib.emplace_back(vertex_attribute::position);
+	vecAttrib.emplace_back(vertex_attribute::texcoord);
+	mapAttrib2Size[vertex_attribute::position] = 3;
+	mapAttrib2Size[vertex_attribute::texcoord] = 2;
+	VAOBuffer cubeVaoBuffer;
+	cubeVaoBuffer.BuildVAO(cubeVertices3, sizeof(cubeVertices3), nullptr, 0, vecAttrib, mapAttrib2Size);
+	// 创建缓存对象
+	cubeVAOId = cubeVaoBuffer.GetVAO();
+	cubeVBOId = cubeVaoBuffer.GetVBO();
+	bRet = true;
+	return bRet;
+}
 void RenderQuad()
 {
 	glBindVertexArray(quadVAOId);
