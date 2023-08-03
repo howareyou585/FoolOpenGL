@@ -119,6 +119,7 @@ public:
 	{
 		m_position = position;
 	}
+	
 	virtual ~PointLight()
 	{
 
@@ -128,6 +129,7 @@ public:
 		Light::SetLightUniformParam(shader, strParaName);
 		string str;
 		str = strParaName + POSITION_PARAM_NAME;
+		shader.setVec3(str, m_position);
 		SetAttenuationUniformParam(shader, strParaName);
 		return true;
 

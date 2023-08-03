@@ -10,20 +10,9 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="DeferredRendering.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="deferred_shading.frag" />
-    <None Include="deferred_shading.vertex" />
-    <None Include="g_buffer.frag" />
-    <None Include="g_buffer.vertex" />
-    <None Include="light_box.frag" />
-    <None Include="light_box.vertex" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{C648DDB0-A780-4396-8427-A3880BEFFB83}</ProjectGuid>
-    <RootNamespace>DeferredRenderingDemo</RootNamespace>
+    <ProjectGuid>{70A0C3C0-EE2D-4CB8-A208-F6B86B4238C2}</ProjectGuid>
+    <RootNamespace>DeferredAndForwardRenderingDemo</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -59,7 +48,6 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -80,6 +68,16 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="triangle02.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="shader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="triangle.frag" />
+    <None Include="triangle.vertex" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
