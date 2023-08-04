@@ -18,6 +18,11 @@ public:
 	{
 		Define(vertices, count);
 	}
+	BoundingBox(const float* vertices, unsigned count) :
+		m_defined(false)
+	{
+		Define(vertices, count);
+	}
 	BoundingBox(const BoundingBox& box) :
 		m_minPnt(box.m_minPnt), m_maxPnt(box.m_maxPnt), m_defined(box.m_defined)
 	{
@@ -74,8 +79,22 @@ public:
 		while (count--)
 			Merge(*vertices++);
 	}
-
+	void Merge(const float* vertices, unsigned count)
+	{
+		for (int i = 0; i < count; i += 3)
+		{
+			Merge(glm::vec3(vertices[i], vertices[i+1], vertices[i+2]));
+		}
+	}
 	void BoundingBox::Define(const glm::vec3 * vertices, unsigned count)
+	{
+		m_defined = false;
+		if (!count)
+			return;
+		Merge(vertices, count);
+		m_defined = true;
+	}
+	void BoundingBox::Define(const float* vertices, unsigned count)
 	{
 		m_defined = false;
 		if (!count)
