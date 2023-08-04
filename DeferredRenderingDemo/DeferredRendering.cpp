@@ -206,29 +206,6 @@ int main(int argc, char** argv)
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpecTextureId, 0);
-	
-	//unsigned int gPositionTextureId, gNormalTextureId, gAlbedoSpecTextureId;
-	//// position color buffer
-	//glGenTextures(1, &gPositionTextureId);
-	//glBindTexture(GL_TEXTURE_2D, gPositionTextureId);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_WIDTH, 0, GL_RGBA, GL_FLOAT, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPositionTextureId, 0);
-	//// normal color buffer
-	//glGenTextures(1, &gNormalTextureId);
-	//glBindTexture(GL_TEXTURE_2D, gNormalTextureId);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_WIDTH, 0, GL_RGBA, GL_FLOAT, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormalTextureId, 0);
-	//// color + specular color buffer
-	//glGenTextures(1, &gAlbedoSpecTextureId);
-	//glBindTexture(GL_TEXTURE_2D, gAlbedoSpecTextureId);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WINDOW_WIDTH, WINDOW_WIDTH, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpecTextureId, 0);
 
 	GLenum attachments[3] = { GL_COLOR_ATTACHMENT0 ,GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(3, attachments);
@@ -297,6 +274,17 @@ int main(int argc, char** argv)
 		shaderLightingPass.setVec3("eyePos", camera.Position);
 		RenderQuad();
 		shaderLightingPass.unUse();
+		//copy content of geometry's depth buffer to default framebuffer's depth buffer
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, gBufferFrameBufferId);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		//blit到默认帧缓冲区。请注意，这可能起作用，也可能不起作用，因为FBO和默认帧缓冲区的内部格式必须匹配。
+		//内部格式由实现定义。这适用于我的所有系统，但如果你的系统不适用，你可能需要写信给
+		//深度缓冲区在另一个着色器阶段（或者以某种方式查看以将默认帧缓冲区的内部格式与FBO的内部格式相匹配）。
+		glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
+		// the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the 		
+		// depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
 
 		glBindVertexArray(cubeVAOId);
 		shaderLightBox.use();
@@ -307,7 +295,7 @@ int main(int argc, char** argv)
 		{
 			glm::mat4 modelMatrix(1.0f);
 			modelMatrix = glm::translate(modelMatrix, lightPositions[i]);
-			modelMatrix = glm::scale(modelMatrix, glm::vec3(0.25f, 0.125f, 0.125f));
+			modelMatrix = glm::scale(modelMatrix, glm::vec3(0.125f, 0.125f, 0.125f));
 			shaderLightBox.setMat4("modelMatrix", modelMatrix);
 			shaderLightBox.setVec3("lightColor", lightColors[i]);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
