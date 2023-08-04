@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 	GLuint cubeVAOId = cubeVaoBuffer.GetVAO();
 	GLuint cubeVBOId = cubeVaoBuffer.GetVBO();
 
-	BoundingBox bbox(cubeVertices3, sizeof(cubeVertices3));
+	BoundingBox bbox(cubeVertices3, sizeof(cubeVertices3)/sizeof(float), 5);
 	// 创建stencil缓存对象
 	VAOBuffer stencilVaoBuffer;
 	vecVertexAttrib.clear();

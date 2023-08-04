@@ -18,10 +18,10 @@ public:
 	{
 		Define(vertices, count);
 	}
-	BoundingBox(const float* vertices, unsigned count) :
+	BoundingBox(const float* vertices, unsigned count, unsigned strid) :
 		m_defined(false)
 	{
-		Define(vertices, count);
+		Define(vertices, count, strid);
 	}
 	BoundingBox(const BoundingBox& box) :
 		m_minPnt(box.m_minPnt), m_maxPnt(box.m_maxPnt), m_defined(box.m_defined)
@@ -79,9 +79,9 @@ public:
 		while (count--)
 			Merge(*vertices++);
 	}
-	void Merge(const float* vertices, unsigned count)
+	void Merge(const float* vertices, unsigned count,unsigned strid)
 	{
-		for (int i = 0; i < count; i += 3)
+		for (int i = 0; i < count; i += strid)
 		{
 			Merge(glm::vec3(vertices[i], vertices[i+1], vertices[i+2]));
 		}
@@ -94,12 +94,12 @@ public:
 		Merge(vertices, count);
 		m_defined = true;
 	}
-	void BoundingBox::Define(const float* vertices, unsigned count)
+	void BoundingBox::Define(const float* vertices, unsigned count, unsigned strid)
 	{
 		m_defined = false;
 		if (!count)
 			return;
-		Merge(vertices, count);
+		Merge(vertices, count, strid);
 		m_defined = true;
 	}
 	BoundingBox BoundingBox::Transformed(const glm::mat4& transform)
