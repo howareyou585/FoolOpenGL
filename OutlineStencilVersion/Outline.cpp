@@ -109,15 +109,16 @@ int main(int argc, char** argv)
 	
 	Shader cubeShader("cube.vertex", "cube.frag");
 	Shader planeShader("cube.vertex", "cube.frag");
+	Shader outlineShader("outline.vertex", "outline.frag");
 	
 	//创建相机
 	Camera camera;
-	camera.InitCamera(bbox, 2.5f);
+	camera.InitCamera(bbox, 4.5f);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	/*glEnable(GL_STENCIL_TEST);
+	glEnable(GL_STENCIL_TEST);
 	glStencilFunc(GL_NOTEQUAL, 1, 0xff); 
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);*/
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	// 开始游戏主循环
 	glEnable(GL_CULL_FACE);
@@ -135,6 +136,11 @@ int main(int argc, char** argv)
 	planeShader.setMat4("projection", projection);
 	planeShader.setInt("tex", 0);
 	planeShader.unUse();
+
+	outlineShader.use();
+	outlineShader.setMat4("view", view);
+	outlineShader.setMat4("projection", projection);
+	outlineShader.unUse();
 	
 	while (!glfwWindowShouldClose(window))
 	{
@@ -145,6 +151,8 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
 		glm::mat4 model;
 		//1.绘制地板
+		//禁用模板缓冲区
+		glStencilMask(0x00);
 		glBindVertexArray(planeVAOId);
 		planeShader.use();
 		glActiveTexture(GL_TEXTURE0);
@@ -153,7 +161,8 @@ int main(int argc, char** argv)
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		planeShader.unUse();
 		//2.绘制箱子
-		
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
 		cubeShader.use();
 		glBindVertexArray(cubeVAOId);
 		glActiveTexture(GL_TEXTURE0);
@@ -167,7 +176,26 @@ int main(int argc, char** argv)
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 		cubeShader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		//glStencilMask(0xFF);  // 再次允许写入模板缓冲区 以便下次迭代时清除
+		cubeShader.unUse();
+
+		glStencilMask(0x00);//
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+
+		outlineShader.use();
+		model = glm::mat4();
+		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(1.1f, 1.1f, 1.1f));
+		outlineShader.setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		model = glm::mat4();
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.1f, 1.1f, 1.1f));
+		outlineShader.setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		outlineShader.unUse();
+
+		glStencilMask(0xFF);  // 再次允许写入模板缓冲区 以便下次迭代时清除
 		glBindVertexArray(0);
 		glUseProgram(0);
 

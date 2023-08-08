@@ -76,6 +76,8 @@
     <None Include="cube.vertex" />
     <None Include="floor.frag" />
     <None Include="floor.vertex" />
+    <None Include="outline.frag" />
+    <None Include="outline.vertex" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

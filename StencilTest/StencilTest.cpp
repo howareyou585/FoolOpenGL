@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 	
 	//创建相机
 	Camera camera;
-	camera.InitCamera(bbox, 1.5f);
+	camera.InitCamera(bbox, 3.5f);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_STENCIL_TEST);
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
-		glm::mat4 model;
+		
 		//1.绘制模板
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE,GL_FALSE);// 禁止向颜色缓冲区中写颜色=》导致颜色缓冲区为黑色
 		glDepthMask(GL_FALSE);//禁止向深度缓冲区中写深度值。
@@ -149,22 +149,22 @@ int main(int argc, char** argv)
 		glStencilMask(0xff);
 		glStencilFunc(GL_ALWAYS, 1, 0xff);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
-		
 		// 这里填写场景绘制代码
+		glm::mat4 model;
 		glBindVertexArray(stencilVAOId);
 		stencilShader.use();
-		
 		stencilShader.setMat4 ("model",model);
+
 		
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);// 禁止向颜色缓冲区中写颜色=》导致颜色缓冲区为黑色
-		glDepthMask(GL_TRUE);//禁止向深度缓冲区中写深度值。
+		/*model = glm::scale(model, glm::vec3(2.5f));
+		glDrawArrays(GL_TRIANGLES, 0, 6);*/
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);// 向颜色缓冲区中写颜色
+		glDepthMask(GL_TRUE);//向深度缓冲区中写深度值。
 
 		glStencilMask(0x00);
 		glStencilFunc(GL_EQUAL, 1, 0xFF);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 		//
 		cubeShader.use();
 		glBindVertexArray(cubeVAOId);
