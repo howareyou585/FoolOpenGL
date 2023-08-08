@@ -216,11 +216,14 @@ int main(int argc, char** argv)
 		glBindVertexArray(cubeVAOId);
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, texId2);
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(1.f, 1.f);
 		for (auto j = 0; j < nModelMatrix; j++)
 		{
 			shader.setMat4("model", vecModelMatrix[j]);
 			glDrawArrays(GL_TRIANGLES, 0, nVertex);
 		}
+		glDisable(GL_POLYGON_OFFSET_FILL);
 		shader.unUse();
 		outlineShader.use();
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
