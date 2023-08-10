@@ -74,7 +74,7 @@
     <None Include="cube.vertex" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MSAABase.cpp" />
+    <ClCompile Include="MSAAOffScreen.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
