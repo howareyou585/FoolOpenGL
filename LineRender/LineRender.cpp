@@ -139,6 +139,7 @@ int main(int argc, char** argv)
 	
 	// Section2 准备着色器程序
 	Shader shader("cube.vertex", "cube.frag");
+	Shader lineShader("line.vertex", "line.frag");
 	shader.use();
 	shader.setInt("s_texture", 0);
 	shader.setInt("s_texture2", 1);
@@ -151,13 +152,15 @@ int main(int argc, char** argv)
 	float distance = glm::length(targetPos - camera.Position);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//glLineWidth(2.0f);
-	////启用反走样
-	//glEnable(GL_BLEND);
-	//glEnable(GL_LINE_SMOOTH);
-	//glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glEnable(GL_LINE_STIPPLE); //启动虚线模式
-	//glLineStipple(1, 0x24FF);
+	//启用反走样
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//启动虚线模式
+	glLineStipple(1, 0x24FF);
+	glEnable(GL_LINE_STIPPLE); 
+	
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -185,12 +188,27 @@ int main(int argc, char** argv)
 		glBindTexture(GL_TEXTURE_2D, texId);
 		glActiveTexture(GL_TEXTURE0+1);
 		glBindTexture(GL_TEXTURE_2D, texId2);
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(1.f, 1.f);
 		for (auto j = 0; j < nModelMatrix; j++)
 		{
 			shader.setMat4("model", vecModelMatrix[j]);
 			glDrawArrays(GL_TRIANGLES, 0, nVertex);
-			//glDrawArrays(GL_LINES, 0, nVertex);
 		}
+		glDisable(GL_POLYGON_OFFSET_FILL);
+		lineShader.use();
+		glEnable(GL_POLYGON_OFFSET_LINE);
+		glPolygonOffset(-1.f, -1.f);
+		lineShader.setMat4("view", viewMatrix);
+		lineShader.setMat4("projection", projectionMatrix);
+		for (auto j = 0; j < nModelMatrix; j++)
+		{
+			lineShader.setMat4("model", vecModelMatrix[j]);
+			glDrawArrays(GL_LINES, 0, nVertex);
+		}
+		glDisable(GL_POLYGON_OFFSET_LINE);
+		lineShader.unUse();
+		
 		shader.unUse();
 		glBindVertexArray(0);
 		glUseProgram(0);
