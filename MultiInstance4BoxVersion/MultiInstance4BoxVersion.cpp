@@ -20,13 +20,15 @@ void processInput(GLFWwindow* window, Camera& camera);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);// 定义程序常量
 void UpdateInstanceMatrix(vector<glm::mat4>& vecInsMatrix);
+void UpdateInstanceColor(vector<glm::vec3>& vecInsColor);
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-const int AMOUNT = 10;
+const int AMOUNT = 100;
 float deltaTime = 0.0f; // 当前帧与上一帧的时间差
 float lastFrame = 0.0f; // 上一帧的时间
 float lastX = WINDOW_WIDTH / 2.0f;
 float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
+bool  bSwitchColorVBO = false;
 Camera camera;
 int main(int argc, char** argv)
 {
@@ -106,7 +108,15 @@ int main(int argc, char** argv)
 	
 	vector<glm::mat4>vecCubeModelMatrix;
 	vecCubeModelMatrix.reserve(AMOUNT);
+	vector<glm::vec3>vecCubeModelColor;
+	vector<glm::vec3>vecCubeModelColor2(AMOUNT,glm::vec3(1.0f,1.0f,0.0f));
+	vecCubeModelColor.reserve(AMOUNT);
+	
+
 	UpdateInstanceMatrix(vecCubeModelMatrix);
+	UpdateInstanceColor(vecCubeModelColor);
+	//UpdateInstanceColor(vecCubeModelColor2);
+
 	BoundingBox totalCubeBoundingBox;
 	for (auto & modelMatrix : vecCubeModelMatrix)
 	{
@@ -133,8 +143,26 @@ int main(int argc, char** argv)
 	glVertexAttribDivisor(4, 1);
 	glVertexAttribDivisor(5, 1);
 	glVertexAttribDivisor(6, 1);
+	
+
+	unsigned int insColorVBOId;
+	glGenBuffers(1, &insColorVBOId);
+	glBindBuffer(GL_ARRAY_BUFFER, insColorVBOId);
+	glBufferData(GL_ARRAY_BUFFER, vecCubeModelColor.size() * sizeof(glm::vec3), vecCubeModelColor.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+	glEnableVertexAttribArray(7);
+	glVertexAttribDivisor(7, 1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0); 
+
+	unsigned int insColorVBOId2;
+	glGenBuffers(1, &insColorVBOId2);
+	glBindBuffer(GL_ARRAY_BUFFER, insColorVBOId2);
+	glBufferData(GL_ARRAY_BUFFER, vecCubeModelColor2.size() * sizeof(glm::vec3), vecCubeModelColor2.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+	glEnableVertexAttribArray(7);
+	glVertexAttribDivisor(7, 1);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	// Section2 准备着色器程序
 	Shader shader("instance.vertex", "instance.frag");
 	shader.use();
@@ -158,11 +186,31 @@ int main(int argc, char** argv)
 		processInput(window, camera);
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
 
-		
+		if (bSwitchColorVBO)
+		{
+			glBindVertexArray(vaoId);
+			glBindBuffer(GL_ARRAY_BUFFER, insColorVBOId2);
+			glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+			glEnableVertexAttribArray(7);
+			glVertexAttribDivisor(7, 1);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindVertexArray(0);
+		}
+		else
+		{
+			glBindVertexArray(vaoId);
+			glBindBuffer(GL_ARRAY_BUFFER, insColorVBOId);
+			glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+			glEnableVertexAttribArray(7);
+			glVertexAttribDivisor(7, 1);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindVertexArray(0);
+		}
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 		// 这里填写场景绘制代码
 		glBindVertexArray(vaoId);
+		
 		shader.use();
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, AMOUNT);
 		shader.unUse();
@@ -180,8 +228,8 @@ void UpdateInstanceMatrix(vector<glm::mat4>& vecInsMatrix)
 {
 	vector<glm::mat4>().swap(vecInsMatrix);
 	srand(static_cast<unsigned int>(glfwGetTime())); // initialize random seed
-	float radius = 500.0;
-	float offset = 25.0f;
+	float radius = 5.0;
+	float offset = 0.25f;
 	for (unsigned int i = 0; i < AMOUNT; i++)
 	{
 		glm::mat4 model = glm::mat4(1.0f);
@@ -205,12 +253,26 @@ void UpdateInstanceMatrix(vector<glm::mat4>& vecInsMatrix)
 		vecInsMatrix.emplace_back(model);
 	}
 }
-
+void UpdateInstanceColor(vector<glm::vec3>& vecColor)
+{
+	for (unsigned int i = 0; i < AMOUNT; i++)
+	{
+		// Also calculate random color
+		GLfloat rColor = ((rand() % 100) / 200.0f) + 0.5; // Between 0.5 and 1.0
+		GLfloat gColor = ((rand() % 100) / 200.0f) + 0.5; // Between 0.5 and 1.0
+		GLfloat bColor = ((rand() % 100) / 200.0f) + 0.5; // Between 0.5 and 1.0
+		vecColor.push_back(glm::vec3(rColor, gColor, bColor));
+	}
+}
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
+	}
+	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+	{
+		bSwitchColorVBO = !bSwitchColorVBO;
 	}
 }
 void processInput(GLFWwindow* ptrWindow, Camera& camera)

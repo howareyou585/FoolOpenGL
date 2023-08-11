@@ -10,13 +10,13 @@ uniform mat4 projection;
 out vec2 texcoord;
 out vec3 normalDir;
 out vec3 fragPos;
-//out vec3 color;
+out vec3 color;
 void main()
 {
 	texcoord = atex;
 	fragPos = vec3((aInsMatrix*vec4(apos,1.0)));
 	mat3 normalMatrix = mat3(transpose(inverse(aInsMatrix)));
 	normalDir = normalize(normalMatrix * anormal); 
-	//color = acolor;
+	color = acolor;
 	gl_Position = projection* view* aInsMatrix* vec4(apos, 1.0);
 }
