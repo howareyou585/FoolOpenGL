@@ -124,7 +124,11 @@ int main(int argc, char** argv)
 		totalCubeBoundingBox.Merge(tempBox);
 	}
 	camera.InitCamera(totalCubeBoundingBox, 0.8f);
-
+	auto err = glGetError();
+	if (0 != err)
+	{
+		std::cout << "error" << std::endl;
+	}
 	glBindVertexArray(vaoId);
 	unsigned int insMatrixVBOId;
 	glGenBuffers(1, &insMatrixVBOId);
@@ -143,26 +147,38 @@ int main(int argc, char** argv)
 	glVertexAttribDivisor(4, 1);
 	glVertexAttribDivisor(5, 1);
 	glVertexAttribDivisor(6, 1);
-	
+	glBindVertexArray(0); 
 
 	unsigned int insColorVBOId;
 	glGenBuffers(1, &insColorVBOId);
 	glBindBuffer(GL_ARRAY_BUFFER, insColorVBOId);
 	glBufferData(GL_ARRAY_BUFFER, vecCubeModelColor.size() * sizeof(glm::vec3), vecCubeModelColor.data(), GL_STATIC_DRAW);
-	glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
-	glEnableVertexAttribArray(7);
-	glVertexAttribDivisor(7, 1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0); 
+	//glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+	//glEnableVertexAttribArray(7);
+	//glVertexAttribDivisor(7, 1);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindVertexArray(0); 
 
 	unsigned int insColorVBOId2;
 	glGenBuffers(1, &insColorVBOId2);
 	glBindBuffer(GL_ARRAY_BUFFER, insColorVBOId2);
 	glBufferData(GL_ARRAY_BUFFER, vecCubeModelColor2.size() * sizeof(glm::vec3), vecCubeModelColor2.data(), GL_STATIC_DRAW);
-	glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
-	glEnableVertexAttribArray(7);
-	glVertexAttribDivisor(7, 1);
+	err = glGetError();
+	if (0 != err)
+	{
+		std::cout << "error" << std::endl;
+	}
+	//glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
+	//err = glGetError();
+	//if (0 != err)
+	//{
+	//	std::cout << "error" << std::endl;
+	//}
+	//glEnableVertexAttribArray(7);
+	//
+	//glVertexAttribDivisor(7, 1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 	// Section2 准备着色器程序
 	Shader shader("instance.vertex", "instance.frag");
 	shader.use();
@@ -176,7 +192,7 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	// 清除颜色缓冲区 重置为指定颜色
 	glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
-
+	
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -185,7 +201,7 @@ int main(int argc, char** argv)
 		lastFrame = currentFrame; // 上一帧的时间
 		processInput(window, camera);
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
-
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		if (bSwitchColorVBO)
 		{
 			glBindVertexArray(vaoId);
@@ -195,6 +211,12 @@ int main(int argc, char** argv)
 			glVertexAttribDivisor(7, 1);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindVertexArray(0);
+			auto err = glGetError();
+			if (0 != err)
+			{
+				std::cout << "error" << std::endl;
+			}
+			bSwitchColorVBO = !bSwitchColorVBO;
 		}
 		else
 		{
@@ -205,8 +227,14 @@ int main(int argc, char** argv)
 			glVertexAttribDivisor(7, 1);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glBindVertexArray(0);
+			auto err = glGetError();
+			if (0 != err)
+			{
+				std::cout << "error" << std::endl;
+			}
+			bSwitchColorVBO = !bSwitchColorVBO;
 		}
-		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+		
 
 		// 这里填写场景绘制代码
 		glBindVertexArray(vaoId);
