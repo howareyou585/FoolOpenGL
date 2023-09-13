@@ -108,16 +108,17 @@ int main(int argc, char** argv)
 	}
 	
 	vector<glm::mat4>vecCubeModelMatrix;
+	vector<glm::mat4>vecCubeModelMatrix2;
 	vecCubeModelMatrix.reserve(AMOUNT);
+	vecCubeModelMatrix2.reserve(AMOUNT);
 	vector<glm::vec3>vecCubeModelColor(AMOUNT, glm::vec3(1.0f, 0.0f, 1.0f));
 	vector<glm::vec3>vecCubeModelColor2(AMOUNT,glm::vec3(1.0f,1.0f,0.0f));
-	vecCubeModelColor.reserve(AMOUNT);
 	
 
 	UpdateInstanceMatrix(vecCubeModelMatrix);
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+	UpdateInstanceMatrix(vecCubeModelMatrix2);
 	
-	//UpdateInstanceColor(vecCubeModelColor2);
-
 	BoundingBox totalCubeBoundingBox;
 	for (auto & modelMatrix : vecCubeModelMatrix)
 	{
@@ -130,47 +131,35 @@ int main(int argc, char** argv)
 	{
 		std::cout << "error" << std::endl;
 	}
-	glBindVertexArray(vaoId);
+	
 	unsigned int insMatrixVBOId;
 	glGenBuffers(1, &insMatrixVBOId);
 	glBindBuffer(GL_ARRAY_BUFFER, insMatrixVBOId);
 	glBufferData(GL_ARRAY_BUFFER, vecCubeModelMatrix.size() * sizeof(glm::mat4), vecCubeModelMatrix.data(),GL_STATIC_DRAW);
-	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)0);
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 4));
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 8));
-	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 12));
-	glEnableVertexAttribArray(6);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glVertexAttribDivisor(3, 1);
-	glVertexAttribDivisor(4, 1);
-	glVertexAttribDivisor(5, 1);
-	glVertexAttribDivisor(6, 1);
-	glBindVertexArray(0); 
+	unsigned int insMatrixVBOId2;
+	glGenBuffers(1, &insMatrixVBOId2);
+	glBindBuffer(GL_ARRAY_BUFFER, insMatrixVBOId2);
+	glBufferData(GL_ARRAY_BUFFER, vecCubeModelMatrix2.size() * sizeof(glm::mat4), vecCubeModelMatrix2.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	unsigned int insColorVBOId;
 	glGenBuffers(1, &insColorVBOId);
 	glBindBuffer(GL_ARRAY_BUFFER, insColorVBOId);
 	glBufferData(GL_ARRAY_BUFFER, vecCubeModelColor.size() * sizeof(glm::vec3), vecCubeModelColor.data(), GL_STATIC_DRAW);
-	//glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
-	//glEnableVertexAttribArray(7);
-	//glVertexAttribDivisor(7, 1);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindVertexArray(0); 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	unsigned int insColorVBOId2;
 	glGenBuffers(1, &insColorVBOId2);
 	glBindBuffer(GL_ARRAY_BUFFER, insColorVBOId2);
 	glBufferData(GL_ARRAY_BUFFER, vecCubeModelColor2.size() * sizeof(glm::vec3), vecCubeModelColor2.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	err = glGetError();
 	if (0 != err)
 	{
 		std::cout << "error" << std::endl;
 	}
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 	// Section2 准备着色器程序
 	Shader shader("instance.vertex", "instance.frag");
 	shader.use();
@@ -205,6 +194,23 @@ int main(int argc, char** argv)
 			glEnableVertexAttribArray(7);
 			glVertexAttribDivisor(7, 1);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			glBindBuffer(GL_ARRAY_BUFFER, insMatrixVBOId2);
+			glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)0);
+			glEnableVertexAttribArray(3);
+			glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 4));
+			glEnableVertexAttribArray(4);
+			glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 8));
+			glEnableVertexAttribArray(5);
+			glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 12));
+			glEnableVertexAttribArray(6);
+
+			glVertexAttribDivisor(3, 1);
+			glVertexAttribDivisor(4, 1);
+			glVertexAttribDivisor(5, 1);
+			glVertexAttribDivisor(6, 1);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 			glBindVertexArray(0);
 			auto err = glGetError();
 			if (0 != err)
@@ -224,6 +230,23 @@ int main(int argc, char** argv)
 			glEnableVertexAttribArray(7);
 			glVertexAttribDivisor(7, 1);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			glBindBuffer(GL_ARRAY_BUFFER, insMatrixVBOId);
+			glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)0);
+			glEnableVertexAttribArray(3);
+			glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 4));
+			glEnableVertexAttribArray(4);
+			glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 8));
+			glEnableVertexAttribArray(5);
+			glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (GLvoid*)(sizeof(float) * 12));
+			glEnableVertexAttribArray(6);
+
+			glVertexAttribDivisor(3, 1);
+			glVertexAttribDivisor(4, 1);
+			glVertexAttribDivisor(5, 1);
+			glVertexAttribDivisor(6, 1);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 			glBindVertexArray(0);
 			auto err = glGetError();
 			if (0 != err)
@@ -231,6 +254,7 @@ int main(int argc, char** argv)
 				std::cout << "error" << std::endl;
 			}
 			bSwitchColorVBO = !bSwitchColorVBO;
+			
 		}
 		
 
