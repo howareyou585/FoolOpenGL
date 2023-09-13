@@ -14,6 +14,7 @@
 #include "learnopengl/camera.h"
 #include "learnopengl/vertexset.h"
 #include "learnopengl/vaobuffer.h"
+#include <thread>
 
 // 键盘回调函数原型声明
 void processInput(GLFWwindow* window, Camera& camera);
@@ -108,13 +109,13 @@ int main(int argc, char** argv)
 	
 	vector<glm::mat4>vecCubeModelMatrix;
 	vecCubeModelMatrix.reserve(AMOUNT);
-	vector<glm::vec3>vecCubeModelColor;
+	vector<glm::vec3>vecCubeModelColor(AMOUNT, glm::vec3(1.0f, 0.0f, 1.0f));
 	vector<glm::vec3>vecCubeModelColor2(AMOUNT,glm::vec3(1.0f,1.0f,0.0f));
 	vecCubeModelColor.reserve(AMOUNT);
 	
 
 	UpdateInstanceMatrix(vecCubeModelMatrix);
-	UpdateInstanceColor(vecCubeModelColor);
+	
 	//UpdateInstanceColor(vecCubeModelColor2);
 
 	BoundingBox totalCubeBoundingBox;
@@ -168,15 +169,6 @@ int main(int argc, char** argv)
 	{
 		std::cout << "error" << std::endl;
 	}
-	//glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
-	//err = glGetError();
-	//if (0 != err)
-	//{
-	//	std::cout << "error" << std::endl;
-	//}
-	//glEnableVertexAttribArray(7);
-	//
-	//glVertexAttribDivisor(7, 1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// Section2 准备着色器程序
@@ -206,6 +198,9 @@ int main(int argc, char** argv)
 		{
 			glBindVertexArray(vaoId);
 			glBindBuffer(GL_ARRAY_BUFFER, insColorVBOId2);
+			vecCubeModelColor2.clear();
+			UpdateInstanceColor(vecCubeModelColor2);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, vecCubeModelColor2.size() * sizeof(glm::vec3), vecCubeModelColor2.data());
 			glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
 			glEnableVertexAttribArray(7);
 			glVertexAttribDivisor(7, 1);
@@ -222,6 +217,9 @@ int main(int argc, char** argv)
 		{
 			glBindVertexArray(vaoId);
 			glBindBuffer(GL_ARRAY_BUFFER, insColorVBOId);
+			vecCubeModelColor.clear();
+			UpdateInstanceColor(vecCubeModelColor);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, vecCubeModelColor.size() * sizeof(glm::vec3), vecCubeModelColor.data());
 			glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (GLvoid*)0);
 			glEnableVertexAttribArray(7);
 			glVertexAttribDivisor(7, 1);
@@ -244,6 +242,7 @@ int main(int argc, char** argv)
 		shader.unUse();
 		glBindVertexArray(0);
 		glfwSwapBuffers(window); // 交换缓存
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 	// 释放资源
 	glDeleteVertexArrays(1, &vaoId);
