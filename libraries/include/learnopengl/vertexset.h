@@ -11,6 +11,7 @@ GLfloat squareVertices[] = {
 	-1.0f, 1.0f, 0.0f,  0.0f,1.0f  //3
 };
 GLuint squareIndexes[] = { 0,1,2,2,3,0 };
+GLuint squareIndexes[] = { 0,1,2,2,3,0 };
 float cubeVertices[] = {
 	// positions          // normals           // texture coords
 	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,

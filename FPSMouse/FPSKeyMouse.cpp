@@ -159,6 +159,12 @@ int main(int argc, char** argv)
 	//glEnable(GL_LINE_STIPPLE); //启动虚线模式
 	//glLineStipple(1, 0x24FF);
 
+	shader.use();
+	glm::mat4 uvMatrix(1.0);
+	uvMatrix = glm::rotate(uvMatrix, glm::radians(30.f),glm::vec3(0,0,1));
+	shader.setMat4("uvTransform", uvMatrix);
+	shader.unUse();
+
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();

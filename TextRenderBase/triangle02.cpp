@@ -5,16 +5,25 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
-
+#include <map>
 // 包含着色器加载库
-#include "shader.h"
+#include "glm/glm.hpp"
+#include "learnopengl/shader.h"
+#include "ft2build.h"
+#include FT_FREETYPE_H
 
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-
+struct Character {
+	GLuint     TextureID;  // 字形纹理的ID
+	glm::ivec2 Size;       // 字形大小
+	glm::ivec2 Bearing;    // 从基准线到字形左部/顶部的偏移值
+	GLuint     Advance;    // 原点距下一个字形原点的距离
+};
+std::map<GLchar, Character> mapCharacter;
 int main(int argc, char** argv)
 {
 	
@@ -59,6 +68,12 @@ int main(int argc, char** argv)
 
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	for (GLubyte c = 0; c < 128; c++)
+	{
+		
+	}
 
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置

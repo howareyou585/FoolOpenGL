@@ -5,9 +5,14 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
-
 // 包含着色器加载库
-#include "shader.h"
+#include <glm/glm.hpp>
+#include "learnopengl/shader.h"
+#include "learnopengl/vaoBuffer.h"
+#include "learnopengl/vertexset.h"
+#include "learnopengl/boundingbox.h"
+#include "learnopengl/model.h"
+#include "learnopengl/camera.h"
 
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);

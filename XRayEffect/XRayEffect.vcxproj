@@ -69,7 +69,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="triangle02.cpp" />
+    <ClCompile Include="XRayEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h" />
