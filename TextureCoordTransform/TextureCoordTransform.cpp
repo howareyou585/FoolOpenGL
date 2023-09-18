@@ -108,7 +108,8 @@ int main(int argc, char** argv)
 	shader.use();
 	shader.setInt("tex", 0);
 	glm::mat4 uvTransform(1.0);
-	uvTransform = glm::rotate(uvTransform, glm::radians(-30.f), glm::vec3(0.f, 0.f, 1.f));
+	//uvTransform = glm::translate(uvTransform, glm::vec3(5.f, 5.f, 0.f));
+	uvTransform = glm::rotate(uvTransform, glm::radians(-45.f), glm::vec3(0.f, 0.f, 1.f));
 	shader.setMat4("uvTransform", uvTransform);
 	shader.unUse();
 	// 开始游戏主循环
