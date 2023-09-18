@@ -1,0 +1,12 @@
+#version 330
+
+layout(location = 0) in vec3 aposition;
+layout(location = 1) in vec2 atextcood;
+uniform mat4 uvTransform;
+out vec2 texcoord;
+void main()
+{
+	mat3 uvTransform3 = mat3(uvTransform);
+	texcoord = (uvTransform3* vec3( atextcood.xy,1.0)).xy;
+	gl_Position = vec4(aposition, 1.0);
+}
