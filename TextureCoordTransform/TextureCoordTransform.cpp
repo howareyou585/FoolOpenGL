@@ -126,7 +126,7 @@ int main(int argc, char** argv)
 		shader.use();
 		
 		
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		glBindVertexArray(0);
 		glUseProgram(0);
