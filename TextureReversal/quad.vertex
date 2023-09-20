@@ -1,0 +1,10 @@
+#version 330
+
+layout(location = 0) in vec3 aposition;
+layout(location = 1) in vec2 atexcoord;
+out vec2 texcoord;
+void main()
+{
+	texcoord = atexcoord;
+	gl_Position = vec4(aposition, 1.0);
+}
