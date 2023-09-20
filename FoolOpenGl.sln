@@ -107,6 +107,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureUpdateDemo", "Textur
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureReversal", "TextureReversal\TextureReversal.vcxproj", "{91DB1808-D12C-4584-AEFF-8A31CFBAB6E8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureSwitchBetweenEachOther", "TextureSwitchBetweenEachOther\TextureSwitchBetweenEachOther.vcxproj", "{CA47CD3F-DF2A-49DB-BCBA-8782EAF7F817}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -427,6 +429,12 @@ Global
 		{91DB1808-D12C-4584-AEFF-8A31CFBAB6E8}.Release|x64.ActiveCfg = Release|Win32
 		{91DB1808-D12C-4584-AEFF-8A31CFBAB6E8}.Release|x86.ActiveCfg = Release|Win32
 		{91DB1808-D12C-4584-AEFF-8A31CFBAB6E8}.Release|x86.Build.0 = Release|Win32
+		{CA47CD3F-DF2A-49DB-BCBA-8782EAF7F817}.Debug|x64.ActiveCfg = Debug|Win32
+		{CA47CD3F-DF2A-49DB-BCBA-8782EAF7F817}.Debug|x86.ActiveCfg = Debug|Win32
+		{CA47CD3F-DF2A-49DB-BCBA-8782EAF7F817}.Debug|x86.Build.0 = Debug|Win32
+		{CA47CD3F-DF2A-49DB-BCBA-8782EAF7F817}.Release|x64.ActiveCfg = Release|Win32
+		{CA47CD3F-DF2A-49DB-BCBA-8782EAF7F817}.Release|x86.ActiveCfg = Release|Win32
+		{CA47CD3F-DF2A-49DB-BCBA-8782EAF7F817}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
