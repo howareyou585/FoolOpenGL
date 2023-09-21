@@ -9,9 +9,10 @@
 // 包含着色器加载库
 #include "glm/glm.hpp"
 #include "learnopengl/shader.h"
+#include "learnopengl/vaobuffer.h"
 #include "ft2build.h"
 #include FT_FREETYPE_H
-
+void RenderText(const Shader& shader, const string&text, float x, float y, float scale, glm::vec3 color);
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -68,35 +69,73 @@ int main(int argc, char** argv)
 
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft))
+	{
+		return -1;
+	}
+	FT_Face face;
+	if (FT_New_Face(ft, "../resources/fonts/arial.ttf",0, &face))
+	{
+		return -1;
+	}
+	FT_Set_Pixel_Sizes(face, 0, 48);
+	//禁用字节对齐限制
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//准备128个字符的纹理数据
 	for (GLubyte c = 0; c < 128; c++)
 	{
-		
+		//加载字符对应的字形
+		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+		{
+			std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+			continue;
+		}
+		//生成纹理
+		GLuint textureId;
+		glGenTextures(1, &textureId);
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED,
+			face->glyph->bitmap.width,
+			face->glyph->bitmap.rows,
+			0,
+			GL_RED,
+			GL_UNSIGNED_BYTE,
+			face->glyph->bitmap.buffer);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		Character character = {
+			textureId,
+			glm::vec2(face->glyph->bitmap.width,face->glyph->bitmap.rows),
+			glm::vec2(face->glyph->bitmap_left,face->glyph->bitmap_top)
+		};
+		mapCharacter[c] = character;
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-
+	FT_Done_Face(face);
+	FT_Done_FreeType(ft);
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置
-	GLfloat vertices[] = {
-		-0.5f, 0.0f, 0.0f,
-		0.5f, 0.0f, 0.0f,
-		0.0f, 0.5f, 0.0f
+	GLfloat vertices[24] = {
+		
 	};
+	VAOBuffer vaoBuffer;
+	vector<vertex_attribute> vecAttrib;
+	map<vertex_attribute, int> mapAttrib2Size;
+	vecAttrib.emplace_back(vertex_attribute::position);
+	vecAttrib.emplace_back(vertex_attribute::texcoord);
+
+	mapAttrib2Size[vertex_attribute::position] = 2;
+	mapAttrib2Size[vertex_attribute::texcoord] = 2;
+
+	vaoBuffer.BuildVAO(vertices, sizeof(vertices), nullptr, 0, vecAttrib, mapAttrib2Size);
 	// 创建缓存对象
-	GLuint VAOId, VBOId;
+	GLuint vaoId = vaoBuffer.GetVAO();
+	GLuint vboId = vaoBuffer.GetVBO();
 	// Step1: 创建并绑定VAO对象
-	glGenVertexArrays(1, &VAOId);
-	glBindVertexArray(VAOId);
-	// Step2: 创建并绑定VBO对象
-	glGenBuffers(1, &VBOId);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOId);
-	// Step3: 分配空间 传送数据
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// Step4: 指定解析方式  并启用顶点属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	
 
 	// Section2 准备着色器程序
 	Shader shader("triangle.vertex", "triangle.frag");
@@ -111,7 +150,7 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// 这里填写场景绘制代码
-		glBindVertexArray(VAOId);
+		glBindVertexArray(vaoId);
 		shader.use();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -121,10 +160,14 @@ int main(int argc, char** argv)
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源
-	glDeleteVertexArrays(1, &VAOId);
-	glDeleteBuffers(1, &VBOId);
+	glDeleteVertexArrays(1, &vaoId);
+	glDeleteBuffers(1, &vboId);
 	glfwTerminate();
 	return 0;
+}
+void RenderText(const Shader& shader, const string&text, float x, float y, float scale, glm::vec3 color)
+{
+
 }
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
