@@ -7,6 +7,7 @@
 #include <vector>
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
+#include<glm/gtc/type_ptr.hpp>
 
 // 包含着色器加载库
 #include "learnopengl/shader.h"
@@ -95,6 +96,9 @@ int main(int argc, char** argv)
 	shader.setInt("s_tex1", 0);
 	shader.setInt("s_tex2", 1);
 	shader.unUse();
+	int cnt = 0;
+	int flag = 1;
+	int N = 2000;
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -109,12 +113,37 @@ int main(int argc, char** argv)
 		vaoBuffer.BindEBO();
 		//glBindVertexArray(vaoId);
 		shader.use();
+		
 		glActiveTexture( GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texSnow1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D,texSnow2);
-		glDrawElements(GL_TRIANGLES,4 ,GL_UNSIGNALED,indices);
 
+		cnt += 1;
+		if (cnt > 2 * N)
+		{
+			cnt = 0;
+		}
+		if (cnt == 0 || cnt == N)
+		{
+			flag = -flag;
+		}
+		float time = 0.f;
+		if (flag == 1)
+		{
+			time = cnt * 1.0f / N;
+			
+		}
+		else
+		{
+			time = 2.f - cnt * 1.0f / N;
+		}
+		shader.setFloat("time", time);
+		glm::mat4 transform(1.f);
+		transform = glm::translate(transform, glm::vec3(0.f, 1.0 - cnt * 1.0 / N, 0.0f));
+		shader.setMat4("transform", transform);
+		//glDrawElements(GL_TRIANGLES,6 ,GL_UNSIGNALED,indices);
+		glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(sizeof(indices)), GL_UNSIGNED_INT, 0);
 		vaoBuffer.UnBindEBO();
 		vaoBuffer.UnBind();
 		glUseProgram(0);
