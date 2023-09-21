@@ -138,7 +138,7 @@ int main(int argc, char** argv)
 	
 
 	// Section2 准备着色器程序
-	Shader shader("triangle.vertex", "triangle.frag");
+	Shader shader("TextBase.vertex", "TextBase.frag");
 
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
