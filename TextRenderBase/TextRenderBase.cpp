@@ -8,6 +8,8 @@
 #include <map>
 // 包含着色器加载库
 #include "glm/glm.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "learnopengl/shader.h"
 #include "learnopengl/vaobuffer.h"
 #include "ft2build.h"
@@ -110,7 +112,8 @@ int main(int argc, char** argv)
 		Character character = {
 			textureId,
 			glm::vec2(face->glyph->bitmap.width,face->glyph->bitmap.rows),
-			glm::vec2(face->glyph->bitmap_left,face->glyph->bitmap_top)
+			glm::vec2(face->glyph->bitmap_left,face->glyph->bitmap_top),
+			face->glyph->advance.x
 		};
 		mapCharacter[c] = character;
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -140,7 +143,11 @@ int main(int argc, char** argv)
 
 	// Section2 准备着色器程序
 	Shader shader("TextBase.vertex", "TextBase.frag");
-
+	glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(WINDOW_WIDTH), 0.0f, static_cast<float>(WINDOW_HEIGHT));
+	shader.use();
+	shader.setMat4("projection", projection);
+	//glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	shader.unUse();
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -157,7 +164,7 @@ int main(int argc, char** argv)
 
 		//glBindVertexArray(0);
 		//glUseProgram(0);
-		RenderText(shader, "Hello World!", 25, 25, 1.0f, glm::vec3(0, 0, 0));
+		RenderText(shader, "Hello World!", 25, 25, 1.0f, glm::vec3(0.5, 0.8, 0.2));
 
 		glfwSwapBuffers(window); // 交换缓存
 	}
@@ -171,7 +178,7 @@ void RenderText( Shader& shader, const string&text, float x, float y, float scal
 {
 	glBindVertexArray(vaoId);
 	shader.use();
-
+	shader.setVec3("textColor", color);
 	for (int i = 0; i < text.length(); i++)
 	{
 		Character c = mapCharacter[text[i]];
@@ -182,9 +189,10 @@ void RenderText( Shader& shader, const string&text, float x, float y, float scal
 		//更新VBO
 		GLfloat vertices[6][4] =
 		{
-			{xpos , ypos + h, 0.0f,0.0f}, // 左上角
-			{xpos,ypos,0.0,1.0f}, //左下角
-			{xpos+w, ypos,1.0f,1.0f},//右下角
+			{xpos ,    ypos + h, 0.0f,0.0f}, // 左上角
+			{xpos,     ypos,     0.0,1.0f}, //左下角
+			{xpos+w,   ypos,     1.0f,1.0f},//右下角
+
 			{xpos,     ypos + h,   0.0, 0.0}, // 左上角
 			{xpos + w, ypos,       1.0, 1.0}, // 右下角
 			{xpos + w, ypos + h,   1.0, 0.0}  // 右上角
@@ -193,7 +201,7 @@ void RenderText( Shader& shader, const string&text, float x, float y, float scal
 		glBindTexture(GL_TEXTURE_2D, c.TextureID);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, size(vertices), vertices);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		x +=( c.Advance >> 6) * scale; // （统一单位）Advance的单位为像素的1/64, 小单位大数值=》大单位小数值
 	}

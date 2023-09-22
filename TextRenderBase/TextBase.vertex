@@ -3,8 +3,9 @@
 layout(location = 0) in vec2 aposition;
 layout(location = 1) in vec2 atexcoord;
 out vec2 texcoord;
+uniform mat4 projection;
 void main()
 {
 	texcoord = atexcoord;
-	gl_Position = vec4(vec3(aposition,0.0), 1.0);
+	gl_Position = projection*vec4(vec3(aposition,0.0), 1.0);
 }
