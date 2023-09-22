@@ -12,10 +12,11 @@
 #include "learnopengl/vaobuffer.h"
 #include "ft2build.h"
 #include FT_FREETYPE_H
-void RenderText(const Shader& shader, const string&text, float x, float y, float scale, glm::vec3 color);
+void RenderText( Shader& shader, const string&text, float x, float y, float scale, glm::vec3 color);
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
+GLuint vaoId{};
+GLuint vboId{};
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
 struct Character {
@@ -132,8 +133,8 @@ int main(int argc, char** argv)
 
 	vaoBuffer.BuildVAO(vertices, sizeof(vertices), nullptr, 0, vecAttrib, mapAttrib2Size);
 	// 创建缓存对象
-	GLuint vaoId = vaoBuffer.GetVAO();
-	GLuint vboId = vaoBuffer.GetVBO();
+	vaoId = vaoBuffer.GetVAO();
+	vboId = vaoBuffer.GetVBO();
 	// Step1: 创建并绑定VAO对象
 	
 
@@ -149,13 +150,14 @@ int main(int argc, char** argv)
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// 这里填写场景绘制代码
-		glBindVertexArray(vaoId);
-		shader.use();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//// 这里填写场景绘制代码
+		//glBindVertexArray(vaoId);
+		//shader.use();
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
 
-		glBindVertexArray(0);
-		glUseProgram(0);
+		//glBindVertexArray(0);
+		//glUseProgram(0);
+		RenderText(shader, "Hello World!", 25, 25, 1.0f, glm::vec3(0, 0, 0));
 
 		glfwSwapBuffers(window); // 交换缓存
 	}
@@ -165,9 +167,39 @@ int main(int argc, char** argv)
 	glfwTerminate();
 	return 0;
 }
-void RenderText(const Shader& shader, const string&text, float x, float y, float scale, glm::vec3 color)
+void RenderText( Shader& shader, const string&text, float x, float y, float scale, glm::vec3 color)
 {
+	glBindVertexArray(vaoId);
+	shader.use();
 
+	for (int i = 0; i < text.length(); i++)
+	{
+		Character c = mapCharacter[text[i]];
+		GLfloat xpos = x + c.Bearing.x * scale; //字符的左下角 X分量
+		GLfloat ypos = y - (c.Size.y - c.Bearing.y) * scale;//字符的左下角 Y分量
+		GLfloat w = c.Size.x * scale;
+		GLfloat h = c.Size.y * scale;
+		//更新VBO
+		GLfloat vertices[6][4] =
+		{
+			{xpos , ypos + h, 0.0f,0.0f}, // 左上角
+			{xpos,ypos,0.0,1.0f}, //左下角
+			{xpos+w, ypos,1.0f,1.0f},//右下角
+			{xpos,     ypos + h,   0.0, 0.0}, // 左上角
+			{xpos + w, ypos,       1.0, 1.0}, // 右下角
+			{xpos + w, ypos + h,   1.0, 0.0}  // 右上角
+		};
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, c.TextureID);
+		glBindBuffer(GL_ARRAY_BUFFER, vboId);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, size(vertices), vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		x +=( c.Advance >> 6) * scale; // （统一单位）Advance的单位为像素的1/64, 小单位大数值=》大单位小数值
+	}
+
+	shader.unUse();
+	glBindVertexArray(0);
 }
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
