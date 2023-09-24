@@ -72,9 +72,6 @@
     <ClCompile Include="BlendDemo.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shader.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Blend.frag" />
     <None Include="Blend.vertex" />
   </ItemGroup>
