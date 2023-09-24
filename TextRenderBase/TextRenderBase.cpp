@@ -14,7 +14,7 @@
 #include "learnopengl/vaobuffer.h"
 #include "ft2build.h"
 #include FT_FREETYPE_H
-void RenderText( Shader& shader, const string&text, float x, float y, float scale, glm::vec3 color);
+float RenderText( Shader& shader, const string&text, float x, float y, float scale, glm::vec3 color);
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLuint vaoId{};
@@ -152,6 +152,8 @@ int main(int argc, char** argv)
 	//glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 	shader.unUse();
 	// 开始游戏主循环
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
@@ -168,7 +170,14 @@ int main(int argc, char** argv)
 		//glBindVertexArray(0);
 		//glUseProgram(0);
 		string str = "Hello World!";
-		RenderText(shader, str, 25, 25, 1.0f, glm::vec3(0.5f, 0.8f, 0.2f));
+		//glm::vec3(0.5f, 0.8f, 0.2f)
+		glm::vec3 color(0.5f,0.5f,0.5f);
+		float y = 25.f;
+		for (int i = 0; i < 5; i++)
+		{
+			float height = RenderText(shader, str, 25, y, 1.0f, color);
+			y += height*1.2f;
+		}
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源
@@ -224,12 +233,13 @@ int main(int argc, char** argv)
 //	glBindTexture(GL_TEXTURE_2D, 0);
 //}
 
-void RenderText( Shader& shader, const string&text, float x, float y, float scale, glm::vec3 color)
+float RenderText( Shader& shader, const string&text, float x, float y, float scale, glm::vec3 color)
 {
 	glBindVertexArray(vaoId);
 	glActiveTexture(GL_TEXTURE0);
 	shader.use();
 	shader.setVec3("textColor", color);
+	float maxHeight{};
 	for (int i = 0; i < text.length(); i++)
 	{
 		Character c = mapCharacter[text[i]];
@@ -237,16 +247,17 @@ void RenderText( Shader& shader, const string&text, float x, float y, float scal
 		GLfloat ypos = y - (c.Size.y - c.Bearing.y) * scale;//字符的左下角 Y分量
 		GLfloat w = c.Size.x * scale;
 		GLfloat h = c.Size.y * scale;
+		maxHeight = maxHeight < h ? h : maxHeight;
 		//更新VBO
 		GLfloat vertices[6][4] =
 		{
-			{xpos ,    ypos + h,	0.0f,0.0f}, // 左上角
-			{xpos,     ypos,		0.0,1.0f}, //左下角
-			{xpos+w,   ypos,		1.0f,1.0f},//右下角
+			{xpos ,    ypos + h,	0.0f,	0.0f}, // 左上角
+			{xpos,     ypos,		0.0,	1.0f}, //左下角
+			{xpos+w,   ypos,		1.0f,	1.0f},//右下角
 
-			{xpos,     ypos + h,   0.0, 0.0}, // 左上角
-			{xpos + w, ypos,       1.0, 1.0}, // 右下角
-			{xpos + w, ypos + h,   1.0, 0.0}  // 右上角
+			{xpos,     ypos + h,   0.0,		0.0}, // 左上角
+			{xpos + w, ypos,       1.0,		1.0}, // 右下角
+			{xpos + w, ypos + h,   1.0,		0.0}  // 右上角
 		};
 		
 		glBindTexture(GL_TEXTURE_2D, c.TextureID);
@@ -259,6 +270,7 @@ void RenderText( Shader& shader, const string&text, float x, float y, float scal
 
 	shader.unUse();
 	glBindVertexArray(0);
+	return maxHeight;
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
