@@ -7,5 +7,5 @@ uniform mat4 projection;
 void main()
 {
 	texcoord = atexcoord;
-	gl_Position = projection*vec4(vec3(aposition,0.0), 1.0);
+	gl_Position = projection*vec4(aposition.xy,0.f,1.0f);
 }

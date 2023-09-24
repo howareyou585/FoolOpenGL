@@ -1,8 +1,8 @@
 #version 330
 
 out vec4 color;
-uniform sampler2D s_texture;
-uniform vec3 textColor;
+uniform sampler2D s_texture; //一个是单颜色的字形位图纹理
+uniform vec3 textColor;//颜色纹理
 in vec2 texcoord;
 void main()
 {

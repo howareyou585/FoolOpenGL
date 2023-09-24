@@ -98,7 +98,10 @@ int main(int argc, char** argv)
 		GLuint textureId;
 		glGenTextures(1, &textureId);
 		glBindTexture(GL_TEXTURE_2D, textureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED,
+		glTexImage2D(
+			GL_TEXTURE_2D, 
+			0, 
+			GL_RED,
 			face->glyph->bitmap.width,
 			face->glyph->bitmap.rows,
 			0,
@@ -111,8 +114,8 @@ int main(int argc, char** argv)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		Character character = {
 			textureId,
-			glm::vec2(face->glyph->bitmap.width,face->glyph->bitmap.rows),
-			glm::vec2(face->glyph->bitmap_left,face->glyph->bitmap_top),
+			glm::ivec2(face->glyph->bitmap.width,face->glyph->bitmap.rows),
+			glm::ivec2(face->glyph->bitmap_left,face->glyph->bitmap_top),
 			face->glyph->advance.x
 		};
 		mapCharacter[c] = character;
@@ -154,7 +157,7 @@ int main(int argc, char** argv)
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
 
 		// 清除颜色缓冲区 重置为指定颜色
-		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//// 这里填写场景绘制代码
@@ -164,8 +167,8 @@ int main(int argc, char** argv)
 
 		//glBindVertexArray(0);
 		//glUseProgram(0);
-		RenderText(shader, "Hello World!", 25, 25, 1.0f, glm::vec3(0.5, 0.8, 0.2));
-
+		string str = "Hello World!";
+		RenderText(shader, str, 25, 25, 1.0f, glm::vec3(0.5f, 0.8f, 0.2f));
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源
@@ -174,9 +177,57 @@ int main(int argc, char** argv)
 	glfwTerminate();
 	return 0;
 }
+// render line of text
+// -------------------
+//void RenderText(Shader &shader, const std::string& text, float x, float y, float scale, glm::vec3 color)
+//{
+//	// activate corresponding render state	
+//	shader.use();
+//	glUniform3f(glGetUniformLocation(shader.ID, "textColor"), color.x, color.y, color.z);
+//	glActiveTexture(GL_TEXTURE0);
+//	glBindVertexArray(vaoId);
+//
+//	// iterate through all characters
+//	std::string::const_iterator c;
+//	for (c = text.begin(); c != text.end(); c++)
+//	{
+//		Character ch = mapCharacter[*c];
+//
+//		float xpos = x + ch.Bearing.x * scale;
+//		float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+//
+//		float w = ch.Size.x * scale;
+//		float h = ch.Size.y * scale;
+//		// update VBO for each character
+//		float vertices[6][4] = {
+//			{ xpos,     ypos + h,   0.0f, 0.0f },
+//			{ xpos,     ypos,       0.0f, 1.0f },
+//			{ xpos + w, ypos,       1.0f, 1.0f },
+//
+//			{ xpos,     ypos + h,   0.0f, 0.0f },
+//			{ xpos + w, ypos,       1.0f, 1.0f },
+//			{ xpos + w, ypos + h,   1.0f, 0.0f }
+//		};
+//		// render glyph texture over quad
+//		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+//		// update content of VBO memory
+//		glBindBuffer(GL_ARRAY_BUFFER, vboId);
+//		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
+//
+//		glBindBuffer(GL_ARRAY_BUFFER, 0);
+//		// render quad
+//		glDrawArrays(GL_TRIANGLES, 0, 6);
+//		// now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+//		x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+//	}
+//	glBindVertexArray(0);
+//	glBindTexture(GL_TEXTURE_2D, 0);
+//}
+
 void RenderText( Shader& shader, const string&text, float x, float y, float scale, glm::vec3 color)
 {
 	glBindVertexArray(vaoId);
+	glActiveTexture(GL_TEXTURE0);
 	shader.use();
 	shader.setVec3("textColor", color);
 	for (int i = 0; i < text.length(); i++)
@@ -189,19 +240,19 @@ void RenderText( Shader& shader, const string&text, float x, float y, float scal
 		//更新VBO
 		GLfloat vertices[6][4] =
 		{
-			{xpos ,    ypos + h, 0.0f,0.0f}, // 左上角
-			{xpos,     ypos,     0.0,1.0f}, //左下角
-			{xpos+w,   ypos,     1.0f,1.0f},//右下角
+			{xpos ,    ypos + h,	0.0f,0.0f}, // 左上角
+			{xpos,     ypos,		0.0,1.0f}, //左下角
+			{xpos+w,   ypos,		1.0f,1.0f},//右下角
 
 			{xpos,     ypos + h,   0.0, 0.0}, // 左上角
 			{xpos + w, ypos,       1.0, 1.0}, // 右下角
 			{xpos + w, ypos + h,   1.0, 0.0}  // 右上角
 		};
-		glActiveTexture(GL_TEXTURE0);
+		
 		glBindTexture(GL_TEXTURE_2D, c.TextureID);
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, size(vertices), vertices);
-		//glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); //此处把sizeof(vertices) 写成 size(vertices) 调试了好久没有找到问题
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		x +=( c.Advance >> 6) * scale; // （统一单位）Advance的单位为像素的1/64, 小单位大数值=》大单位小数值
 	}
@@ -209,6 +260,7 @@ void RenderText( Shader& shader, const string&text, float x, float y, float scal
 	shader.unUse();
 	glBindVertexArray(0);
 }
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
