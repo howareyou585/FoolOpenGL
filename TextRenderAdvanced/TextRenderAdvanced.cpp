@@ -5,19 +5,29 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
-#include <glm/glm.hpp>
+#include <map>
 // 包含着色器加载库
+#include "glm/glm.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "learnopengl/shader.h"
+#include "learnopengl/Character.h"
+#include "learnopengl/vaobuffer.h"
+#include "ft2build.h"
+#include FT_FREETYPE_H
 
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
+GLuint vaoId{};
+GLuint vboId{};
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
+Character g_charMap[1 << 16];
+
 
 int main(int argc, char** argv)
 {
-	
+
 	if (!glfwInit())	// 初始化glfw库
 	{
 		std::cout << "Error::GLFW could not initialize GLFW!" << std::endl;
@@ -51,41 +61,25 @@ int main(int argc, char** argv)
 	GLenum status = glewInit();
 	if (status != GLEW_OK)
 	{
-		std::cout << "Error::GLEW glew version:" << glewGetString(GLEW_VERSION) 
+		std::cout << "Error::GLEW glew version:" << glewGetString(GLEW_VERSION)
 			<< " error string:" << glewGetErrorString(status) << std::endl;
 		glfwTerminate();
 		return -1;
 	}
 
+	TextureFont textureFont("../resources/fonts/arial.ttf", 16);
+	
+
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	// Section1 准备顶点数据
-	// 指定顶点属性数据 顶点位置
-	GLfloat vertices[] = {
-		-0.5f, 0.0f, 0.0f,
-		0.5f, 0.0f, 0.0f,
-		0.0f, 0.5f, 0.0f
-	};
-	// 创建缓存对象
-	GLuint VAOId, VBOId;
-	// Step1: 创建并绑定VAO对象
-	glGenVertexArrays(1, &VAOId);
-	glBindVertexArray(VAOId);
-	// Step2: 创建并绑定VBO对象
-	glGenBuffers(1, &VBOId);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOId);
-	// Step3: 分配空间 传送数据
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// Step4: 指定解析方式  并启用顶点属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
 	// Section2 准备着色器程序
-	Shader shader("triangle.vertex", "triangle.frag");
-
+	Shader shader("TextAdvanced.vertex", "TextAdvanced.frag");
+	glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(WINDOW_WIDTH), 0.0f, static_cast<float>(WINDOW_HEIGHT));
+	shader.use();
+	shader.setMat4("projection", projection);
+	//glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	shader.unUse();
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -94,20 +88,12 @@ int main(int argc, char** argv)
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		// 这里填写场景绘制代码
-		glBindVertexArray(VAOId);
-		shader.use();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		glBindVertexArray(0);
-		glUseProgram(0);
-
+		//todo
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源
-	glDeleteVertexArrays(1, &VAOId);
-	glDeleteBuffers(1, &VBOId);
+	glDeleteVertexArrays(1, &vaoId);
+	glDeleteBuffers(1, &vboId);
 	glfwTerminate();
 	return 0;
 }
