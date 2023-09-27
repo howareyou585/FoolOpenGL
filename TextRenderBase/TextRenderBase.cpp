@@ -76,9 +76,9 @@ int main(int argc, char** argv)
 
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-	//IntilizeAscIIText();
-	string str("hahhaaa");
-	IntilizeUnicodeText(str);
+	IntilizeAscIIText();
+	/*string str("hahhaaa");
+	IntilizeUnicodeText(str);*/
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置
 	GLfloat vertices[24] = {
@@ -118,16 +118,16 @@ int main(int argc, char** argv)
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//string str = "Hello World!";
+		string str = "Hello World!";
 		glm::vec3 color(0.5f,0.5f,0.5f);
-	/*	float y = 25.f;
+		float y = 25.f;
 		for (int i = 0; i < 5; i++)
 		{
 			float height = RenderText(shader, str, 25, y, 1.0f, color);
 			y += height*1.2f;
-		}*/
-		wstring strtext = L"我是中国人";
-		RenderText(shader, strtext, 25, 25, 1.0f, color);
+		}
+		/*wstring strtext = L"我是中国人";
+		RenderText(shader, strtext, 25, 25, 1.0f, color);*/
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源
@@ -184,6 +184,7 @@ int IntilizeAscIIText()
 		return -1;
 	}
 	FT_Set_Pixel_Sizes(face, 0, 48);
+	
 	//禁用字节对齐限制
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	//准备128个字符的纹理数据
@@ -222,6 +223,11 @@ int IntilizeAscIIText()
 		mapCharacter[c] = character;
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+	//FT_Matrix matrix;
+	//FT_Vector delta;
+	//delta.x = 100;
+	//delta.y = 100;
+	//FT_Set_Transform(face, &matrix, &delta);
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);
 }

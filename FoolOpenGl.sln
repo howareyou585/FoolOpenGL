@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.902
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.33927.289
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SkyBox", "SkyBox\SkyBox.vcxproj", "{6126BC25-73CD-4C59-8824-A121BF4E8D6D}"
 EndProject
@@ -112,6 +112,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextRenderAdvanced", "TextRenderAdvanced\TextRenderAdvanced.vcxproj", "{54F0F1B9-591F-4FFE-B47E-DFD3A3E83DFF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlendDemo", "BlendDemo\BlendDemo.vcxproj", "{BC3B95F4-BD86-4A63-93C6-E39737F51E66}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlendAdvancedDemo", "BlendAdvancedDemo\BlendAdvancedDemo.vcxproj", "{24CD23CE-EA61-44CA-89BD-F55FB1769488}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -451,6 +453,12 @@ Global
 		{BC3B95F4-BD86-4A63-93C6-E39737F51E66}.Release|x64.ActiveCfg = Release|Win32
 		{BC3B95F4-BD86-4A63-93C6-E39737F51E66}.Release|x86.ActiveCfg = Release|Win32
 		{BC3B95F4-BD86-4A63-93C6-E39737F51E66}.Release|x86.Build.0 = Release|Win32
+		{24CD23CE-EA61-44CA-89BD-F55FB1769488}.Debug|x64.ActiveCfg = Debug|Win32
+		{24CD23CE-EA61-44CA-89BD-F55FB1769488}.Debug|x86.ActiveCfg = Debug|Win32
+		{24CD23CE-EA61-44CA-89BD-F55FB1769488}.Debug|x86.Build.0 = Debug|Win32
+		{24CD23CE-EA61-44CA-89BD-F55FB1769488}.Release|x64.ActiveCfg = Release|Win32
+		{24CD23CE-EA61-44CA-89BD-F55FB1769488}.Release|x86.ActiveCfg = Release|Win32
+		{24CD23CE-EA61-44CA-89BD-F55FB1769488}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
