@@ -115,6 +115,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlendDemo", "BlendDemo\Blen
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlendAdvancedDemo", "BlendAdvancedDemo\BlendAdvancedDemo.vcxproj", "{24CD23CE-EA61-44CA-89BD-F55FB1769488}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlendAdvancedDemoVer2", "BlendAdvancedDemoVer2\BlendAdvancedDemoVer2.vcxproj", "{82613CD2-49AA-4658-81B1-14D5F3040979}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -459,6 +461,12 @@ Global
 		{24CD23CE-EA61-44CA-89BD-F55FB1769488}.Release|x64.ActiveCfg = Release|Win32
 		{24CD23CE-EA61-44CA-89BD-F55FB1769488}.Release|x86.ActiveCfg = Release|Win32
 		{24CD23CE-EA61-44CA-89BD-F55FB1769488}.Release|x86.Build.0 = Release|Win32
+		{82613CD2-49AA-4658-81B1-14D5F3040979}.Debug|x64.ActiveCfg = Debug|Win32
+		{82613CD2-49AA-4658-81B1-14D5F3040979}.Debug|x86.ActiveCfg = Debug|Win32
+		{82613CD2-49AA-4658-81B1-14D5F3040979}.Debug|x86.Build.0 = Debug|Win32
+		{82613CD2-49AA-4658-81B1-14D5F3040979}.Release|x64.ActiveCfg = Release|Win32
+		{82613CD2-49AA-4658-81B1-14D5F3040979}.Release|x86.ActiveCfg = Release|Win32
+		{82613CD2-49AA-4658-81B1-14D5F3040979}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

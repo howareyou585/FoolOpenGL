@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{24CD23CE-EA61-44CA-89BD-F55FB1769488}</ProjectGuid>
+    <ProjectGuid>{82613CD2-49AA-4658-81B1-14D5F3040979}</ProjectGuid>
     <RootNamespace>BlendDemo</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -69,11 +69,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BlendAdvancedDemo.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="BlendAdvance.frag" />
     <None Include="BlendAdvance.vertex" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BlendAdvancedDemoVer2.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

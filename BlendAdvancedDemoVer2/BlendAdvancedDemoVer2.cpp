@@ -127,18 +127,18 @@ int main(int argc, char** argv)
 	}
 	BoundingBox totalBoundingBox;
 	
-	//vector<glm::mat4> vecModelMatrix;
-	map<glm::mat4*,BoundingBox> mapModelMtx2BoundingBox;
+	vector<glm::mat4> vecModelMatrix;
+
 	int nModelMatrix = sizeof(vegetation)/sizeof(glm::vec3) ;
-	//vecModelMatrix.reserve(nModelMatrix);
+	vecModelMatrix.reserve(nModelMatrix);
 	for (int i = 0; i < nModelMatrix; i++)
 	{
-		glm::mat4* ptrModel = new glm::mat4(1.0f);
-		*ptrModel = glm::translate(*ptrModel, vegetation[i]);
-		BoundingBox tmpBoundingBox = box.Transformed(*ptrModel);
+		glm::mat4 model(1.0f);
+		model = glm::translate(model, vegetation[i]);
+		BoundingBox tmpBoundingBox = box.Transformed(model);
 		totalBoundingBox.Merge(tmpBoundingBox);
-		//vecModelMatrix.emplace_back(model);
-		mapModelMtx2BoundingBox[ptrModel] = tmpBoundingBox;
+		vecModelMatrix.emplace_back(model);
+		
 	}
 	//float raduis = totalBoundingBox.GetLength()*0.8f;
 
@@ -146,7 +146,7 @@ int main(int argc, char** argv)
 	float radius = totalBoundingBox.GetLength() * 0.8f;
 
 	// Section2 准备着色器程序
-	Shader shader("BlendAdvance.vertex", "BlendAdvance.frag");
+	Shader shader("BlendAdvanceVer2.vertex", "BlendAdvanceVer2.frag");
 	shader.use();
 	shader.setInt("s_texture", 0);
 	shader.unUse();
@@ -182,12 +182,10 @@ int main(int argc, char** argv)
 		glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
 		shader.setMat4("projection", projectionMatrix);
 
-		for (auto it = mapModelMtx2BoundingBox.begin(); it != mapModelMtx2BoundingBox.end(); it++)
+		for (int i = 0;i< nModelMatrix; i++)
 		{
-			auto& bbox = it->second;
-			auto center = bbox.GetCenter();
-			auto dist = glm::distance(center, targetPos);
-			mapDistance2Matrix[dist] = *(it->first);
+			auto dist = glm::distance(camera.Position, vegetation[i]);
+			mapDistance2Matrix[dist] = vecModelMatrix[i];
 		}
 
 		glActiveTexture(GL_TEXTURE0);
