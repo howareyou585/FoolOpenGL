@@ -158,7 +158,7 @@ int main(int argc, char** argv)
 	//glCullFace(GL_BACK);
 	glm::vec3 targetPos = totalBoundingBox.GetCenter();
 	float distance = glm::length(targetPos - camera.Position);
-	map<float, glm::mat4> mapDistance2Matrix;
+	
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -181,20 +181,21 @@ int main(int argc, char** argv)
 		shader.setMat4("view", viewMatrix);
 		glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
 		shader.setMat4("projection", projectionMatrix);
-
+		map<float, glm::mat4> mapDistance2Matrix;
 		for (auto it = mapModelMtx2BoundingBox.begin(); it != mapModelMtx2BoundingBox.end(); it++)
 		{
 			auto& bbox = it->second;
 			auto center = bbox.GetCenter();
-			auto dist = glm::distance(center, targetPos);
+			auto dist = glm::length(center - camera.Position);
 			mapDistance2Matrix[dist] = *(it->first);
 		}
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texWindowId);
-		for (auto it = mapDistance2Matrix.begin(); it!=mapDistance2Matrix.end();it++)
+		//先绘制远处的透明模型，在绘制近处的透明模型
+		for (auto rit = mapDistance2Matrix.begin(); rit!=mapDistance2Matrix.end();rit++)
 		{
-			shader.setMat4("model", it->second);
+			shader.setMat4("model", rit->second);
 			glDrawArrays(GL_TRIANGLES, 0, nVertex);
 			//glDrawArrays(GL_LINES, 0, nVertex);
 		}

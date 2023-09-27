@@ -184,15 +184,16 @@ int main(int argc, char** argv)
 
 		for (int i = 0;i< nModelMatrix; i++)
 		{
-			auto dist = glm::distance(camera.Position, vegetation[i]);
+			auto dist = glm::length(camera.Position - vegetation[i]);
 			mapDistance2Matrix[dist] = vecModelMatrix[i];
 		}
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texWindowId);
-		for (auto it = mapDistance2Matrix.begin(); it!=mapDistance2Matrix.end();it++)
+		//先绘制远处的透明模型，在绘制近处的透明模型
+		for (auto rit = mapDistance2Matrix.rbegin(); rit!=mapDistance2Matrix.rend();rit++)
 		{
-			shader.setMat4("model", it->second);
+			shader.setMat4("model", rit->second);
 			glDrawArrays(GL_TRIANGLES, 0, nVertex);
 			//glDrawArrays(GL_LINES, 0, nVertex);
 		}

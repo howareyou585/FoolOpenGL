@@ -5,6 +5,5 @@ uniform sampler2D s_texture;
 in vec2 texcoord;
 void main()
 {
-	vec4 texColor = texture(s_texture, texcoord);
-	color = texColor;
+	color = texture(s_texture, texcoord);
 }
