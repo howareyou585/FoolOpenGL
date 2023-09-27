@@ -16,9 +16,10 @@
 #include "ft2build.h"
 #include FT_FREETYPE_H
 int IntilizeAscIIText();
-int IntilizeUnicodeText(string& text);
+int IntilizeAscIITexts(string& text);
+
 float RenderText(Shader& shader, const string&text,   float x, float y, float scale, glm::vec3 color);
-void RenderText(Shader& shader, const wstring& text, float x, float y, float scale, glm::vec3 color);
+void RenderTexts(Shader& shader, const string& text,  float x, float y, float scale, glm::vec3 color);
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLuint vaoId{};
@@ -137,7 +138,7 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-void RenderText(Shader& shader, const wstring& text, float x, float y, float scale, glm::vec3 color)
+void RenderTexts(Shader& shader, const string& text, float x, float y, float scale, glm::vec3 color)
 {
 	glBindVertexArray(vaoId);
 	glBindBuffer(GL_ARRAY_BUFFER, vboId);
@@ -232,7 +233,7 @@ int IntilizeAscIIText()
 	FT_Done_FreeType(ft);
 }
 
-int IntilizeUnicodeText(string& text)
+int IntilizeAscIITexts(string& text)
 {
 	int ret = -1;
 	FT_Library ft;

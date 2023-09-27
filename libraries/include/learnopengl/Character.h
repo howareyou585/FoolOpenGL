@@ -12,8 +12,8 @@ public:
         y0          =   0;
         x1          =   0;
         y1          =   0;
-        offsetX = 0;
-        offsetY = 0;
+        offsetX     =   0;
+        offsetY     =   0;
     }
 
     unsigned short   x0;
