@@ -1,8 +1,18 @@
 #ifndef CHARACTER_H
 #define CHARACTER_H
+#include<vector>
 #include "ft2build.h"
 #include "freetype/ftglyph.h"
 #include FT_FREETYPE_H
+using namespace std;
+typedef struct  vertexData
+{
+    float x;
+    float y;
+    float z;
+    float u;
+    float v;
+} VertexData;
 class   Character
 {
 public:
@@ -15,24 +25,20 @@ public:
         offsetX     =   0;
         offsetY     =   0;
     }
-
-    unsigned short   x0;
-    unsigned short   y0;
-    unsigned short   x1;
-    unsigned short   y1;
+    //存储当前字符在纹理上的坐标位置
+    unsigned short   x0 = 10;
+    unsigned short   y0 = 10;
+    unsigned short   x1 = 10;
+    unsigned short   y1 = 10;
     unsigned int   offsetX : 10;
     unsigned int   offsetY : 10;
 };
-class   float5
-{
-public:
-    float   x, y, z;
-    float   u, v;
-};
+
 
 class TextureFont
 {
 public:
+    
     TextureFont(const char* ptrFontFile, int fontSize)
     {
         if (!ptrFontFile)
@@ -150,14 +156,13 @@ public:
         return  &m_character[ch];
     }
 
-    void DrawText(float x, float y, const wchar_t* ptrText)
+    bool  GetVertexData(float x, float y, const wchar_t* ptrText,vector<VertexData> & vecVertexData)
     {
+        bool bret = false;
         if (!ptrText)
         {
-            return;
+            return bret;
         }
-        typedef float TextVertex[5];
-        TextVertex vert[1024] = {};
         float       texWidth = 1024;
         float       texHeight = 1024;
         float       xStart = x;
@@ -177,46 +182,51 @@ public:
             float       offset = (float(h) - float(ch->offsetY));
             float       offsetX = float(ch->offsetX);
 
-
+            VertexData vd;
             /**
             *   第一个点
             */
-            vert[index + 0][0] = xStart;
-            vert[index + 0][1] = yStart - h + offset;
-            vert[index + 0][2] = zStart;
-            vert[index + 0][3] = ch->x0 / texWidth;
-            vert[index + 0][4] = ch->y0 / texHeight;
+            vd.x = xStart;
+            vd.y = yStart - h + offset;
+            vd.z = zStart;
+            vd.u = ch->x0 / texWidth;
+            vd.v = ch->y0 / texHeight;
+            vecVertexData.emplace_back(vd);
             /**
             *   第二个点
             */
-            vert[index + 1][0] = xStart + w;
-            vert[index + 1][1] = yStart - h + offset;
-            vert[index + 1][2] = zStart;
-            vert[index + 1][3] = ch->x1 / texWidth;
-            vert[index + 1][4] = ch->y0 / texHeight;
-
+        
+            vd.x = xStart + w;
+            vd.y = yStart - h + offset;
+            vd.z = zStart;
+            vd.u = ch->x1 / texWidth;
+            vd.v = ch->y0 / texHeight;
+            vecVertexData.emplace_back(vd);
             /**
             *   第三个点
             */
-            vert[index + 2][0] = xStart + w;
-            vert[index + 2][1] = yStart + offset;
-            vert[index + 2][2] = zStart;
-            vert[index + 2][3] = ch->x1 / texWidth;
-            vert[index + 2][4] = ch->y1 / texHeight;
-
+         
+            vd.x = xStart + w;
+            vd.y = yStart + offset;
+            vd.z = zStart;
+            vd.u = ch->x1 / texWidth;
+            vd.v = ch->y1 / texHeight;
+            vecVertexData.emplace_back(vd);
 
             /**
             *   第四个点
             */
-            vert[index + 3][0] = xStart;
-            vert[index + 3][1] = yStart + offset;
-            vert[index + 3][2] = zStart;
-            vert[index + 3][3] = ch->x0 / texWidth;
-            vert[index + 3][4] = ch->y1 / texHeight;
-
+           
+            vd.x = xStart;
+            vd.y = yStart + offset;
+            vd.z = zStart;
+            vd.u = ch->x0 / texWidth;
+            vd.v = ch->y1 / texHeight;
+            vecVertexData.emplace_back(vd);
             index += 4;
             xStart += w + (ch->offsetX);
         }
+        bret = vecVertexData.size() > 0;
     }
 protected:
     Character m_character[1 << 16];

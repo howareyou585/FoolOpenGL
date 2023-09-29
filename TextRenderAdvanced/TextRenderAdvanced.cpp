@@ -23,8 +23,7 @@ GLuint vboId{};
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
 Character g_charMap[1 << 16];
-
-
+TextureFont* ptrTextureFont;
 int main(int argc, char** argv)
 {
 
@@ -67,9 +66,23 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	TextureFont textureFont("../resources/fonts/arial.ttf", 16);
+	ptrTextureFont = new TextureFont("../resources/fonts/arial.ttf", 16);
 	
-
+	vector<VertexData>vecVertexData;
+	wstring strText = L"中秋快乐!";
+	if (!ptrTextureFont->GetVertexData(10, 10, strText.c_str(), vecVertexData))
+	{
+		return -1;
+	}
+	VAOBuffer vaoBuffer;
+	vector<vertex_attribute> vecVertexAttrib;
+	vecVertexAttrib.emplace_back(vertex_attribute::position);
+	vecVertexAttrib.emplace_back(vertex_attribute::texcoord);
+	map<vertex_attribute, int> mapVertexAttrib2Length;
+	mapVertexAttrib2Length[vertex_attribute::position] = 3;
+	mapVertexAttrib2Length[vertex_attribute::texcoord] = 2;
+	vaoBuffer.BuildVAO((float*)(vecVertexData.data()), vecVertexData.size() * sizeof(VertexData), nullptr, 0, vecVertexAttrib, mapVertexAttrib2Length);
+	//根据vecVertexData
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
