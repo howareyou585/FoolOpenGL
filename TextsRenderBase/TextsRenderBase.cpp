@@ -16,6 +16,7 @@
 #include "ft2build.h"
 #include FT_FREETYPE_H
 int IntilizeAscIIText(const string&  strText, int x, int y);
+int IntilizeAscIIText2(const string& strText, int x, int y);
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLuint vaoId{};
@@ -24,13 +25,13 @@ GLuint vboId{};
 GLuint textureId{};
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-//struct Character {
-//	GLuint     TextureID;  // 字形纹理的ID
-//	glm::ivec2 Size;       // 字形大小
-//	glm::ivec2 Bearing;    // 从基准线到字形左部/顶部的偏移值
-//	GLuint     Advance;    // 原点距下一个字形原点的距离
-//};
-//std::map<GLchar, Character> mapCharacter;
+struct Character {
+	GLuint     TextureID;  // 字形纹理的ID
+	glm::ivec2 Size;       // 字形大小
+	glm::ivec2 Bearing;    // 从基准线到字形左部/顶部的偏移值
+	GLuint     Advance;    // 原点距下一个字形原点的距离
+};
+std::map<GLchar, Character> mapCharacter;
 struct CharBitmap
 {
 	glm::ivec2 Size;       // 字形大小
@@ -105,7 +106,7 @@ int main(int argc, char** argv)
 	vboId = vaoBuffer.GetVBO();
 
 	string stText("hello world");
-	IntilizeAscIIText(stText,25,25);
+	IntilizeAscIIText2(stText,25,25);
 	// Section2 准备着色器程序
 	Shader shader("TextsBase.vertex", "TextsBase.frag");
 	glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(WINDOW_WIDTH), 0.0f, static_cast<float>(WINDOW_HEIGHT));
@@ -171,6 +172,9 @@ int IntilizeAscIIText(const string& strText,int x,int y)
 			std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
 			continue;
 		}
+		FT_UInt glyphIndex = FT_Get_Char_Index(face,c);
+		FT_Load_Glyph(face, glyphIndex, FT_LOAD_RENDER);
+		//
 		float top = face->glyph->bitmap_top;
 		float btm = face->glyph->bitmap_top - face->glyph->bitmap.rows;
 		if (maxY < top)
@@ -254,6 +258,193 @@ int IntilizeAscIIText(const string& strText,int x,int y)
 	glBindVertexArray(0);
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);
+}
+
+int IntilizeAscIIText2(const string& strText, int x, int y)
+{
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft))
+	{
+		return -1;
+	}
+	FT_Face face;
+	if (FT_New_Face(ft, "../resources/fonts/arial.ttf", 0, &face))
+	{
+		return -1;
+	}
+	FT_Set_Pixel_Sizes(face, 0, 48);
+
+	float minY = (1 << 16) - 1; // 最小的Y
+	float maxY = 0.0f; //最大的Y
+	float minX = minY; //最小的X
+	float maxX = maxY; //最大的X
+	
+	int ppy = 0;
+
+	FT_Vector penPos;
+	//FT_UInt glyphIndex;
+	penPos.x = 0;
+	penPos.y = 0;
+
+	bool bFirst = true;
+	for (int i = 0; i < strText.length(); i++)
+	{
+		auto c = strText[i];
+		//加载字符对应的字形
+		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+		{
+			std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+			continue;
+		}
+		FT_UInt glyphIndex = FT_Get_Char_Index(face, c);
+		FT_Load_Glyph(face, glyphIndex, FT_LOAD_RENDER);
+		auto py = face->glyph->bitmap.rows - face->glyph->bitmap_top;
+		for (int y = face->glyph->bitmap.rows - 1; y >= 0; y--)
+		{
+			for (int x = 0; x < face->glyph->bitmap.width; x++)
+			{
+				int tx = penPos.x + face->glyph->bitmap_left + x;
+				int ty = penPos.y + py - (face->glyph->bitmap.rows - y);
+				if (bFirst)
+				{
+					bFirst = false;
+					minX = tx;
+					maxX = tx;
+					minY = ty;
+					maxY = ty;
+					ppy = py;
+				}
+				else
+				{
+					maxX = tx;
+					if (maxY < ty)
+					{
+						maxY = ty;
+					}
+					if (minY > ty)
+					{
+						minY = ty;
+					}
+					if (ppy < py)
+					{
+						ppy = py;
+					}
+				}
+			}
+		}
+		penPos.x += (face->glyph->advance.x >> 6);
+		
+	}
+	glm::vec2 size(maxX - minX, maxY - minY);
+	size.x += 20;
+	size.y += 20;
+	int txtWidth = size.x;
+	int txtHeight = size.y;
+
+	int length = txtWidth * txtHeight;
+
+	unsigned char* ptrTextData = new unsigned char[length];
+	memset(ptrTextData, 0, length);
+
+	FT_UInt glyphIndex;
+	FT_Vector vectorPen;
+	vectorPen.x = 10;
+	vectorPen.y = txtHeight - 10 - ppy;
+
+	for (auto iter = strText.begin(); iter != strText.end(); iter++)
+	{
+		if (FT_Load_Char(face, *iter, FT_LOAD_RENDER))
+		{
+			std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+			continue;
+		}
+		auto c = *iter;
+		glyphIndex = FT_Get_Char_Index(face, c);
+		FT_Load_Glyph(face, glyphIndex, FT_LOAD_RENDER);
+		FT_Bitmap* bitmap = &face->glyph->bitmap;
+		auto Py = face->glyph->bitmap.rows - face->glyph->bitmap_top;
+		for (int y = bitmap->rows - 1; y >= 0; --y) {
+
+			for (int x = 0; x < bitmap->width; x++)
+			{
+				int tx = vectorPen.x + face->glyph->bitmap_left + x;
+				int ty = vectorPen.y + Py - (face->glyph->bitmap.rows - y);
+				int idx = ty * txtWidth + tx;
+				ptrTextData[idx] = bitmap->buffer[y * bitmap->width + x];
+
+			}
+		}
+		vectorPen.x += (face->glyph->advance.x >> 6);
+	}
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	unsigned int texture2;
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		GL_RED,
+		txtWidth,
+		txtHeight,
+		0,
+		GL_RED,
+		GL_UNSIGNED_BYTE,
+		ptrTextData
+	);
+	// set texture options
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	Character character = {
+				texture2,
+				glm::vec2(txtWidth ,txtHeight),
+				glm::vec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+				static_cast<unsigned int>(face->glyph->advance.x)
+	};
+	mapCharacter.insert(std::pair<unsigned int, Character>(10000, character));
+
+	if (ptrTextData)
+	{
+		delete[]ptrTextData;
+		ptrTextData = nullptr;
+	}
+	FT_Done_Face(face);
+	FT_Done_FreeType(ft);
+
+	// -----------------------------------
+	glGenVertexArrays(1, &vaoId);
+	glGenBuffers(1, &vboId);
+	glBindVertexArray(vaoId);
+	glBindBuffer(GL_ARRAY_BUFFER, vboId);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+
+	//初始化VBO		
+	int scale = 1.0;
+	Character ch = mapCharacter[10000];
+	float xpos = 0;
+	float ypos = 0;
+	float w = ch.Size.x * scale;
+	float h = ch.Size.y * scale;
+	// update VBO for each character
+	float vertices[6][4] = {
+		{ xpos,     ypos + h,   0.0f, 0.0f },
+		{ xpos,     ypos,       0.0f, 1.0f },
+		{ xpos + w, ypos,       1.0f, 1.0f },
+
+		{ xpos,     ypos + h,   0.0f, 0.0f },
+		{ xpos + w, ypos,       1.0f, 1.0f },
+		{ xpos + w, ypos + h,   1.0f, 0.0f }
+	};
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	return 0;
 }
 
 

@@ -74,6 +74,7 @@ int main(int argc, char** argv)
 	{
 		return -1;
 	}
+
 	VAOBuffer vaoBuffer;
 	vector<vertex_attribute> vecVertexAttrib;
 	vecVertexAttrib.emplace_back(vertex_attribute::position);
@@ -82,6 +83,8 @@ int main(int argc, char** argv)
 	mapVertexAttrib2Length[vertex_attribute::position] = 3;
 	mapVertexAttrib2Length[vertex_attribute::texcoord] = 2;
 	vaoBuffer.BuildVAO((float*)(vecVertexData.data()), vecVertexData.size() * sizeof(VertexData), nullptr, 0, vecVertexAttrib, mapVertexAttrib2Length);
+	vaoId = vaoBuffer.GetVAO();
+	vboId = vaoBuffer.GetVBO();
 	//根据vecVertexData
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -90,8 +93,10 @@ int main(int argc, char** argv)
 	Shader shader("TextAdvanced.vertex", "TextAdvanced.frag");
 	glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(WINDOW_WIDTH), 0.0f, static_cast<float>(WINDOW_HEIGHT));
 	shader.use();
-	shader.setMat4("projection", projection);
-	//glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	shader.setMat4("projection", projection); 
+	shader.setInt("s_texture", 0);
+	glm::vec3 textColor(0.5, 0.5, 0.5);
+	shader.setVec3("textColor", textColor);
 	shader.unUse();
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
@@ -101,8 +106,14 @@ int main(int argc, char** argv)
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		//todo
+		glBindVertexArray(vaoId);
+
+		glActiveTexture(GL_TEXTURE0);
+		auto textId = ptrTextureFont->GetTexturedId();
+		glBindTexture(GL_TEXTURE_2D, textId);
+		glDrawArrays(GL_QUADS, 0, vecVertexData.size());
 		glfwSwapBuffers(window); // 交换缓存
+		glBindVertexArray(0);
 	}
 	// 释放资源
 	glDeleteVertexArrays(1, &vaoId);

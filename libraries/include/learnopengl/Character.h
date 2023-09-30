@@ -228,6 +228,10 @@ public:
         }
         bret = vecVertexData.size() > 0;
     }
+    unsigned GetTexturedId()
+    {
+        return m_textureId;
+    }
 protected:
     Character m_character[1 << 16];
     FT_Library  m_library;

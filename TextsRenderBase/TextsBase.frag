@@ -6,6 +6,6 @@ uniform vec3 textColor;//ÑÕÉ«ÎÆÀí
 in vec2 texcoord;
 void main()
 {
-	vec4 sampled = vec4(1.0, 1.0, 1.0, texture(s_texture, texcoord).r);
+	vec4 sampled = vec4(1.0, 1.0, 1.0, texture(s_texture, texcoord).r*0.6);
 	color = vec4(textColor,1.0)*sampled;
 }
