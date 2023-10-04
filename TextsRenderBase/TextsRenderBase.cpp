@@ -377,9 +377,9 @@ int IntilizeAscIIText2(const string& strText, int x, int y)
 		vectorPen.x += (face->glyph->advance.x >> 6);
 	}
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	unsigned int texture2;
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
+	//unsigned int texture2;
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
 	glTexImage2D(
 		GL_TEXTURE_2D,
 		0,
@@ -398,7 +398,7 @@ int IntilizeAscIIText2(const string& strText, int x, int y)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	Character character = {
-				texture2,
+				textureId,
 				glm::vec2(txtWidth ,txtHeight),
 				glm::vec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
 				static_cast<unsigned int>(face->glyph->advance.x)
