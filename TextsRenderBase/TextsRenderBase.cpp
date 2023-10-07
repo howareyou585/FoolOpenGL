@@ -109,12 +109,45 @@ int main(int argc, char** argv)
 	IntilizeAscIIText2(stText,25,25);
 	// Section2 准备着色器程序
 	Shader shader("TextsBase.vertex", "TextsBase.frag");
+	
 	glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(WINDOW_WIDTH), 0.0f, static_cast<float>(WINDOW_HEIGHT));
+	glm::mat4 instanceMatrix(1.0);
+	instanceMatrix = glm::rotate(instanceMatrix, glm::radians(30.f), glm::vec3(0, 0, 1.0f));
 	shader.use();
 	shader.setMat4("projection", projection);
 	//glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 	glm::vec3 color(0.5f, 0.5f, 0.5f);
 	shader.setVec3("textColor", color);
+	shader.setMat4("insMatrix", instanceMatrix);
+
+	/*Character ch = Characters[10000];
+	auto num = floor(with / (ch.Size.m_x + 20));
+	auto Lnum = floor(height / (ch.Size.m_y + 20));
+	glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::translate(trans, glm::vec3(-ch.Size.m_x / 2, -ch.Size.m_y / 2, 0.0f));
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0, 0.0, 1.0));
+	auto remat = model * trans;
+	for (size_t i = 0; i < num + 1; i++)
+	{
+		for (size_t j = 0; j < Lnum; j++)
+		{
+
+			glm::mat4 model2 = glm::mat4(1.0f);
+			model2 = glm::translate(model2, glm::vec3(i * ch.Size.m_x + ch.Size.m_x / 2, j * 1.5 * ch.Size.m_y + ch.Size.m_y, 0.0f));
+			model2 = model2 * remat;
+			glUniformMatrix4fv(glGetUniformLocation(shader.Program_ID, "aInstanceMatrix"),
+				1, GL_FALSE, glm::value_ptr(model2));
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+	}
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	glDisable(GL_BLEND);*/
+
 	shader.unUse();
 	// 开始游戏主循环
 	glEnable(GL_BLEND);
