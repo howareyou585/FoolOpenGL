@@ -268,7 +268,7 @@ int IntilizeAscIIText2(const string& strText, int x, int y)
 		return -1;
 	}
 	FT_Face face;
-	if (FT_New_Face(ft, "../resources/fonts/arial.ttf", 0, &face))
+	if (FT_New_Face(ft, "../resources/fonts/simfang.ttf", 0, &face))
 	{
 		return -1;
 	}
@@ -414,14 +414,15 @@ int IntilizeAscIIText2(const string& strText, int x, int y)
 	FT_Done_FreeType(ft);
 
 	// -----------------------------------
-	glGenVertexArrays(1, &vaoId);
+	/*glGenVertexArrays(1, &vaoId);
 	glGenBuffers(1, &vboId);
 	glBindVertexArray(vaoId);
 	glBindBuffer(GL_ARRAY_BUFFER, vboId);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);*/
+	glBindVertexArray(vaoId);
+	glBindBuffer(GL_ARRAY_BUFFER, vboId);
 	//≥ı ºªØVBO		
 	int scale = 1.0;
 	Character ch = mapCharacter[10000];
