@@ -260,7 +260,7 @@ unsigned int TextureArrayFromFile(const vector<string>& vecFile, const string &d
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+	
 	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGB, 1000, 1000, 2);
 	for (int i = 0 ;i <vecFile.size();i++)
 	{
