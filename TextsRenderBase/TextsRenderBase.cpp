@@ -16,7 +16,7 @@
 #include "ft2build.h"
 #include FT_FREETYPE_H
 int IntilizeAscIIText(const string&  strText, int x, int y);
-int IntilizeAscIIText2(const string& strText, int x, int y);
+int IntilizeAscIIText2(const string& strText);
 // 键盘回调函数原型声明
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 GLuint vaoId{};
@@ -106,19 +106,25 @@ int main(int argc, char** argv)
 	vboId = vaoBuffer.GetVBO();
 
 	string stText("hello world");
-	IntilizeAscIIText2(stText,25,25);
+	float angle = 30.f;
+	int txtWidth = IntilizeAscIIText2(stText);
+	int txtHeight = txtWidth * glm::sin(glm::radians(angle));
 	// Section2 准备着色器程序
 	Shader shader("TextsBase.vertex", "TextsBase.frag");
 	
 	glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(WINDOW_WIDTH), 0.0f, static_cast<float>(WINDOW_HEIGHT));
-	glm::mat4 instanceMatrix(1.0);
-	instanceMatrix = glm::rotate(instanceMatrix, glm::radians(30.f), glm::vec3(0, 0, 1.0f));
+	/*glm::mat4 instanceMatrix(1.0);
+	instanceMatrix = glm::rotate(instanceMatrix, glm::radians(angle), glm::vec3(0, 0, 1.0f));
+	*/
+
+	auto row = floor(WINDOW_WIDTH / txtWidth) + 1;
+	auto col = floor(WINDOW_HEIGHT / txtHeight) + 1;
 	shader.use();
 	shader.setMat4("projection", projection);
 	//glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 	glm::vec3 color(0.5f, 0.5f, 0.5f);
 	shader.setVec3("textColor", color);
-	shader.setMat4("insMatrix", instanceMatrix);
+	//shader.setMat4("insMatrix", instanceMatrix);
 
 	/*Character ch = Characters[10000];
 	auto num = floor(with / (ch.Size.m_x + 20));
@@ -152,6 +158,10 @@ int main(int argc, char** argv)
 	// 开始游戏主循环
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	auto ch = mapCharacter[10000];
+	auto offsetX = ch.Size.x / 4;
+	auto offsetY = ch.Size.y / 2;
+	
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
@@ -164,8 +174,20 @@ int main(int argc, char** argv)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
 		shader.use();
-
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		
+		for (auto i = 0; i < row; i++)
+		{
+			for (auto j = 0; j < col; j++)
+			{
+				glm::mat4 insMatrix(1.0f);
+				glm::vec3 pos(i*txtWidth+offsetX, j*txtHeight+offsetY,0);
+				insMatrix = glm::translate(insMatrix, pos);
+				insMatrix = glm::rotate(insMatrix, glm::radians(angle), glm::vec3(0, 0, 1.0));
+				shader.setMat4("insMatrix", insMatrix);
+				glDrawArrays(GL_TRIANGLES, 0, 6);
+			}
+		}
+	
 		shader.unUse();
 		glfwSwapBuffers(window); // 交换缓存
 	}
@@ -293,7 +315,7 @@ int IntilizeAscIIText(const string& strText,int x,int y)
 	FT_Done_FreeType(ft);
 }
 
-int IntilizeAscIIText2(const string& strText, int x, int y)
+int IntilizeAscIIText2(const string& strText)
 {
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft))
@@ -478,7 +500,7 @@ int IntilizeAscIIText2(const string& strText, int x, int y)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	return 0;
+	return txtWidth;
 }
 
 

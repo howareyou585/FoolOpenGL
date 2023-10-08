@@ -23,7 +23,7 @@ using namespace std;
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
 unsigned int TextureFromFile(const char *path, const string &directory, int& width, int& height, bool gamma = false);
-
+unsigned int TextureArrayFromFile(const vector<string>& vecFile, const string &directory, bool gamma = false);
 class Model 
 {
 public:
@@ -245,6 +245,60 @@ private:
     }
 };
 
+unsigned int TextureArrayFromFile(const vector<string>& vecFile, const string &directory, bool gamma)
+{
+	unsigned int textureID = 0;
+	if (!vecFile.size())
+	{
+		return textureID;
+	}
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, textureID);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGB, 1000, 1000, 2);
+	for (int i = 0 ;i <vecFile.size();i++)
+	{
+		auto& strFile = vecFile[i];
+		string filename = directory + '/' + strFile;
+		int width, height, nrComponents;
+		//stbi_set_flip_vertically_on_load(true);
+		unsigned char *ptrData = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+		if (ptrData)
+		{
+			GLenum format;
+			if (nrComponents == 1)
+				format = GL_RED;
+			else if (nrComponents == 3)
+				format = GL_RGB;
+			else if (nrComponents == 4)
+				format = GL_RGBA;
+			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, 
+				width, height, 1, GL_RGB, GL_UNSIGNED_BYTE, 
+				ptrData);
+			stbi_image_free(ptrData);
+		}
+		else
+		{
+			textureID = 0;
+			std::cout << "Texture failed to load at path: " << filename << std::endl;
+			stbi_image_free(ptrData);
+		}
+	}
+	
+
+	
+	
+
+	
+
+	return textureID;
+}
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
 {
