@@ -11,7 +11,9 @@ enum class vertex_attribute
 	position = 0,
 	normal,
 	texcoord,
-	color
+	color,
+	tangent,
+	bitangent
 };
 class VAOBuffer
 {
