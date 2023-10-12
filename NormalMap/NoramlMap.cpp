@@ -103,7 +103,7 @@ int main(int argc, char** argv)
 	GLuint normalMap  = TextureFromFile("brickwall_normal.jpg", "../resources/textures");
 	//设置相机
 	BoundingBox box;
-	int nVal = sizeof(cubeVertices) / sizeof(GLfloat);
+	int nVal = count;
 	for(int i = 0; i< nVal; i+=14)
 	{ 
 		glm::vec3 pnt(ptrVertexBuffer[i], ptrVertexBuffer[i + 1], ptrVertexBuffer[i + 2]);
@@ -120,7 +120,7 @@ int main(int argc, char** argv)
 	//glEnable(GL_CULL_FACE);
 	// 开始游戏主循环
 	GLfloat angle = 0.0f;
-	int nVeretx = nVal / 8;
+	int nVeretx = nVal / 14;
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件

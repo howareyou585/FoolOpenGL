@@ -5,6 +5,7 @@
 #include <GLEW/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -261,13 +262,13 @@ unsigned int TextureArrayFromFile(const vector<string>& vecFile, const string &d
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGB, 1000, 1000, 2);
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGB8, 1000, 1000, 2);
 	for (int i = 0 ;i <vecFile.size();i++)
 	{
 		auto& strFile = vecFile[i];
 		string filename = directory + '/' + strFile;
 		int width, height, nrComponents;
-		//stbi_set_flip_vertically_on_load(true);
+		stbi_set_flip_vertically_on_load(true);
 		unsigned char *ptrData = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
 		if (ptrData)
 		{
@@ -279,7 +280,7 @@ unsigned int TextureArrayFromFile(const vector<string>& vecFile, const string &d
 			else if (nrComponents == 4)
 				format = GL_RGBA;
 			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, 
-				width, height, 1, GL_RGB, GL_UNSIGNED_BYTE, 
+				width, height, 1, format, GL_UNSIGNED_BYTE,
 				ptrData);
 			stbi_image_free(ptrData);
 		}
@@ -290,13 +291,6 @@ unsigned int TextureArrayFromFile(const vector<string>& vecFile, const string &d
 			stbi_image_free(ptrData);
 		}
 	}
-	
-
-	
-	
-
-	
-
 	return textureID;
 }
 
