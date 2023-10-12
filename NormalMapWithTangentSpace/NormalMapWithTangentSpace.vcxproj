@@ -10,6 +10,13 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NormalMapWithTangentSpace.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="NormalMapWithTangentSpace.frag" />
+    <None Include="NormalMapWithTangentSpace.vertex" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{30AE4C99-3B28-4116-A49D-161E80C043DF}</ProjectGuid>
     <RootNamespace>NormalMapWithTangentSpace</RootNamespace>
@@ -51,7 +58,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32s.lib;SOIL.lib;legacy_stdio_definitions.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
