@@ -172,7 +172,7 @@ int main(int argc, char** argv)
 		shader.setInt("normalMap", 1);
 
 		glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
-		shader.setVec3("light.position", lightPos);
+		shader.setVec3("lightPos", lightPos);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
 

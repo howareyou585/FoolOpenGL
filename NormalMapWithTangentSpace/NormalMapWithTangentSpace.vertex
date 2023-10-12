@@ -7,21 +7,31 @@ layout(location = 4) in vec3 abitangent;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-out vec2 texcoord;
-out vec3 fragPos;
-out mat3 TBN;
+uniform vec3 eyePos;
+uniform	vec3 lightPos;
+
+out VS_OUT
+{
+   vec2 texcoord;
+   vec3 tangentFragPos; // 切线空间的顶点
+   vec3 tangentLightPos;// 切线空间的灯光位置
+   vec3 tangentViewPos; // 切线空间的相机位置
+}vs_out;
+
 void main()
 {
 	
-    vec4 postion = model*vec4(aposition, 1.0);
-	fragPos = postion.xyz; 
-	
+    
 	mat3 normalMatrix = transpose(inverse(mat3(model)));
 	//normalDir =  mat3(transpose(inverse(model)))*anormal;
 	vec3 T = normalize(normalMatrix * atangent);
 	vec3 B = normalize(normalMatrix * abitangent);
 	vec3 N = normalize(normalMatrix * anormal);
-	TBN = mat3(T,B,N);
-	texcoord = atextcoord;
+
+	mat3 TBN = transpose(mat3(T,B,N));
+	vs_out.tangentFragPos = TBN * aposition; 
+	vs_out.tangentLightPos = TBN * lightPos;
+	vs_out.tangentViewPos = TBN *  eyePos;
+	vs_out.texcoord = atextcoord;
 	gl_Position = projection*view*model*vec4(aposition, 1.0);
 }
