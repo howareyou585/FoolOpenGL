@@ -10,6 +10,13 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NormalMapWithComplexModel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="NormalMapWithComplexModel.frag" />
+    <None Include="NormalMapWithComplexModel.vertex" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{63FEACB1-FDC6-4CAC-986A-3E56F85EBC0F}</ProjectGuid>
     <RootNamespace>NormalMapWithComplexModel</RootNamespace>
@@ -68,9 +75,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="shader.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
