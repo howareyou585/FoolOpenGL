@@ -68,39 +68,41 @@ int main(int argc, char** argv)
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	auto ptrModel = new Model("../Model/backpack/backpack.obj");
+    
 	GLfloat* ptrVertexBuffer = nullptr;
 	int count = 0;
 	if (!CreateVertexSet(&ptrVertexBuffer, count))
 	{
 		return -1;
 	}
-	// 创建缓存对象
-	VAOBuffer vaoBuffer;
-	vector<vertex_attribute> vecVertexAttrib;
-	//pos1.x, pos1.y, pos1.z, 
-	//nm.x, nm.y, nm.z, 
-	//uv1.x, uv1.y, 
-	//tangent1.x, tangent1.y, tangent1.z, 
-	//bitangent1.x, bitangent1.y, bitangent1.z
-	vecVertexAttrib.push_back(vertex_attribute::position);
-	vecVertexAttrib.push_back(vertex_attribute::normal);
-	vecVertexAttrib.push_back(vertex_attribute::texcoord);
-	vecVertexAttrib.push_back(vertex_attribute::tangent);
-	vecVertexAttrib.push_back(vertex_attribute::bitangent);
+	//// 创建缓存对象
+	//VAOBuffer vaoBuffer;
+	//vector<vertex_attribute> vecVertexAttrib;
+	////pos1.x, pos1.y, pos1.z, 
+	////nm.x, nm.y, nm.z, 
+	////uv1.x, uv1.y, 
+	////tangent1.x, tangent1.y, tangent1.z, 
+	////bitangent1.x, bitangent1.y, bitangent1.z
+	//vecVertexAttrib.push_back(vertex_attribute::position);
+	//vecVertexAttrib.push_back(vertex_attribute::normal);
+	//vecVertexAttrib.push_back(vertex_attribute::texcoord);
+	//vecVertexAttrib.push_back(vertex_attribute::tangent);
+	//vecVertexAttrib.push_back(vertex_attribute::bitangent);
 
-	map< vertex_attribute, int> mapVertexAttrib2Num;
-	mapVertexAttrib2Num[vertex_attribute::position] = 3;
-	mapVertexAttrib2Num[vertex_attribute::normal] = 3;
-	mapVertexAttrib2Num[vertex_attribute::texcoord] = 2;
-	mapVertexAttrib2Num[vertex_attribute::tangent] = 3;
-	mapVertexAttrib2Num[vertex_attribute::bitangent] = 3;
+	//map< vertex_attribute, int> mapVertexAttrib2Num;
+	//mapVertexAttrib2Num[vertex_attribute::position] = 3;
+	//mapVertexAttrib2Num[vertex_attribute::normal] = 3;
+	//mapVertexAttrib2Num[vertex_attribute::texcoord] = 2;
+	//mapVertexAttrib2Num[vertex_attribute::tangent] = 3;
+	//mapVertexAttrib2Num[vertex_attribute::bitangent] = 3;
 
-	vaoBuffer.BuildVAO(ptrVertexBuffer, count*sizeof(GLfloat),
-		nullptr, 0, vecVertexAttrib, mapVertexAttrib2Num);
-	GLuint VAOId = vaoBuffer.GetVAO();
+	//vaoBuffer.BuildVAO(ptrVertexBuffer, count*sizeof(GLfloat),
+	//	nullptr, 0, vecVertexAttrib, mapVertexAttrib2Num);
+	//GLuint VAOId = vaoBuffer.GetVAO();
 	//准备材质
-	GLuint diffuseMap = TextureFromFile("brickwall.jpg", "../resources/textures");
-	GLuint normalMap  = TextureFromFile("brickwall_normal.jpg", "../resources/textures");
+	GLuint diffuseMap = TextureFromFile("diffuse.jpg", "../Model/backpack");
+	GLuint normalMap  = TextureFromFile("normal.png",  "../Model/backpack");
 	//设置相机
 	BoundingBox box;
 	int nVal = count;
@@ -130,7 +132,7 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 		// 这里填写场景绘制代码
-		glBindVertexArray(VAOId);
+		//glBindVertexArray(VAOId);
 		shader.use();
 		glm::mat4 model(1.f);
 		
@@ -179,16 +181,16 @@ int main(int argc, char** argv)
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalMap);
 
-		glDrawArrays(GL_TRIANGLES, 0, nVeretx);
+		ptrModel->Draw(shader);
 
 
-		glBindVertexArray(0);
+		//glBindVertexArray(0);
 		glUseProgram(0);
 
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源
-	glDeleteVertexArrays(1, &VAOId);
+	//glDeleteVertexArrays(1, &VAOId);
 	glfwTerminate();
 	return 0;
 }
