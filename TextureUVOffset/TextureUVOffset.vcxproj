@@ -11,15 +11,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ParallaxMapping.cpp" />
+    <ClCompile Include="TextureUVOffset.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ParallaxMapping.frag" />
-    <None Include="ParallaxMapping.vertex" />
+    <None Include="TextureUVOffset.frag" />
+    <None Include="TextureUVOffset.vertex" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{8C8929A9-671E-4996-98E2-92948EB50BD4}</ProjectGuid>
-    <RootNamespace>ParallaxMapping</RootNamespace>
+    <ProjectGuid>{0221ED09-B28E-42E5-AA5A-FFD4FF461D62}</ProjectGuid>
+    <RootNamespace>TextureArrayDemo</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -58,7 +58,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32s.lib;SOIL.lib;legacy_stdio_definitions.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32s.lib;SOIL.lib;freetype262d.lib;legacy_stdio_definitions.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
