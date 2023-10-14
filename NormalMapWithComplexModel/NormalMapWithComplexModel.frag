@@ -15,21 +15,18 @@ struct Light
 	vec3 spacular;
 } ;
 
-struct Material
-{
-	sampler2D diffuse;
-	vec3 spacular;
-	float shiness;
-};
 
-uniform Material material;
+uniform float shiness;
 uniform Light light;
-uniform sampler2D normalMap;
+
+uniform sampler2D texture_diffuse1; // 漫反射
+uniform sampler2D texture_specular1; //高光
+uniform sampler2D texture_normal1;  // 发线
 void main()
 {
-	vec3 diffuse = texture(material.diffuse,fs_in.texcoord).xyz;
+	vec3 diffuse = texture(texture_diffuse1,fs_in.texcoord).xyz;
 	 // obtain normal from normal map in range [0,1]
-	vec3 normalDir = texture(normalMap,fs_in.texcoord).xyz;
+	vec3 normalDir = texture(texture_normal1,fs_in.texcoord).xyz;
 	// transform normal vector to range [-1,1]
 	normalDir = normalize(normalDir*2-1);
 	
@@ -46,8 +43,10 @@ void main()
 	vec3 halfDir = normalize(eyeDir + lightDir);
 
 	//specular
-	float spacularFator = pow(max(dot(halfDir, normalDir), 0.0), material.shiness);
-	vec3 spacularColor = light.spacular*material.spacular*spacularFator;
+	vec3 spacular = texture(texture_specular1,fs_in.texcoord).xyz;
+	
+	float spacularFator = pow(max(dot(halfDir, normalDir), 0.0), shiness);
+	vec3 spacularColor = light.spacular*spacular*spacularFator;
 	vec3 result = ambientColor + diffuseColor + spacularColor;
 	color = vec4(result,1.0f);
 }

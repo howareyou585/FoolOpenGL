@@ -69,60 +69,23 @@ int main(int argc, char** argv)
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	auto ptrModel = new Model("../Model/backpack/backpack.obj");
-    
-	GLfloat* ptrVertexBuffer = nullptr;
-	int count = 0;
-	if (!CreateVertexSet(&ptrVertexBuffer, count))
-	{
-		return -1;
-	}
-	//// 创建缓存对象
-	//VAOBuffer vaoBuffer;
-	//vector<vertex_attribute> vecVertexAttrib;
-	////pos1.x, pos1.y, pos1.z, 
-	////nm.x, nm.y, nm.z, 
-	////uv1.x, uv1.y, 
-	////tangent1.x, tangent1.y, tangent1.z, 
-	////bitangent1.x, bitangent1.y, bitangent1.z
-	//vecVertexAttrib.push_back(vertex_attribute::position);
-	//vecVertexAttrib.push_back(vertex_attribute::normal);
-	//vecVertexAttrib.push_back(vertex_attribute::texcoord);
-	//vecVertexAttrib.push_back(vertex_attribute::tangent);
-	//vecVertexAttrib.push_back(vertex_attribute::bitangent);
 
-	//map< vertex_attribute, int> mapVertexAttrib2Num;
-	//mapVertexAttrib2Num[vertex_attribute::position] = 3;
-	//mapVertexAttrib2Num[vertex_attribute::normal] = 3;
-	//mapVertexAttrib2Num[vertex_attribute::texcoord] = 2;
-	//mapVertexAttrib2Num[vertex_attribute::tangent] = 3;
-	//mapVertexAttrib2Num[vertex_attribute::bitangent] = 3;
-
-	//vaoBuffer.BuildVAO(ptrVertexBuffer, count*sizeof(GLfloat),
-	//	nullptr, 0, vecVertexAttrib, mapVertexAttrib2Num);
-	//GLuint VAOId = vaoBuffer.GetVAO();
 	//准备材质
 	GLuint diffuseMap = TextureFromFile("diffuse.jpg", "../Model/backpack");
 	GLuint normalMap  = TextureFromFile("normal.png",  "../Model/backpack");
 	//设置相机
-	BoundingBox box;
-	int nVal = count;
-	for(int i = 0; i< nVal; i+=14)
-	{ 
-		glm::vec3 pnt(ptrVertexBuffer[i], ptrVertexBuffer[i + 1], ptrVertexBuffer[i + 2]);
-		box.Merge(pnt);
-	}
+	BoundingBox box = ptrModel->GetBoundingBox();
+	
 	glm::vec3 center = box.GetCenter();
 	glm::vec3 position = center +  (box.GetLength()*3.f)*glm::vec3(0, 0, 1.0f);
 	Camera camera(position);
 	// Section2 准备着色器程序
-	Shader shader("NormalMapWithTangentSpace.vertex", "NormalMapWithTangentSpace.frag");
-	
-	// 
+	Shader shader("NormalMapWithComplexModel.vertex", "NormalMapWithComplexModel.frag");
+
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	// 开始游戏主循环
-	GLfloat angle = 0.0f;
-	int nVeretx = nVal / 14;
+	GLfloat angle = 0.0f;	
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
@@ -156,7 +119,7 @@ int main(int argc, char** argv)
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 		shader.setVec3("eyePos", camera.Position);
-	
+		
 		
 		glm::vec3 ambient(0.3f, 0.3f, 0.3f);
 		glm::vec3 diffuse(0.8f, 0.8f, 0.8f);
@@ -166,12 +129,7 @@ int main(int argc, char** argv)
 		shader.setVec3("light.ambient", ambient);
 		shader.setVec3("light.diffuse", diffuse);
 		shader.setVec3("light.spacular", spacular);
-		shader.setVec3("material.ambient", ambient);
-		shader.setInt("material.diffuse", 0);
-		shader.setVec3("material.spacular", spacular);
-		shader.setFloat("material.shiness", 256.0f);
-
-		shader.setInt("normalMap", 1);
+		shader.setFloat("shiness", 256.0f);
 
 		glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
 		shader.setVec3("lightPos", lightPos);
@@ -200,74 +158,4 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
 	}
-}
-bool CreateVertexSet(GLfloat** ptrBuffer, int& count)
-{
-	// positions
-	glm::vec3 pos1(-1.0, 1.0, 0.0);
-	glm::vec3 pos2(-1.0, -1.0, 0.0);
-	glm::vec3 pos3(1.0, -1.0, 0.0);
-	glm::vec3 pos4(1.0, 1.0, 0.0);
-	// texture coordinates
-	glm::vec2 uv1(0.0, 1.0);
-	glm::vec2 uv2(0.0, 0.0);
-	glm::vec2 uv3(1.0, 0.0);
-	glm::vec2 uv4(1.0, 1.0);
-	// normal vector
-	glm::vec3 nm(0.0, 0.0, 1.0);
-	// calculate tangent/bitangent vectors of both triangles
-	glm::vec3 tangent1, bitangent1;
-	glm::vec3 tangent2, bitangent2;
-	// - triangle 1
-	glm::vec3 edge1 = pos2 - pos1;
-	glm::vec3 edge2 = pos3 - pos1;
-	glm::vec2 deltaUV1 = uv2 - uv1;
-	glm::vec2 deltaUV2 = uv3 - uv1;
-
-	GLfloat f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-
-	tangent1.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-	tangent1.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-	tangent1.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-	tangent1 = glm::normalize(tangent1);
-
-	bitangent1.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-	bitangent1.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-	bitangent1.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-	bitangent1 = glm::normalize(bitangent1);
-
-	// - triangle 2
-	edge1 = pos3 - pos1;
-	edge2 = pos4 - pos1;
-	deltaUV1 = uv3 - uv1;
-	deltaUV2 = uv4 - uv1;
-
-	f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-
-	tangent2.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-	tangent2.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-	tangent2.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-	tangent2 = glm::normalize(tangent2);
-
-
-	bitangent2.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-	bitangent2.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-	bitangent2.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-	bitangent2 = glm::normalize(bitangent2);
-
-	GLfloat quadVertices[] = {
-		// Positions            // normal         // TexCoords  // Tangent                          // Bitangent
-		pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-		pos2.x, pos2.y, pos2.z, nm.x, nm.y, nm.z, uv2.x, uv2.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-		pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
-
-		pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
-		pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
-		pos4.x, pos4.y, pos4.z, nm.x, nm.y, nm.z, uv4.x, uv4.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z
-	};
-	int length = sizeof(quadVertices);
-	count = length / sizeof(GLfloat);
-	*ptrBuffer = new GLfloat[count];
-	memcpy(*ptrBuffer, quadVertices, length);
-	return count > 0;
 }
