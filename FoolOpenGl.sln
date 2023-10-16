@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.33927.289
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.902
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SkyBox", "SkyBox\SkyBox.vcxproj", "{6126BC25-73CD-4C59-8824-A121BF4E8D6D}"
 EndProject
@@ -126,6 +126,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NormalMapWithComplexModel", "NormalMapWithComplexModel\NormalMapWithComplexModel.vcxproj", "{63FEACB1-FDC6-4CAC-986A-3E56F85EBC0F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureUVOffset", "TextureUVOffset\TextureUVOffset.vcxproj", "{0221ED09-B28E-42E5-AA5A-FFD4FF461D62}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallaxMappingStep", "ParallaxMappingStep\ParallaxMappingStep.vcxproj", "{F51BC819-EA18-4D64-A21B-73B4D5512A6C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -507,6 +509,12 @@ Global
 		{0221ED09-B28E-42E5-AA5A-FFD4FF461D62}.Release|x64.ActiveCfg = Release|Win32
 		{0221ED09-B28E-42E5-AA5A-FFD4FF461D62}.Release|x86.ActiveCfg = Release|Win32
 		{0221ED09-B28E-42E5-AA5A-FFD4FF461D62}.Release|x86.Build.0 = Release|Win32
+		{F51BC819-EA18-4D64-A21B-73B4D5512A6C}.Debug|x64.ActiveCfg = Debug|Win32
+		{F51BC819-EA18-4D64-A21B-73B4D5512A6C}.Debug|x86.ActiveCfg = Debug|Win32
+		{F51BC819-EA18-4D64-A21B-73B4D5512A6C}.Debug|x86.Build.0 = Debug|Win32
+		{F51BC819-EA18-4D64-A21B-73B4D5512A6C}.Release|x64.ActiveCfg = Release|Win32
+		{F51BC819-EA18-4D64-A21B-73B4D5512A6C}.Release|x86.ActiveCfg = Release|Win32
+		{F51BC819-EA18-4D64-A21B-73B4D5512A6C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
