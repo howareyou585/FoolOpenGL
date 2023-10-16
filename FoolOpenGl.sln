@@ -129,6 +129,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureUVOffset", "TextureU
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallaxMappingStep", "ParallaxMappingStep\ParallaxMappingStep.vcxproj", "{F51BC819-EA18-4D64-A21B-73B4D5512A6C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallaxOcclusionMapping", "ParallaxOcclusionMapping\ParallaxOcclusionMapping.vcxproj", "{72E259EB-504C-479A-A367-9D13E4618D7C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -515,6 +517,12 @@ Global
 		{F51BC819-EA18-4D64-A21B-73B4D5512A6C}.Release|x64.ActiveCfg = Release|Win32
 		{F51BC819-EA18-4D64-A21B-73B4D5512A6C}.Release|x86.ActiveCfg = Release|Win32
 		{F51BC819-EA18-4D64-A21B-73B4D5512A6C}.Release|x86.Build.0 = Release|Win32
+		{72E259EB-504C-479A-A367-9D13E4618D7C}.Debug|x64.ActiveCfg = Debug|Win32
+		{72E259EB-504C-479A-A367-9D13E4618D7C}.Debug|x86.ActiveCfg = Debug|Win32
+		{72E259EB-504C-479A-A367-9D13E4618D7C}.Debug|x86.Build.0 = Debug|Win32
+		{72E259EB-504C-479A-A367-9D13E4618D7C}.Release|x64.ActiveCfg = Release|Win32
+		{72E259EB-504C-479A-A367-9D13E4618D7C}.Release|x86.ActiveCfg = Release|Win32
+		{72E259EB-504C-479A-A367-9D13E4618D7C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
