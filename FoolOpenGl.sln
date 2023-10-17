@@ -23,8 +23,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShadowMappingDepth", "Shado
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IndirectDrawerDemo", "IndirectDrawerDemo\IndirectDrawerDemo.vcxproj", "{1113CC82-2BCD-4214-9DD0-CE502EF9149B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HDRDemo", "HDRDemo\HDRDemo.vcxproj", "{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MRTDemo", "MRTDemo\MRTDemo.vcxproj", "{D0E1886C-161D-4495-B39C-800E497851ED}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IndirectDrawDynamicDemo", "IndirectDrawDynamicDemo\IndirectDrawDynamicDemo.vcxproj", "{0D3B9732-C602-436C-8CAF-01EACE301896}"
@@ -131,6 +129,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallaxMappingStep", "Para
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallaxOcclusionMapping", "ParallaxOcclusionMapping\ParallaxOcclusionMapping.vcxproj", "{72E259EB-504C-479A-A367-9D13E4618D7C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HDRWithExposure", "HDRWithExposure\HDRWithExposure.vcxproj", "{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -199,12 +199,6 @@ Global
 		{1113CC82-2BCD-4214-9DD0-CE502EF9149B}.Release|x64.ActiveCfg = Release|Win32
 		{1113CC82-2BCD-4214-9DD0-CE502EF9149B}.Release|x86.ActiveCfg = Release|Win32
 		{1113CC82-2BCD-4214-9DD0-CE502EF9149B}.Release|x86.Build.0 = Release|Win32
-		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Debug|x64.ActiveCfg = Debug|Win32
-		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Debug|x86.ActiveCfg = Debug|Win32
-		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Debug|x86.Build.0 = Debug|Win32
-		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Release|x64.ActiveCfg = Release|Win32
-		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Release|x86.ActiveCfg = Release|Win32
-		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Release|x86.Build.0 = Release|Win32
 		{D0E1886C-161D-4495-B39C-800E497851ED}.Debug|x64.ActiveCfg = Debug|Win32
 		{D0E1886C-161D-4495-B39C-800E497851ED}.Debug|x86.ActiveCfg = Debug|Win32
 		{D0E1886C-161D-4495-B39C-800E497851ED}.Debug|x86.Build.0 = Debug|Win32
@@ -523,6 +517,12 @@ Global
 		{72E259EB-504C-479A-A367-9D13E4618D7C}.Release|x64.ActiveCfg = Release|Win32
 		{72E259EB-504C-479A-A367-9D13E4618D7C}.Release|x86.ActiveCfg = Release|Win32
 		{72E259EB-504C-479A-A367-9D13E4618D7C}.Release|x86.Build.0 = Release|Win32
+		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Debug|x64.ActiveCfg = Debug|Win32
+		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Debug|x86.ActiveCfg = Debug|Win32
+		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Debug|x86.Build.0 = Debug|Win32
+		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Release|x64.ActiveCfg = Release|Win32
+		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Release|x86.ActiveCfg = Release|Win32
+		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
