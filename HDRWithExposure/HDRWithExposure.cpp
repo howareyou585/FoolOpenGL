@@ -86,10 +86,12 @@ int main(int argc, char** argv)
 	vector<vertex_attribute> vecAttrib;
 	map<vertex_attribute, int> mapAttrib2Size;
 	vecAttrib.emplace_back(vertex_attribute::position);
+	vecAttrib.emplace_back(vertex_attribute::normal);
 	vecAttrib.emplace_back(vertex_attribute::texcoord);
 	mapAttrib2Size[vertex_attribute::position] = 3;
+	mapAttrib2Size[vertex_attribute::normal] = 3;
 	mapAttrib2Size[vertex_attribute::texcoord] = 2;
-	vaoBuffer.BuildVAO(cubeVertices3, sizeof(cubeVertices3), nullptr, 
+	vaoBuffer.BuildVAO(cubeVertices2, sizeof(cubeVertices2), nullptr, 
 		0, vecAttrib, mapAttrib2Size);
 	
 	// 创建缓存对象
@@ -111,74 +113,68 @@ int main(int argc, char** argv)
 	lightColors.emplace_back(glm::vec3(0.f, 0.0f, 0.2f));
 	lightColors.emplace_back(glm::vec3(0.0f, 0.1f, 0.0f));
 	//set up floating point framebuffer to render scene;
-	GLuint hdrFBO;
-	glGenFramebuffers(1, &hdrFBO);
-	//-Create floating point color buffer
-	GLuint colorBuffer;
-	glGenTextures(1, &colorBuffer);
-	glBindTexture(GL_TEXTURE_2D, colorBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//-Create depth buffer(renderBuffer)
-	GLuint rboDepthBuffer;
-	glGenRenderbuffers(1, &rboDepthBuffer);
-	//todo
+	//GLuint hdrFBO;
+	//glGenFramebuffers(1, &hdrFBO);
+	////-Create floating point color buffer
+	//GLuint colorBuffer;
+	//glGenTextures(1, &colorBuffer);
+	//glBindTexture(GL_TEXTURE_2D, colorBuffer);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	////-Create depth buffer(renderBuffer)
+	//GLuint rboDepthBuffer;
+	//glGenRenderbuffers(1, &rboDepthBuffer);
+	//glBindRenderbuffer(GL_RENDERBUFFER, rboDepthBuffer);
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT);
+	//
+	////attach buffers
+	//glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0);
+	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepthBuffer);
+	//if (!glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	//{
+	//	return 0;
+	//}
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 	BoundingBox box;
-	int nVal = sizeof(cubeVertices3) / sizeof(GLfloat);
-	for (int i = 0; i < nVal; i += 5)
+	int nVal = sizeof(cubeVertices2) / sizeof(GLfloat);
+	for (int i = 0; i < nVal; i += 8)
 	{
-		glm::vec3 pnt(cubeVertices3[i], cubeVertices3[i + 1], cubeVertices3[i + 2]);
+		glm::vec3 pnt(cubeVertices2[i], cubeVertices2[i + 1], cubeVertices2[i + 2]);
 		box.Merge(pnt);
 	}
-	BoundingBox totalBoundingBox;
-	int nModelMatrix = sizeof(cubePositions) / sizeof(glm::vec3);
-	vector<glm::mat4> vecModelMatrix;
-	vecModelMatrix.reserve(nModelMatrix);
-	for (int i = 0; i < nModelMatrix; i++)
-	{
-		glm::mat4 model(1.0f);
-		model = glm::translate(model, cubePositions[i]);
-		float angle = 20.0f * i;
-		model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-		BoundingBox tmpBoundingBox = box.Transformed(model);
-		totalBoundingBox.Merge(tmpBoundingBox);
-		vecModelMatrix.emplace_back(model);
-	}
-	//float raduis = totalBoundingBox.GetLength()*0.8f;
 	
-	camera.InitCamera(totalBoundingBox,0.8f);
-	float radius = totalBoundingBox.GetLength() * 0.8f;
-	
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0));
+	model = glm::scale(model, glm::vec3(2.5f, 2.5f, 27.5f));
+	BoundingBox totalBoundingBox = box.Transformed(model);
+
+	camera.InitCamera(totalBoundingBox,1.2f);
+
 	// Section2 准备着色器程序
 	Shader shader("lighting.vertex", "lighting.frag");
 	Shader hdrShader("hdrExposure.vetex", "hdrExposure.frag");
 	shader.use();
-	shader.setInt("s_texture", 0);
-	shader.setInt("s_texture2", 1);
+	glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
+	shader.setMat4("projection", projectionMatrix);
+	shader.setMat4("model", model);
+	shader.setInt("diffuseMap", 0);
+	for (auto i = 0; i < lightPositions.size(); i++)
+	{
+		shader.setVec3("pointlights[" + std::to_string(i) + "].position", lightPositions[i]);
+		shader.setVec3("pointlights[" + std::to_string(i) + "].color", lightColors[i]);
+	}
+	shader.setBool("inverse_normals", true);
 	shader.unUse();
-	int nVertex = sizeof(cubeVertices3) / (sizeof(GLuint) * 5);
+	int nVertex = sizeof(cubeVertices2) / (sizeof(GLfloat) * 8);
 	// 开始游戏主循环
 	glEnable(GL_DEPTH_TEST);
-	//glCullFace(GL_BACK);
 	glm::vec3 targetPos = totalBoundingBox.GetCenter();
-	float distance = glm::length(targetPos - camera.Position);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//glLineWidth(2.0f);
-	////启用反走样
-	//glEnable(GL_BLEND);
-	//glEnable(GL_LINE_SMOOTH);
-	//glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glEnable(GL_LINE_STIPPLE); //启动虚线模式
-	//glLineStipple(1, 0x24FF);
 
-	shader.use();
-	glm::mat4 uvMatrix(1.0);
-	uvMatrix = glm::rotate(uvMatrix, glm::radians(30.f),glm::vec3(0,0,1));
-	shader.setMat4("uvTransform", uvMatrix);
-	shader.unUse();
-
+	
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -193,24 +189,19 @@ int main(int argc, char** argv)
 
 		// 这里填写场景绘制代码
 		glBindVertexArray(VAOId);
-		shader.use();
-		//鼠标移动，镜头方向不变
+		float distance = glm::length(targetPos - camera.Position);
 		targetPos = camera.Position + distance * camera.Front;
 		glm::mat4 viewMatrix = camera.GetViewMatrix(targetPos);
-
+		shader.use();
+		//鼠标移动，镜头方向不变
+	
+		shader.setVec3("eyePos", camera.Position);
 		shader.setMat4("view", viewMatrix);
-		glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
-		shader.setMat4("projection", projectionMatrix);
+	
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texId);
-		glActiveTexture(GL_TEXTURE0+1);
-		glBindTexture(GL_TEXTURE_2D, texId2);
-		for (auto j = 0; j < nModelMatrix; j++)
-		{
-			shader.setMat4("model", vecModelMatrix[j]);
-			glDrawArrays(GL_TRIANGLES, 0, nVertex);
-			//glDrawArrays(GL_LINES, 0, nVertex);
-		}
+
+		glDrawArrays(GL_TRIANGLES, 0, nVertex);
 		shader.unUse();
 		glBindVertexArray(0);
 		glUseProgram(0);
