@@ -12,10 +12,10 @@ out vec3 fragPos;
 
 void main()
 {
-    vec4 postion = model*vec4(aposition, 1.0);
-	fragPos = postion.xyz; 
-	vec3 nor = inverse_normals ? anormal:(-anormal);
-	normalDir =  mat3(transpose(inverse(model)))*nor;
+    fragPos = vec3(model*vec4(aposition, 1.0));
+	vec3 n = inverse_normals ? -anormal : anormal;
+	mat3 normalMatrix = transpose(inverse(mat3(model)));
+	normalDir = normalize(normalMatrix * n);
 	texcoord = atextcoord;
 	gl_Position = projection * view * model * vec4(aposition, 1.0);
 }

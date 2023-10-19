@@ -13,13 +13,20 @@ enum class AttachmentType
 class FBOBuffer
 {
 public:
-	FBOBuffer(map<GLenum, AttachmentType>& mapColorAttachment, bool bAttachedDepth, bool bAttachedStencil):
+	FBOBuffer(int width, int height,
+		map<GLenum, AttachmentType>& mapColorAttachment, bool bAttachedDepth, bool bAttachedStencil):
+		m_width(width),
+		m_height(height),
 		m_bAttachedDepth(bAttachedDepth),
 		m_bAttachedStencil(bAttachedStencil)
 	{
 		m_mapColorAttachment = mapColorAttachment;
 	}
-	
+	void SetSize(int width, int height)
+	{
+		m_width = width;
+		m_height = height;
+	}
 	bool Create()
 	{
 		bool bRet = false;

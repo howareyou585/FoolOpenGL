@@ -103,15 +103,19 @@ int main(int argc, char** argv)
    // - Positions
 	vector<glm::vec3> lightPositions;
 	lightPositions.emplace_back(glm::vec3(0.0f, 0.0f, 49.5f));
-	lightPositions.emplace_back(glm::vec3(1.4f, -1.9f, 9.0f));
+	lightPositions.emplace_back(glm::vec3(-1.4f, -1.9f, 9.0f));
 	lightPositions.emplace_back(glm::vec3(0.0f, -1.8f, 4.0f));
 	lightPositions.emplace_back(glm::vec3(0.8f, -1.7f, 6.0f));
 	// - Colors
 	vector<glm::vec3> lightColors;
 	lightColors.emplace_back(glm::vec3(200.f, 200.f, 200.f));
 	lightColors.emplace_back(glm::vec3(0.1f, 0.0f, 0.0f));
-	lightColors.emplace_back(glm::vec3(0.f, 0.0f, 0.2f));
+	lightColors.emplace_back(glm::vec3(0.0f, 0.0f, 0.2f));
 	lightColors.emplace_back(glm::vec3(0.0f, 0.1f, 0.0f));
+	//lightColors.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f));
+	//lightColors.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f));
+	//lightColors.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f));
+	//lightColors.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f));
 	//set up floating point framebuffer to render scene;
 	//GLuint hdrFBO;
 	//glGenFramebuffers(1, &hdrFBO);
@@ -152,11 +156,11 @@ int main(int argc, char** argv)
 	model = glm::scale(model, glm::vec3(2.5f, 2.5f, 27.5f));
 	BoundingBox totalBoundingBox = box.Transformed(model);
 
-	camera.InitCamera(totalBoundingBox,1.2f);
+	camera.InitCamera(totalBoundingBox,0.1f);
 
 	// Section2 准备着色器程序
 	Shader shader("lighting.vertex", "lighting.frag");
-	Shader hdrShader("hdrExposure.vetex", "hdrExposure.frag");
+	//Shader hdrShader("hdrExposure.vetex", "hdrExposure.frag");
 	shader.use();
 	glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
 	shader.setMat4("projection", projectionMatrix);
@@ -194,8 +198,6 @@ int main(int argc, char** argv)
 		glm::mat4 viewMatrix = camera.GetViewMatrix(targetPos);
 		shader.use();
 		//鼠标移动，镜头方向不变
-	
-		shader.setVec3("eyePos", camera.Position);
 		shader.setMat4("view", viewMatrix);
 	
 		glActiveTexture(GL_TEXTURE0);

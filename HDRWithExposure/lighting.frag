@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 color;
+out vec4 FragColor;
 in vec2 texcoord;
 in vec3 normalDir;
 in vec3 fragPos;
@@ -14,26 +14,34 @@ uniform sampler2D diffuseMap;
 
 #define POINT_NUM 4
 
-uniform vec3 eyePos;
-
-
 uniform PointLight pointlights[POINT_NUM];
-vec3 calcPointLight(PointLight pntLight, vec3 nor, vec3 fragPos, vec3 viewDir);
+vec3 calcPointLight(PointLight pntLight, vec3 nor, vec3 fragPos);
 void main()
 {
-	vec3 eyeDir = normalize(eyePos-fragPos);
-	vec3 nor = normalize(normalDir);
-	vec3 result;
+	vec3 normal = normalize(normalDir);
+	 // ambient
+	vec3 color = texture(diffuseMap,texcoord).rgb;
+    vec3 ambient = 0.0 * color;
+    // lighting
+    vec3 lighting = vec3(0.0);
 	
 	for(int i = 0; i <POINT_NUM; i++)
 	{
-		result+= calcPointLight(pointlights[i],nor,fragPos,eyeDir);
+		// diffuse
+        vec3 lightDir = normalize(pointlights[i].position - fragPos);
+        float diff = max(dot(lightDir, normal), 0.0);
+        vec3 diffuse = pointlights[i].color * diff * color;      
+        vec3 result = diffuse;        
+        // attenuation (use quadratic as we have gamma correction)
+        float distance = length(fragPos - pointlights[i].position);
+        result *= 1.0 / (distance * distance);
+        lighting += result;
 	}
-	color = vec4(result,1.0f);
+	FragColor = vec4(ambient + lighting,1.0f);
 }
 
 
-vec3 calcPointLight(PointLight light, vec3 nor, vec3 fragPos, vec3 viewDir)
+vec3 calcPointLight(PointLight light, vec3 nor, vec3 fragPos)
 {
 	vec3 diffuse = texture(diffuseMap,texcoord).xyz;
 
