@@ -15,6 +15,8 @@
     <None Include="hdrExposure.vertex" />
     <None Include="lighting.frag" />
     <None Include="lighting.vertex" />
+    <None Include="light_cube.frag" />
+    <None Include="light_cube.vertex" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HDRWithExposure.cpp" />

@@ -27,6 +27,8 @@ float lastFrame = 0.0f; // 上一帧的时间
 float lastX = WINDOW_WIDTH / 2.0f;
 float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
+bool  hdrFlg = false;
+float exposureValue = 1.0f;
 Camera camera;
 int main(int argc, char** argv)
 {
@@ -66,7 +68,7 @@ int main(int argc, char** argv)
 	//（译注：即表示你正在操作这个程序，Windows中拥有焦点的程序标题栏通常是有颜色的那个，
 	//而失去焦点的程序标题栏则是灰色的），光标应该停留在窗口中（除非程序失去焦点或者退出）。
 	//我们可以用一个简单地配置调用来完成：
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	//在调用这个函数之后，无论我们怎么去移动鼠标，光标都不会显示了，
 	// 它也不会离开窗口。对于FPS摄像机系统来说非常完美。
 	// 初始化GLEW 获取OpenGL函数
@@ -83,6 +85,7 @@ int main(int argc, char** argv)
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	VAOBuffer vaoBuffer;
+	
 	vector<vertex_attribute> vecAttrib;
 	map<vertex_attribute, int> mapAttrib2Size;
 	vecAttrib.emplace_back(vertex_attribute::position);
@@ -97,52 +100,70 @@ int main(int argc, char** argv)
 	// 创建缓存对象
 	GLuint VAOId = vaoBuffer.GetVAO();
 	GLuint VBOId = vaoBuffer.GetVBO();
+
+	VAOBuffer quadVAOBuffer;
+	float quadVertices[] = {
+		// positions        // texture Coords
+		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+		 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+	};
+	vecAttrib.clear();
+	mapAttrib2Size.clear();
+	vecAttrib.emplace_back(vertex_attribute::position);
+	vecAttrib.emplace_back(vertex_attribute::texcoord);
+	mapAttrib2Size[vertex_attribute::position] = 3;
+	mapAttrib2Size[vertex_attribute::texcoord] = 2;
+	quadVAOBuffer.BuildVAO(quadVertices, sizeof(quadVertices), nullptr,
+		0, vecAttrib, mapAttrib2Size);
+	// 创建缓存对象
+	GLuint quadVAOId = vaoBuffer.GetVAO();
+	GLuint quadVBOId = vaoBuffer.GetVBO();
 	//加载材质
-	GLuint texId  = TextureFromFile("wood.png", "../resources/textures");
+	GLuint woodTexId  = TextureFromFile("wood.png", "../resources/textures");
 	// Light sources
    // - Positions
 	vector<glm::vec3> lightPositions;
-	lightPositions.emplace_back(glm::vec3(0.0f, 0.0f, 49.5f));
-	lightPositions.emplace_back(glm::vec3(-1.4f, -1.9f, 9.0f));
-	lightPositions.emplace_back(glm::vec3(0.0f, -1.8f, 4.0f));
-	lightPositions.emplace_back(glm::vec3(0.8f, -1.7f, 6.0f));
+	lightPositions.emplace_back(glm::vec3(0.0f, 0.0f, 49.5f)); // 白光位置
+	lightPositions.emplace_back(glm::vec3(-1.4f, -1.9f, 9.0f));// 红光位置
+	lightPositions.emplace_back(glm::vec3(0.0f, -1.8f, 4.0f)); // 蓝光位置
+	lightPositions.emplace_back(glm::vec3(0.8f, -1.7f, 6.0f)); // 绿光位置
 	// - Colors
 	vector<glm::vec3> lightColors;
-	lightColors.emplace_back(glm::vec3(200.f, 200.f, 200.f));
-	lightColors.emplace_back(glm::vec3(0.1f, 0.0f, 0.0f));
-	lightColors.emplace_back(glm::vec3(0.0f, 0.0f, 0.2f));
-	lightColors.emplace_back(glm::vec3(0.0f, 0.1f, 0.0f));
-	//lightColors.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f));
-	//lightColors.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f));
-	//lightColors.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f));
-	//lightColors.emplace_back(glm::vec3(1.0f, 1.0f, 1.0f));
+	lightColors.emplace_back(glm::vec3(200.f, 200.f, 200.f));// 白光
+	lightColors.emplace_back(glm::vec3(0.1f, 0.0f, 0.0f));	 // 红光
+	lightColors.emplace_back(glm::vec3(0.0f, 0.0f, 0.2f));	 // 蓝光
+	lightColors.emplace_back(glm::vec3(0.0f, 0.1f, 0.0f));	 // 绿光
+
 	//set up floating point framebuffer to render scene;
-	//GLuint hdrFBO;
-	//glGenFramebuffers(1, &hdrFBO);
-	////-Create floating point color buffer
-	//GLuint colorBuffer;
-	//glGenTextures(1, &colorBuffer);
-	//glBindTexture(GL_TEXTURE_2D, colorBuffer);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	////-Create depth buffer(renderBuffer)
-	//GLuint rboDepthBuffer;
-	//glGenRenderbuffers(1, &rboDepthBuffer);
-	//glBindRenderbuffer(GL_RENDERBUFFER, rboDepthBuffer);
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT);
-	//
-	////attach buffers
-	//glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0);
-	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepthBuffer);
-	//if (!glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	//{
-	//	return 0;
-	//}
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	GLuint hdrFBO;
+	glGenFramebuffers(1, &hdrFBO);
+	//-Create floating point color buffer
+	GLuint colorBuffer;
+	glGenTextures(1, &colorBuffer);
+	glBindTexture(GL_TEXTURE_2D, colorBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+	//-Create depth buffer(renderBuffer)
+	GLuint rboDepthBuffer;
+	glGenRenderbuffers(1, &rboDepthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT);
+	
+	//attach buffers
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepthBuffer);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		return 0;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
+	
 	BoundingBox box;
 	int nVal = sizeof(cubeVertices2) / sizeof(GLfloat);
 	for (int i = 0; i < nVal; i += 8)
@@ -156,10 +177,12 @@ int main(int argc, char** argv)
 	model = glm::scale(model, glm::vec3(2.5f, 2.5f, 27.5f));
 	BoundingBox totalBoundingBox = box.Transformed(model);
 
-	camera.InitCamera(totalBoundingBox,0.1f);
+	camera.InitCamera(totalBoundingBox,0.3f);
 
 	// Section2 准备着色器程序
 	Shader shader("lighting.vertex", "lighting.frag");
+	Shader shaderCube("light_cube.vertex", "light_cube.frag");
+	Shader shaderHdr("hdrExposure.vertex", "hdrExposure.frag");
 	//Shader hdrShader("hdrExposure.vetex", "hdrExposure.frag");
 	shader.use();
 	glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
@@ -173,7 +196,15 @@ int main(int argc, char** argv)
 	}
 	shader.setBool("inverse_normals", true);
 	shader.unUse();
+	
+	shaderCube.use();
+	shaderCube.setMat4("projection", projectionMatrix);
+	shaderCube.unUse();
+
+	
+
 	int nVertex = sizeof(cubeVertices2) / (sizeof(GLfloat) * 8);
+	
 	// 开始游戏主循环
 	glEnable(GL_DEPTH_TEST);
 	glm::vec3 targetPos = totalBoundingBox.GetCenter();
@@ -187,6 +218,7 @@ int main(int argc, char** argv)
 		processInput(window, camera);
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
 
+		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -201,10 +233,28 @@ int main(int argc, char** argv)
 		shader.setMat4("view", viewMatrix);
 	
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texId);
+		glBindTexture(GL_TEXTURE_2D, woodTexId);
 
 		glDrawArrays(GL_TRIANGLES, 0, nVertex);
 		shader.unUse();
+
+		shaderCube.use();
+		shaderCube.setMat4("view", viewMatrix);
+		for (auto i = 0; i < lightPositions.size(); i++)
+		{
+			glm::mat4 lightModelMatrix(1.0f);
+			lightModelMatrix = glm::translate(lightModelMatrix, lightPositions[i]);
+			lightModelMatrix = glm::scale(lightModelMatrix, glm::vec3(0.2, 0.2, 0.2));
+			shaderCube.setMat4("model", lightModelMatrix);
+			shaderCube.setVec3("lightColor", lightColors[i]);
+			glDrawArrays(GL_TRIANGLES, 0, nVertex);
+		}
+		shaderCube.unUse();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		shaderHdr.use();
+		shaderHdr.setBool("hdr", hdrFlg);
+		shaderHdr.setFloat("exposure", exposureValue);
+		shaderHdr.unUse();
 		glBindVertexArray(0);
 		glUseProgram(0);
 

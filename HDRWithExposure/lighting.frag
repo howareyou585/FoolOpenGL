@@ -33,8 +33,8 @@ void main()
         vec3 diffuse = pointlights[i].color * diff * color;      
         vec3 result = diffuse;        
         // attenuation (use quadratic as we have gamma correction)
-        float distance = length(fragPos - pointlights[i].position);
-        result *= 1.0 / (distance * distance);
+        float dist = length(fragPos - pointlights[i].position);
+        result *= 1.0 / (dist * dist);
         lighting += result;
 	}
 	FragColor = vec4(ambient + lighting,1.0f);
