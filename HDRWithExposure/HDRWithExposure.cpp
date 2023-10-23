@@ -250,12 +250,13 @@ int main(int argc, char** argv)
 		}
 		shaderCube.unUse();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClearColor(0.f, 0.f, 0.f, 1.0f);
+		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindVertexArray(quadVAOId);
 
 		shaderHdr.use();
 		shaderHdr.setBool("enableHdrFlg", hdrFlg);
+		shaderHdr.setFloat("exposure", exposureValue);
 		//cout<<"hdrFlg:"<<hdrFlg<<endl;
 		std::cout << "hdr: " << (hdrFlg ? "on" : "off") << "| exposure: " << exposureValue << std::endl;
 
