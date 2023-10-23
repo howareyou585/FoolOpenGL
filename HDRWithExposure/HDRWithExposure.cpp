@@ -102,24 +102,19 @@ int main(int argc, char** argv)
 	GLuint VBOId = vaoBuffer.GetVBO();
 
 	VAOBuffer quadVAOBuffer;
-	float quadVertices[] = {
-		// positions        // texture Coords
-		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-		 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-	};
+	
 	vecAttrib.clear();
 	mapAttrib2Size.clear();
 	vecAttrib.emplace_back(vertex_attribute::position);
 	vecAttrib.emplace_back(vertex_attribute::texcoord);
 	mapAttrib2Size[vertex_attribute::position] = 3;
 	mapAttrib2Size[vertex_attribute::texcoord] = 2;
-	quadVAOBuffer.BuildVAO(quadVertices, sizeof(quadVertices), nullptr,
-		0, vecAttrib, mapAttrib2Size);
+	quadVAOBuffer.BuildVAO(squareVertices, sizeof(squareVertices), squareIndexes,
+		sizeof(squareIndexes), vecAttrib, mapAttrib2Size);
 	// 创建缓存对象
-	GLuint quadVAOId = vaoBuffer.GetVAO();
-	GLuint quadVBOId = vaoBuffer.GetVBO();
+	GLuint quadVAOId = quadVAOBuffer.GetVAO();
+	GLuint quadVBOId = quadVAOBuffer.GetVBO();
+
 	//加载材质
 	GLuint woodTexId  = TextureFromFile("wood.png", "../resources/textures");
 	// Light sources
@@ -183,7 +178,7 @@ int main(int argc, char** argv)
 	Shader shader("lighting.vertex", "lighting.frag");
 	Shader shaderCube("light_cube.vertex", "light_cube.frag");
 	Shader shaderHdr("hdrExposure.vertex", "hdrExposure.frag");
-	//Shader hdrShader("hdrExposure.vetex", "hdrExposure.frag");
+
 	shader.use();
 	glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
 	shader.setMat4("projection", projectionMatrix);
@@ -251,9 +246,16 @@ int main(int argc, char** argv)
 		}
 		shaderCube.unUse();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(0.f, 0.f, 0.f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glBindVertexArray(quadVAOId);
+
 		shaderHdr.use();
-		shaderHdr.setBool("hdr", hdrFlg);
-		shaderHdr.setFloat("exposure", exposureValue);
+		shaderHdr.setBool("enableHdrFlg", hdrFlg);
+		shaderHdr.setInt("colorBuffer", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, colorBuffer);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, squareIndexes);
 		shaderHdr.unUse();
 		glBindVertexArray(0);
 		glUseProgram(0);
@@ -309,6 +311,11 @@ void processInput(GLFWwindow *ptrWindow, Camera & camera)
 		direction = Camera_Movement::RIGHT;
 		bMove = true;
 		//camera.ProcessKeyboard()
+	}
+	if (glfwGetKey(ptrWindow, GLFW_KEY_SPACE) == GLFW_PRESS )
+	{
+		hdrFlg = !hdrFlg;
+		
 	}
 	if (bMove)
 	{
