@@ -29,6 +29,7 @@ float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
 bool  hdrFlg = false;
 float exposureValue = 1.0f;
+bool hdrKeyPressed = false;
 Camera camera;
 int main(int argc, char** argv)
 {
@@ -130,6 +131,9 @@ int main(int argc, char** argv)
 	lightColors.emplace_back(glm::vec3(0.1f, 0.0f, 0.0f));	 // 红光
 	lightColors.emplace_back(glm::vec3(0.0f, 0.0f, 0.2f));	 // 蓝光
 	lightColors.emplace_back(glm::vec3(0.0f, 0.1f, 0.0f));	 // 绿光
+	//lightColors.emplace_back(glm::vec3(100.1f, 100.1f, 100.1f));	 // 红光
+	//lightColors.emplace_back(glm::vec3(200.2f, 200.2f, 200.2f));	 // 蓝光
+	//lightColors.emplace_back(glm::vec3(300.1f, 300.1f, 300.1f));	 // 绿光
 
 	//set up floating point framebuffer to render scene;
 	GLuint hdrFBO;
@@ -252,6 +256,9 @@ int main(int argc, char** argv)
 
 		shaderHdr.use();
 		shaderHdr.setBool("enableHdrFlg", hdrFlg);
+		//cout<<"hdrFlg:"<<hdrFlg<<endl;
+		std::cout << "hdr: " << (hdrFlg ? "on" : "off") << "| exposure: " << exposureValue << std::endl;
+
 		shaderHdr.setInt("colorBuffer", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, colorBuffer);
@@ -316,6 +323,22 @@ void processInput(GLFWwindow *ptrWindow, Camera & camera)
 	{
 		hdrFlg = !hdrFlg;
 		
+	}
+	if (glfwGetKey(ptrWindow, GLFW_KEY_SPACE) == GLFW_RELEASE)
+	{
+		hdrKeyPressed = false;
+	}
+
+	if (glfwGetKey(ptrWindow, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		if (exposureValue > 0.0f)
+			exposureValue -= 0.001f;
+		else
+			exposureValue = 0.0f;
+	}
+	else if (glfwGetKey(ptrWindow, GLFW_KEY_E) == GLFW_PRESS)
+	{
+		exposureValue += 0.001f;
 	}
 	if (bMove)
 	{
