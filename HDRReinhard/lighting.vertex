@@ -1,0 +1,21 @@
+#version 330 core
+layout(location = 0) in vec3 aposition;
+layout(location = 1) in vec3 anormal;
+layout(location = 2) in vec2 atextcoord;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+uniform bool inverse_normals;
+out vec2 texcoord;
+out vec3 normalDir;
+out vec3 fragPos;
+
+void main()
+{
+    fragPos = vec3(model*vec4(aposition, 1.0));
+	vec3 n = inverse_normals ? -anormal : anormal;
+	mat3 normalMatrix = transpose(inverse(mat3(model)));
+	normalDir = normalize(normalMatrix * n);
+	texcoord = atextcoord;
+	gl_Position = projection * view * model * vec4(aposition, 1.0);
+}
