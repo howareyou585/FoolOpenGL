@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.902
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.33927.289
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SkyBox", "SkyBox\SkyBox.vcxproj", "{6126BC25-73CD-4C59-8824-A121BF4E8D6D}"
 EndProject
@@ -131,13 +131,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParallaxOcclusionMapping", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HDRWithExposure", "HDRWithExposure\HDRWithExposure.vcxproj", "{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GammaBaseDemo", "GammaBaseDemo\GammaBaseDemo.vcxproj", "{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HDRReinhard", "HDRReinhard\HDRReinhard.vcxproj", "{AA960CD4-6EB6-47B1-88AB-C8D9BEBE6E75}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sprites", "Sprites\Sprites.vcxproj", "{432286BE-69E0-4554-8867-39B1C9AA5DBD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Bloom", "Bloom\Bloom.vcxproj", "{1B678967-E791-422D-B2A6-2F626CC0848C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GammaWithSRGBFrameBufferDemo", "GammaWithSRGBFrameBufferDemo\GammaWithSRGBFrameBufferDemo.vcxproj", "{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GammaWithShaderDemo", "GammaWithShaderDemo\GammaWithShaderDemo.vcxproj", "{025D0EC0-C979-48C4-9584-7C6D810D2457}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -531,12 +533,6 @@ Global
 		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Release|x64.ActiveCfg = Release|Win32
 		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Release|x86.ActiveCfg = Release|Win32
 		{17D0CAB4-CCF9-49CA-96E4-7067D42B9817}.Release|x86.Build.0 = Release|Win32
-		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Debug|x64.ActiveCfg = Debug|Win32
-		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Debug|x86.ActiveCfg = Debug|Win32
-		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Debug|x86.Build.0 = Debug|Win32
-		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Release|x64.ActiveCfg = Release|Win32
-		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Release|x86.ActiveCfg = Release|Win32
-		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Release|x86.Build.0 = Release|Win32
 		{AA960CD4-6EB6-47B1-88AB-C8D9BEBE6E75}.Debug|x64.ActiveCfg = Debug|Win32
 		{AA960CD4-6EB6-47B1-88AB-C8D9BEBE6E75}.Debug|x86.ActiveCfg = Debug|Win32
 		{AA960CD4-6EB6-47B1-88AB-C8D9BEBE6E75}.Debug|x86.Build.0 = Debug|Win32
@@ -555,6 +551,18 @@ Global
 		{1B678967-E791-422D-B2A6-2F626CC0848C}.Release|x64.ActiveCfg = Release|Win32
 		{1B678967-E791-422D-B2A6-2F626CC0848C}.Release|x86.ActiveCfg = Release|Win32
 		{1B678967-E791-422D-B2A6-2F626CC0848C}.Release|x86.Build.0 = Release|Win32
+		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Debug|x64.ActiveCfg = Debug|Win32
+		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Debug|x86.ActiveCfg = Debug|Win32
+		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Debug|x86.Build.0 = Debug|Win32
+		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Release|x64.ActiveCfg = Release|Win32
+		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Release|x86.ActiveCfg = Release|Win32
+		{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}.Release|x86.Build.0 = Release|Win32
+		{025D0EC0-C979-48C4-9584-7C6D810D2457}.Debug|x64.ActiveCfg = Debug|Win32
+		{025D0EC0-C979-48C4-9584-7C6D810D2457}.Debug|x86.ActiveCfg = Debug|Win32
+		{025D0EC0-C979-48C4-9584-7C6D810D2457}.Debug|x86.Build.0 = Debug|Win32
+		{025D0EC0-C979-48C4-9584-7C6D810D2457}.Release|x64.ActiveCfg = Release|Win32
+		{025D0EC0-C979-48C4-9584-7C6D810D2457}.Release|x86.ActiveCfg = Release|Win32
+		{025D0EC0-C979-48C4-9584-7C6D810D2457}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

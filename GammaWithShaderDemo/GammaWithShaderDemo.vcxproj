@@ -15,10 +15,10 @@
     <None Include="cube.vertex" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GammaBaseDemo.cpp" />
+    <ClCompile Include="GammaWithShader.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}</ProjectGuid>
+    <ProjectGuid>{025D0EC0-C979-48C4-9584-7C6D810D2457}</ProjectGuid>
     <RootNamespace>GammaBaseDemo</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
