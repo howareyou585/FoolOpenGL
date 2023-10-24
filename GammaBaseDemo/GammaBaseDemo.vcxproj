@@ -10,6 +10,13 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="cube.frag" />
+    <None Include="cube.vertex" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GammaBaseDemo.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}</ProjectGuid>
     <RootNamespace>GammaBaseDemo</RootNamespace>
