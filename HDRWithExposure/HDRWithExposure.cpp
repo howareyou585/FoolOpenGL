@@ -14,6 +14,9 @@
 #include "learnopengl/boundingbox.h"
 #include "learnopengl/model.h"
 #include "learnopengl/camera.h"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 // 键盘回调函数原型声明
 //void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow *window, Camera & camera);
@@ -59,10 +62,26 @@ int main(int argc, char** argv)
 	// 创建的窗口的context指定为当前context
 	glfwMakeContextCurrent(window);
 
+#pragma region imgui初始化
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();//主题颜色
+	//ImGui::StyleColorsLight();
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 130");
+#pragma endregion
+
+
 	// 注册窗口键盘事件回调函数
 	//glfwSetKeyCallback(window, key_callback);
 	// 注册窗口鼠标事件回调函数
-	glfwSetCursorPosCallback(window, mouse_callback);
+	//glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 	//首先我们要告诉GLFW，它应该隐藏光标，并捕捉(Capture)它。
 	//捕捉光标表示的是，如果焦点在你的程序上
@@ -264,15 +283,42 @@ int main(int argc, char** argv)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, colorBuffer);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, squareIndexes);
+#pragma region create element
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		ImGui::Begin("Hello OpenGL");
+		//ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+		ImGui::Checkbox("Enable HDR", &hdrFlg);      // Edit bools storing our window open/close state
+		//ImGui::Checkbox("Another Window", &show_another_window);
+		ImGui::SliderFloat("EXPOSURE VALUE", &exposureValue, 0, 10);
+		//ImGui::SliderFloat("light1 position", &lightPositions[0].x, 0, 50);
+		//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::ColorEdit3("light2 color", (float*)&lightColors[1]); // Edit 3 floats representing a color
+		ImGui::ColorEdit3("light3 color", (float*)&lightColors[2]);
+		ImGui::ColorEdit3("light4 color", (float*)&lightColors[3]);
+	
+		ImGui::End();
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#pragma endregion
 		shaderHdr.unUse();
 		glBindVertexArray(0);
 		glUseProgram(0);
 
 		glfwSwapBuffers(window); // 交换缓存
+		
 	}
 	// 释放资源
 	glDeleteVertexArrays(1, &VAOId);
 	glDeleteBuffers(1, &VBOId);
+#pragma region Cleanup imgui
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+#pragma endregion
+
 	glfwTerminate();
 	return 0;
 }
