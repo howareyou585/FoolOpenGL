@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.33927.289
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.902
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SkyBox", "SkyBox\SkyBox.vcxproj", "{6126BC25-73CD-4C59-8824-A121BF4E8D6D}"
 EndProject
@@ -140,6 +140,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GammaWithSRGBFrameBufferDemo", "GammaWithSRGBFrameBufferDemo\GammaWithSRGBFrameBufferDemo.vcxproj", "{8C594DE3-FA28-4D06-9497-EC79B0FABE7D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GammaWithShaderDemo", "GammaWithShaderDemo\GammaWithShaderDemo.vcxproj", "{025D0EC0-C979-48C4-9584-7C6D810D2457}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GammaWithSRGBTexture", "GammaWithSRGBTexture\GammaWithSRGBTexture.vcxproj", "{112B21F9-243A-4D6B-BE7D-46F77B251783}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -563,6 +565,12 @@ Global
 		{025D0EC0-C979-48C4-9584-7C6D810D2457}.Release|x64.ActiveCfg = Release|Win32
 		{025D0EC0-C979-48C4-9584-7C6D810D2457}.Release|x86.ActiveCfg = Release|Win32
 		{025D0EC0-C979-48C4-9584-7C6D810D2457}.Release|x86.Build.0 = Release|Win32
+		{112B21F9-243A-4D6B-BE7D-46F77B251783}.Debug|x64.ActiveCfg = Debug|Win32
+		{112B21F9-243A-4D6B-BE7D-46F77B251783}.Debug|x86.ActiveCfg = Debug|Win32
+		{112B21F9-243A-4D6B-BE7D-46F77B251783}.Debug|x86.Build.0 = Debug|Win32
+		{112B21F9-243A-4D6B-BE7D-46F77B251783}.Release|x64.ActiveCfg = Release|Win32
+		{112B21F9-243A-4D6B-BE7D-46F77B251783}.Release|x86.ActiveCfg = Release|Win32
+		{112B21F9-243A-4D6B-BE7D-46F77B251783}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

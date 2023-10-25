@@ -1,0 +1,20 @@
+#version 330
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec3 aNormal;
+layout(location = 2) in vec2 aTexCoord;
+out VS_OUT
+{
+   vec2 texCoord;
+   vec3 normalDir;
+   vec3 fragPos;
+}vs_out;
+uniform mat4 view;
+uniform mat4 projection;
+
+void main()
+{
+	vs_out.texCoord = aTexCoord;
+	vs_out.normalDir = aNormal;// 因为model为单位矩阵不需要做变换。
+	vs_out.fragPos = aPosition;
+	gl_Position = projection * view * vec4(aPosition, 1.0);
+}
