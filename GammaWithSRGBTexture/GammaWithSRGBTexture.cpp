@@ -163,8 +163,8 @@ int main(int argc, char** argv)
 	shader.setInt("floorTexture", 0);
 	for (int i = 0; i < vecLightPosition.size(); i++)
 	{
-		shader.setVec3("lightPositions[" + to_string(i) + "]", vecLightPosition[i]);
-		shader.setVec3("lightColors[" + to_string(i) + "]", vecLightColor[i]);
+		shader.setVec3("Light[" + to_string(i) + "].position", vecLightPosition[i]);
+		shader.setVec3("Light[" + to_string(i) + "].color", vecLightColor[i]);
 	}
 	shader.unUse();
 	int nVertex = sizeof(planeVertices) / (sizeof(GLuint) * 8);
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	//glCullFace(GL_BACK);
 	glm::vec3 targetPos = box.GetCenter();
-	float distance = glm::length(targetPos - camera.Position);
+	//float distance = glm::length(targetPos - camera.Position);
 	//glEnable(GL_SRGB);
 	while (!glfwWindowShouldClose(window))
 	{
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
 		glBindVertexArray(VAOId);
 		
 		//鼠标移动，镜头方向不变
-		targetPos = camera.Position + distance * camera.Front;
+		//targetPos = camera.Position + distance * camera.Front;
 		glm::mat4 viewMatrix = camera.GetViewMatrix(targetPos);
 		shader.use();
 		shader.setMat4("view", viewMatrix);
