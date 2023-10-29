@@ -126,6 +126,13 @@ int main(int argc, char** argv)
 	// 创建缓存对象
 	GLuint VAOId = vaoBuffer.GetVAO();
 	GLuint VBOId = vaoBuffer.GetVBO();
+
+	VAOBuffer cubeVaoBuffer;
+	cubeVaoBuffer.BuildVAO(cubeVertices, sizeof(planeVertices), nullptr,
+		0, vecAttrib, mapAttrib2Size);
+	// 创建缓存对象
+	GLuint cubeVAOId = cubeVaoBuffer.GetVAO();
+	GLuint cubeVBOId = cubeVaoBuffer.GetVBO();
 	//加载材质
 	GLuint texId  = TextureFromFile("wood.png", "../resources/textures");
 	GLuint texId_gamma_correct = TextureFromFile("wood.png", "../resources/textures");
@@ -136,6 +143,7 @@ int main(int argc, char** argv)
 	vecLightPosition.emplace_back(glm::vec3(-1.0f, 0.0f, 0.0f));
 	vecLightPosition.emplace_back(glm::vec3(1.0f, 0.0f, 0.0f));
 	vecLightPosition.emplace_back(glm::vec3(3.0f, 0.0f, 0.0f));
+	
 	vector<glm::vec3> vecLightColor;
 	vecLightColor.reserve(4);
 	vecLightColor.emplace_back(glm::vec3(0.25));
@@ -159,15 +167,13 @@ int main(int argc, char** argv)
 	
 	// Section2 准备着色器程序
 	Shader shader("Gamma_correct.vertex", "Gamma_correct.frag");
+	Shader cubeShader("lightCube.vertex", "lightCube.frag");
 	shader.use();
 	shader.setInt("floorTexture", 0);
-	for (int i = 0; i < vecLightPosition.size(); i++)
-	{
-		shader.setVec3("Light[" + to_string(i) + "].position", vecLightPosition[i]);
-		shader.setVec3("Light[" + to_string(i) + "].color", vecLightColor[i]);
-	}
+	
 	shader.unUse();
-	int nVertex = sizeof(planeVertices) / (sizeof(GLuint) * 8);
+	int nVertex = sizeof(planeVertices) / (sizeof(GLfloat) * 8);
+	int nCubeVertex = sizeof(cubeVertices) / (sizeof(GLfloat) * 8);
 	// 开始游戏主循环
 	glEnable(GL_DEPTH_TEST);
 	//glCullFace(GL_BACK);
@@ -200,8 +206,26 @@ int main(int argc, char** argv)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, gammaFlg ? texId_gamma_correct :texId);
 		shader.setBool("gamma", gammaFlg);	
+		for (int i = 0; i < vecLightPosition.size(); i++)
+		{
+			shader.setVec3("Light[" + to_string(i) + "].position", vecLightPosition[i]);
+			shader.setVec3("Light[" + to_string(i) + "].color", vecLightColor[i]);
+		}
 		glDrawArrays(GL_TRIANGLES, 0, nVertex);
 		shader.unUse();
+		glBindVertexArray(cubeVAOId);
+		cubeShader.use();
+		cubeShader.setMat4("projection", projectionMatrix);
+		cubeShader.setMat4("view", viewMatrix);
+		for (int i = 0; i < vecLightPosition.size(); i++)
+		{
+			glm::mat4 tempModel(1.0);
+			tempModel = glm::scale(tempModel, glm::vec3(0.5, 0.5, 0.5));
+			tempModel = glm::translate(tempModel, vecLightPosition[i]);
+			cubeShader.setMat4("model",tempModel);
+			glDrawArrays(GL_TRIANGLES, 0, nCubeVertex);
+		}
+		cubeShader.unUse();
 #pragma region create element
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
@@ -210,7 +234,11 @@ int main(int argc, char** argv)
 		ImGui::Begin("Hello Gamma");
 		//ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
 		ImGui::Checkbox("Enable gamma", &gammaFlg);      // Edit bools storing our window open/close state
-		
+		for (int i = 0; i < vecLightPosition.size(); i++)
+		{
+			string strLightPos = "light position " + to_string(i);
+			ImGui::DragFloat3(strLightPos.c_str(), (float*)(&vecLightPosition[i]), vecLightPosition[i].x, vecLightPosition[i].y, vecLightPosition[i].z);
+		}
 
 		ImGui::End();
 		ImGui::Render();

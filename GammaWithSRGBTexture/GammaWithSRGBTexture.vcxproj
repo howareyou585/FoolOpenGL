@@ -34,6 +34,8 @@
   <ItemGroup>
     <None Include="Gamma_correct.frag" />
     <None Include="Gamma_correct.vertex" />
+    <None Include="lightCube.frag" />
+    <None Include="lightCube.vertex" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{112B21F9-243A-4D6B-BE7D-46F77B251783}</ProjectGuid>
