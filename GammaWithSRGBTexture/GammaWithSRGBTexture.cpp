@@ -237,7 +237,7 @@ int main(int argc, char** argv)
 		for (int i = 0; i < vecLightPosition.size(); i++)
 		{
 			string strLightPos = "light position " + to_string(i);
-			ImGui::DragFloat3(strLightPos.c_str(), (float*)(&vecLightPosition[i]), vecLightPosition[i].x, vecLightPosition[i].y, vecLightPosition[i].z);
+			ImGui::DragFloat3(strLightPos.c_str(), (float*)(&vecLightPosition[i]),1.0f,-20.0f,20.0f);
 		}
 
 		ImGui::End();
