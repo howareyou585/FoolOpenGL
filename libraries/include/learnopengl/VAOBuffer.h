@@ -43,6 +43,7 @@ public:
 	void Bind()
 	{
 		glBindVertexArray(m_vaoId);
+		
 	}
 	void UnBind()
 	{
