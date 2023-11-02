@@ -273,8 +273,8 @@ int main(int argc, char** argv)
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		ImGui::Begin("Hello Framebuffer");
-		if (ImGui::Button("ÌØÐ§"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
+		if (ImGui::Button("Effect"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+			counter = (counter+1)%6;
 		ImGui::SameLine();
 		ImGui::End();
 		ImGui::Render();
