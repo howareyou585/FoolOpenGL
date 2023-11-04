@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.902
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.33927.289
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SkyBox", "SkyBox\SkyBox.vcxproj", "{6126BC25-73CD-4C59-8824-A121BF4E8D6D}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Depth", "Depth\Depth.vcxproj", "{5D6FBFE7-6FAE-4C50-858D-9FC6570E4F1D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StencilTest", "StencilTest\StencilTest.vcxproj", "{6DBE2637-C77A-4BA4-B291-AF27DFB7F37D}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameBuffer", "FrameBuffer\FrameBuffer.vcxproj", "{636A1A8B-DA36-43BC-9C19-5D3A238301D3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AxisSample", "AxisSample\AxisSample.vcxproj", "{6FE26495-6D21-4F32-BC01-067DEC28F8DB}"
 EndProject
@@ -147,6 +145,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameBufferWithMulitPostpre
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HomeWork", "HomeWork\HomeWork.vcxproj", "{AE89D63C-D8A6-45A4-8BE1-1F7CD3F37EF4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{393A7B2E-1EED-4AED-AA0A-A9E8954983FF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LoadModel", "LoaderModel\LoadModel.vcxproj", "{636A1A8B-DA36-43BC-9C19-5D3A238301D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -179,12 +181,6 @@ Global
 		{6DBE2637-C77A-4BA4-B291-AF27DFB7F37D}.Release|x64.ActiveCfg = Release|Win32
 		{6DBE2637-C77A-4BA4-B291-AF27DFB7F37D}.Release|x86.ActiveCfg = Release|Win32
 		{6DBE2637-C77A-4BA4-B291-AF27DFB7F37D}.Release|x86.Build.0 = Release|Win32
-		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Debug|x64.ActiveCfg = Debug|Win32
-		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Debug|x86.ActiveCfg = Debug|Win32
-		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Debug|x86.Build.0 = Debug|Win32
-		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Release|x64.ActiveCfg = Release|Win32
-		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Release|x86.ActiveCfg = Release|Win32
-		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Release|x86.Build.0 = Release|Win32
 		{6FE26495-6D21-4F32-BC01-067DEC28F8DB}.Debug|x64.ActiveCfg = Debug|Win32
 		{6FE26495-6D21-4F32-BC01-067DEC28F8DB}.Debug|x86.ActiveCfg = Debug|Win32
 		{6FE26495-6D21-4F32-BC01-067DEC28F8DB}.Debug|x86.Build.0 = Debug|Win32
@@ -587,6 +583,12 @@ Global
 		{AE89D63C-D8A6-45A4-8BE1-1F7CD3F37EF4}.Release|x64.ActiveCfg = Release|Win32
 		{AE89D63C-D8A6-45A4-8BE1-1F7CD3F37EF4}.Release|x86.ActiveCfg = Release|Win32
 		{AE89D63C-D8A6-45A4-8BE1-1F7CD3F37EF4}.Release|x86.Build.0 = Release|Win32
+		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Debug|x64.ActiveCfg = Debug|Win32
+		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Debug|x86.ActiveCfg = Debug|Win32
+		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Debug|x86.Build.0 = Debug|Win32
+		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Release|x64.ActiveCfg = Release|Win32
+		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Release|x86.ActiveCfg = Release|Win32
+		{636A1A8B-DA36-43BC-9C19-5D3A238301D3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
