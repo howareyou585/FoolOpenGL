@@ -15,6 +15,14 @@ enum class vertex_attribute
 	tangent,
 	bitangent
 };
+struct  VertexData
+{
+	glm::vec3 position;
+	// normal
+	glm::vec3 normal;
+	// texCoords
+	glm::vec2 texCoord;
+};
 class VAOBuffer
 {
 public:
@@ -118,6 +126,40 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		bRet = true;
 	}
+
+	bool BuildVAO(vector<VertexData>& vecVertex, vector<unsigned int>& vecIndex)
+	{
+		bool bRet = false;
+		GL_INPUT_ERROR
+			glGenVertexArrays(1, &m_vaoId);
+		glBindVertexArray(m_vaoId);
+
+		//使用一个VBO保存位置 法向 纹理坐标
+		glGenBuffers(1, &m_vboId);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
+		auto length = vecVertex.size() * sizeof(VertexData);
+		glBufferData(GL_ARRAY_BUFFER, length, vecVertex.data(), GL_STATIC_DRAW);
+		// set the vertex attribute pointers
+		// vertex Positions
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)0);
+		// vertex normals
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offsetof(VertexData, normal));
+		// vertex texture coords
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offsetof(VertexData, texCoord));
+
+
+		glGenBuffers(1, &m_eboId);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboId);
+
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vecIndex.size() * sizeof(GLuint), vecIndex.data(), GL_STATIC_DRAW);
+		GL_INPUT_ERROR
+			glBindVertexArray(0);
+		return true;
+	}
+
 	GLuint GetVAO() { return m_vaoId; }
 	GLuint GetVBO() { return m_vboId; }
 	GLuint GetEBO() { return m_eboId; }
@@ -207,6 +249,8 @@ private:
 		glBindVertexArray(0);
 		return true;
 	}
+
+	
 	bool BuildVAO(vector<glm::vec3>& vecPositon,
 		vector<glm::vec2>& vecTexcoord,
 		vector<glm::vec3>& vecNormal,

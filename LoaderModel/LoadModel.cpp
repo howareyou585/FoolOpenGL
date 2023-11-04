@@ -12,9 +12,10 @@
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 #include "assimp/Importer.hpp"
-#include "learnopengl/vertex.h"
+#include "learnopengl/model.h"
 #include "learnopengl/filesystem.h"
 #include "learnopengl/camera.h"
+#include "learnopengl/vaobuffer.h"
 
 using namespace std;
 // 键盘回调函数原型声明
@@ -80,7 +81,7 @@ int main(int argc, char** argv)
 
 
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile("../resources/models/3dmax/baseModel.obj", aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	const aiScene* scene = importer.ReadFile("../resources/models/nanosuit/nanosuit.obj", aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 	// check for errors
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 	{
@@ -89,8 +90,9 @@ int main(int argc, char** argv)
 	}
 	//定义vecVertices用来缓存顶点
 	vector<VertexData>vecVertices;
+	vector<float> vecValue;
 	//定义vecIndices用来缓存索引
-	vector<unsigned> vecIndices;
+	vector<unsigned int> vecIndices;
 
 	auto numMeshes = scene->mNumMeshes;
 	cout << "mesh count = " << numMeshes << endl;
@@ -136,37 +138,46 @@ int main(int argc, char** argv)
 			vd.texCoord.x = txtcoord.x;
 			vd.texCoord.y = txtcoord.y;
 			vecVertices.emplace_back(vd);
-		
+			vecValue.push_back(position.x);
+			vecValue.push_back(position.y);
+			vecValue.push_back(position.z);
 			//texCoord
 		}
 
 		
-		//获取面的数量和面数组
-		//auto numFaecs = ptrMesh->mNumFaces;
-		//auto faces = ptrMesh->mFaces;
-		//cout << "第" << i << "个mesh 有" << numFaecs <<"个面" << endl;
-		//for (auto j = 0; j < numFaecs; j++)
-		//{
-		//	//获取面的索引
-		//	auto face = faces[j];
-		//	auto numIndices = face.mNumIndices;
-		//	auto indices = face.mIndices;
-		//	cout << "face " << j << "顶点索引的数量" << numIndices << endl;
-		//	for (auto k = 0; k < numIndices; k++)
-		//	{
-		//		cout << indices[k];
-		//		if (k != numIndices - 1)
-		//		{
-		//			cout << ",";
-		//		}
-		//		else
-		//		{
-		//			cout << endl;
-		//		}
-		//	}
-		//}
 
+		//获取面的数量和面数组
+		auto numFaecs = ptrMesh->mNumFaces;
+		auto faces = ptrMesh->mFaces;
+		cout << "第" << i << "个mesh 有" << numFaecs <<"个面" << endl;
+		for (auto j = 0; j < numFaecs; j++)
+		{
+			//获取面的索引
+			auto face = faces[j];
+			auto numIndices = face.mNumIndices;
+			auto indices = face.mIndices;
+			for (auto k = 0; k < numIndices; k++)
+			{
+				vecIndices.emplace_back(indices[k]);
+			}
+		}
+		for (auto ids : vecIndices)
+		{
+			cout << ids << ",";
+		}
+		cout << endl;
+		break;
 	}
+
+	VAOBuffer vaoBuffer;
+	vaoBuffer.BuildVAO(vecVertices, vecIndices);
+	auto vaoId = vaoBuffer.GetVAO();
+	auto vboid = vaoBuffer.GetVBO();
+	Shader shader("model.vertex", "model.frag");
+
+	BoundingBox box;
+	box.Merge(vecValue.data(), vecValue.size(), 8);
+	camera.InitCamera(box, 0.9);
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -180,12 +191,23 @@ int main(int argc, char** argv)
 		lastFrame = currentFrame; // 上一帧的时间
 		processInput(window, camera);
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
-
+		
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		vaoBuffer.Bind();
+		shader.use();
+		glm::mat4 model(1.0);
+		model = glm::rotate(model, glm::radians(currentFrame), glm::vec3(0, 1, 0));
+		glm::mat4 view = camera.GetViewMatrix();
+		glm::mat4 projection = camera.GetProjectionMatrix(WINDOW_WIDTH, WINDOW_HEIGHT);
+		shader.setMat4("model", model);
 		
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
+		//glDrawElements(GL_TRIANGLES, vecIndices.size(), GL_UNSIGNED_INT, &vecIndices[0]);
+		glDrawArrays(GL_TRIANGLES, 0, vecVertices.size());
+		shader.unUse();
 		//nanosuit.Draw(shader);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
