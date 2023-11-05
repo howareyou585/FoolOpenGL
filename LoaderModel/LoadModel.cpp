@@ -106,6 +106,7 @@ int main(int argc, char** argv)
 		{
 			cout << "第" << i << "个mesh 为 NULL" << endl;
 		}
+		
 		string strName(ptrMesh->mName.C_Str());
 		//获取顶点的数量和顶点数组
 		auto numVertices = ptrMesh->mNumVertices;
@@ -169,17 +170,27 @@ int main(int argc, char** argv)
 		cout << endl;
 		break;
 	}
-
+	//vector<glm::vec3> vecPosition;
+	//vector<glm::vec3> vecNormal;
+	//vector<glm::vec2> vecUV;
+	//for (int i = 0; i < vecVertices.size(); i++)
+	//{
+	//	vecPosition.emplace_back(vecVertices[i].position);
+	//	vecNormal.emplace_back(vecVertices[i].normal);
+	//	vecUV.emplace_back(vecVertices[i].texCoord);
+	//}
+	
 	VAOBuffer vaoBuffer;
 	vaoBuffer.BuildVAO(vecVertices, vecIndices);
+	//vaoBuffer.BuildVAO(vecPosition,  vecUV, vecNormal, vecIndices);
 	auto vaoId = vaoBuffer.GetVAO();
 	auto vboId = vaoBuffer.GetVBO();
 	Shader shader("model.vertex", "model.frag");
 
 	BoundingBox box;
-	box.Merge(vecValue.data(), vecValue.size(), 8);
+	box.Merge(vecValue.data(), vecValue.size(), 3);
 	
-	camera.InitCamera(box, 0.9);
+	camera.InitCamera(box, 1.2);
 	glm::vec3 targetPos = box.GetCenter();
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -204,8 +215,8 @@ int main(int argc, char** argv)
 		glm::mat4 view(1.0);
 		glm::mat4 projection(1.0);
 		model = glm::rotate(model, glm::radians(currentFrame), glm::vec3(0, 1, 0));
-		//view = camera.GetViewMatrix(targetPos);
-		//projection = camera.GetProjectionMatrix(WINDOW_WIDTH, WINDOW_HEIGHT);
+		view = camera.GetViewMatrix(targetPos);
+		projection = camera.GetProjectionMatrix(WINDOW_WIDTH, WINDOW_HEIGHT);
 		shader.setMat4("model", model);
 		
 		shader.setMat4("view", view);

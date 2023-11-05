@@ -126,6 +126,56 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		bRet = true;
 	}
+	bool BuildVAO(vector<glm::vec3>& vecPositon,
+		vector<glm::vec2>& vecTexcoord,
+		vector<glm::vec3>& vecNormal,
+		vector<unsigned int>& vecIndex)
+	{
+		GL_INPUT_ERROR
+			glGenVertexArrays(1, &m_vaoId);
+		glBindVertexArray(m_vaoId);
+
+		//使用一个VBO保存位置 法向 纹理坐标
+		glGenBuffers(1, &m_vboId);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
+		auto length = vecPositon.size() * sizeof(glm::vec3) +
+			vecNormal.size() * sizeof(glm::vec3) +
+			vecTexcoord.size() * sizeof(glm::vec2);
+		glBufferData(GL_ARRAY_BUFFER, length, nullptr, GL_STATIC_DRAW);
+		GL_INPUT_ERROR
+			//position
+			GLuint offset_positon = 0;
+		GLuint size_position = vecPositon.size() * sizeof(glm::vec3);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, size_position, vecPositon.data());
+		GL_INPUT_ERROR
+			////normal
+			GLuint offset_normal = size_position;
+		GLuint size_normal = vecNormal.size() * sizeof(glm::vec3);
+		glBufferSubData(GL_ARRAY_BUFFER, offset_normal, size_normal, vecNormal.data());
+		GL_INPUT_ERROR
+			////textcoord
+			GLuint offset_textcoord = size_position + size_normal;
+		GLuint size_textcoord = vecTexcoord.size() * sizeof(glm::vec2);
+		glBufferSubData(GL_ARRAY_BUFFER, offset_textcoord, size_textcoord, vecTexcoord.data());
+		GL_INPUT_ERROR
+			glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)offset_normal);
+
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)offset_textcoord);
+		GL_INPUT_ERROR
+
+			glGenBuffers(1, &m_eboId);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboId);
+
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vecIndex.size() * sizeof(GLuint), vecIndex.data(), GL_STATIC_DRAW);
+		GL_INPUT_ERROR
+			glBindVertexArray(0);
+		return true;
+	}
 
 	bool BuildVAO(vector<VertexData>& vecVertex, vector<unsigned int>& vecIndex)
 	{
@@ -156,7 +206,7 @@ public:
 		glGenBuffers(1, &m_eboId);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboId);
 
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vecIndex.size() * sizeof(GLuint), vecIndex.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vecIndex.size() * sizeof(GLuint), &vecIndex[0], GL_STATIC_DRAW);
 		GL_INPUT_ERROR
 			glBindVertexArray(0);
 		return true;
@@ -252,59 +302,6 @@ private:
 		return true;
 	}
 
-	
-	bool BuildVAO(vector<glm::vec3>& vecPositon,
-		vector<glm::vec2>& vecTexcoord,
-		vector<glm::vec3>& vecNormal,
-		vector<unsigned int>& vecIndex)
-	{
-		GL_INPUT_ERROR
-		glGenVertexArrays(1, &m_vaoId);
-		glBindVertexArray(m_vaoId);
-		
-		//使用一个VBO保存位置 法向 纹理坐标
-		glGenBuffers(1, &m_vboId);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
-		auto length = vecPositon.size() * sizeof(glm::vec3) +
-			vecNormal.size() * sizeof(glm::vec3) +
-			vecTexcoord.size() * sizeof(glm::vec2);
-		glBufferData(GL_ARRAY_BUFFER, length, nullptr, GL_STATIC_DRAW);
-		GL_INPUT_ERROR
-		//position
-		GLuint offset_positon = 0;
-		GLuint size_position = vecPositon.size() * sizeof(glm::vec3);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, size_position, vecPositon.data());
-		GL_INPUT_ERROR
-		////normal
-		GLuint offset_normal = size_position;
-		GLuint size_normal = vecNormal.size() * sizeof(glm::vec3);
-		glBufferSubData(GL_ARRAY_BUFFER, offset_normal, size_normal, vecNormal.data());
-		GL_INPUT_ERROR
-		////textcoord
-		GLuint offset_textcoord = size_position + size_normal;
-		GLuint size_textcoord = vecTexcoord.size() * sizeof(glm::vec2);
-		glBufferSubData(GL_ARRAY_BUFFER, offset_textcoord, size_textcoord, vecTexcoord.data());
-		GL_INPUT_ERROR
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)offset_normal);
-
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)offset_textcoord);
-		GL_INPUT_ERROR
-
-		glGenBuffers(1, &m_eboId);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboId);
-
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vecIndex.size() * sizeof(GLuint), vecIndex.data(), GL_STATIC_DRAW);
-		GL_INPUT_ERROR
-		glBindVertexArray(0);
-		return true;
-	}
-
-	
 
 	void SetTexture(vector<Model*>& vecModel)
 	{

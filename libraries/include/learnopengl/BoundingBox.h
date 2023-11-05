@@ -83,7 +83,8 @@ public:
 	{
 		for (int i = 0; i < count; i += strid)
 		{
-			Merge(glm::vec3(vertices[i], vertices[i+1], vertices[i+2]));
+			glm::vec3 pnt(vertices[i], vertices[i + 1], vertices[i + 2]);
+			Merge(pnt);
 		}
 		m_defined = true;
 	}
