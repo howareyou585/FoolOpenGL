@@ -85,6 +85,7 @@ public:
 		{
 			Merge(glm::vec3(vertices[i], vertices[i+1], vertices[i+2]));
 		}
+		m_defined = true;
 	}
 	void BoundingBox::Define(const glm::vec3 * vertices, unsigned count)
 	{

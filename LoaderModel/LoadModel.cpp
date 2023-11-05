@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-
+	GL_INPUT_ERROR
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile("../resources/models/nanosuit/nanosuit.obj", aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 	// check for errors
@@ -88,6 +88,7 @@ int main(int argc, char** argv)
 		cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
 		return 0;
 	}
+	
 	//定义vecVertices用来缓存顶点
 	vector<VertexData>vecVertices;
 	vector<float> vecValue;
@@ -123,7 +124,7 @@ int main(int argc, char** argv)
 			auto position = ptrVertices[j];
 			auto normal = ptrNormals[j];
 			auto txtcoord = textureCoord[j];
-			cout << "(" << position.x << "," << position.y << "," << position.z << normal.x << "," << normal.y << "," << normal.z << "," << txtcoord.x << "," << txtcoord.y << "," << txtcoord.z << ")" << endl;
+			cout << "(" << position.x << "," << position.y << "," << position.z <<","<< normal.x << "," << normal.y << "," << normal.z << "," << txtcoord.x << "," << txtcoord.y << "," << txtcoord.z << ")" << endl;
 			
 			VertexData vd;
 			vd.position.x = position.x;
@@ -172,12 +173,14 @@ int main(int argc, char** argv)
 	VAOBuffer vaoBuffer;
 	vaoBuffer.BuildVAO(vecVertices, vecIndices);
 	auto vaoId = vaoBuffer.GetVAO();
-	auto vboid = vaoBuffer.GetVBO();
+	auto vboId = vaoBuffer.GetVBO();
 	Shader shader("model.vertex", "model.frag");
 
 	BoundingBox box;
 	box.Merge(vecValue.data(), vecValue.size(), 8);
+	
 	camera.InitCamera(box, 0.9);
+	glm::vec3 targetPos = box.GetCenter();
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -198,18 +201,20 @@ int main(int argc, char** argv)
 		vaoBuffer.Bind();
 		shader.use();
 		glm::mat4 model(1.0);
+		glm::mat4 view(1.0);
+		glm::mat4 projection(1.0);
 		model = glm::rotate(model, glm::radians(currentFrame), glm::vec3(0, 1, 0));
-		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 projection = camera.GetProjectionMatrix(WINDOW_WIDTH, WINDOW_HEIGHT);
+		//view = camera.GetViewMatrix(targetPos);
+		//projection = camera.GetProjectionMatrix(WINDOW_WIDTH, WINDOW_HEIGHT);
 		shader.setMat4("model", model);
 		
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 		//glDrawElements(GL_TRIANGLES, vecIndices.size(), GL_UNSIGNED_INT, &vecIndices[0]);
 		glDrawArrays(GL_TRIANGLES, 0, vecVertices.size());
-		shader.unUse();
+		//shader.unUse();
 		//nanosuit.Draw(shader);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);
 
