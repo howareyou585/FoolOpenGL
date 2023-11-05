@@ -138,7 +138,8 @@ public:
 		glGenBuffers(1, &m_vboId);
 		glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
 		auto length = vecVertex.size() * sizeof(VertexData);
-		glBufferData(GL_ARRAY_BUFFER, length, vecVertex.data(), GL_STATIC_DRAW);
+		//glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, length, &vecVertex[0], GL_STATIC_DRAW);
 		// set the vertex attribute pointers
 		// vertex Positions
 		glEnableVertexAttribArray(0);
@@ -151,7 +152,6 @@ public:
 		glEnableVertexAttribArray(2);
 		auto len2 = offsetof(VertexData, texCoord);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offsetof(VertexData, texCoord));
-
 
 		glGenBuffers(1, &m_eboId);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboId);

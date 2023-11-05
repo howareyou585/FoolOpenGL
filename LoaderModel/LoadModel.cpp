@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 
 	GL_INPUT_ERROR
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile("../resources/models/nanosuit/nanosuit.obj", aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	const aiScene* scene = importer.ReadFile("../resources/models/3dmax/baseModel.obj", aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 	// check for errors
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 	{
