@@ -16,6 +16,7 @@
 #include "learnopengl/filesystem.h"
 #include "learnopengl/camera.h"
 #include "learnopengl/vaobuffer.h"
+#include "learnopengl/vertexset.h"
 
 using namespace std;
 // 键盘回调函数原型声明
@@ -95,108 +96,111 @@ int main(int argc, char** argv)
 	//定义vecIndices用来缓存索引
 	vector<unsigned int> vecIndices;
 
-	auto numMeshes = scene->mNumMeshes;
-	cout << "mesh count = " << numMeshes << endl;
-	auto meshes = scene->mMeshes;
 	
-	for (int i = 0; i < numMeshes; i++)
-	{
-		auto ptrMesh = meshes[i];
-		if (!ptrMesh)
-		{
-			cout << "第" << i << "个mesh 为 NULL" << endl;
-		}
-		
-		string strName(ptrMesh->mName.C_Str());
-		//获取顶点的数量和顶点数组
-		auto numVertices = ptrMesh->mNumVertices;
-		//auto numNormals = ptrMesh->mNormals;
-		
-		auto ptrVertices = ptrMesh->mVertices;
-		auto ptrNormals = ptrMesh->mNormals;
-		auto ptrTextureCoords = ptrMesh->mTextureCoords;
-		auto textureCoord = ptrTextureCoords[0];
-		
-		//mesh中的顶点信息
-		cout << "-------------------------------------------" << endl;
-		cout << "第" << i <<"个mesh 的顶点数量" << numVertices  << endl;
-		for (auto j = 0; j < numVertices; j++)
-		{
-			auto position = ptrVertices[j];
-			auto normal = ptrNormals[j];
-			auto txtcoord = textureCoord[j];
-			cout << "(" << position.x << "," << position.y << "," << position.z <<","<< normal.x << "," << normal.y << "," << normal.z << "," << txtcoord.x << "," << txtcoord.y << "," << txtcoord.z << ")" << endl;
-			
-			VertexData vd;
-			vd.position.x = position.x;
-			vd.position.y = position.y;
-			vd.position.z = position.z;
-
-			
-			vd.normal.x = normal.x;
-			vd.normal.y = normal.y;
-			vd.normal.z = normal.z;
-
-			vd.texCoord.x = txtcoord.x;
-			vd.texCoord.y = txtcoord.y;
-			vecVertices.emplace_back(vd);
-			vecValue.push_back(position.x);
-			vecValue.push_back(position.y);
-			vecValue.push_back(position.z);
-			//texCoord
-		}
-
-		
-
-		//获取面的数量和面数组
-		auto numFaecs = ptrMesh->mNumFaces;
-		auto faces = ptrMesh->mFaces;
-		cout << "第" << i << "个mesh 有" << numFaecs <<"个面" << endl;
-		for (auto j = 0; j < numFaecs; j++)
-		{
-			//获取面的索引
-			auto face = faces[j];
-			auto numIndices = face.mNumIndices;
-			auto indices = face.mIndices;
-			for (auto k = 0; k < numIndices; k++)
-			{
-				vecIndices.emplace_back(indices[k]);
-			}
-		}
-		for (auto ids : vecIndices)
-		{
-			cout << ids << ",";
-		}
-		cout << endl;
-		break;
-	}
-	//vector<glm::vec3> vecPosition;
-	//vector<glm::vec3> vecNormal;
-	//vector<glm::vec2> vecUV;
-	//for (int i = 0; i < vecVertices.size(); i++)
+	//auto numMeshes = scene->mNumMeshes;
+	//cout << "mesh count = " << numMeshes << endl;
+	//auto meshes = scene->mMeshes;
+	//
+	//for (int i = 0; i < numMeshes; i++)
 	//{
-	//	vecPosition.emplace_back(vecVertices[i].position);
-	//	vecNormal.emplace_back(vecVertices[i].normal);
-	//	vecUV.emplace_back(vecVertices[i].texCoord);
+	//	auto ptrMesh = meshes[i];
+	//	if (!ptrMesh)
+	//	{
+	//		cout << "第" << i << "个mesh 为 NULL" << endl;
+	//	}
+	//	
+	//	string strName(ptrMesh->mName.C_Str());
+	//	//获取顶点的数量和顶点数组
+	//	auto numVertices = ptrMesh->mNumVertices;
+	//	//auto numNormals = ptrMesh->mNormals;
+	//	
+	//	auto ptrVertices = ptrMesh->mVertices;
+	//	auto ptrNormals = ptrMesh->mNormals;
+	//	auto ptrTextureCoords = ptrMesh->mTextureCoords;
+	//	auto textureCoord = ptrTextureCoords[0];
+	//	
+	//	//mesh中的顶点信息
+	//	cout << "-------------------------------------------" << endl;
+	//	cout << "第" << i <<"个mesh 的顶点数量" << numVertices  << endl;
+	//	for (auto j = 0; j < numVertices; j++)
+	//	{
+	//		auto position = ptrVertices[j];
+	//		auto normal = ptrNormals[j];
+	//		auto txtcoord = textureCoord[j];
+	//		cout << "(" << position.x << "," << position.y << "," << position.z <<","<< normal.x << "," << normal.y << "," << normal.z << "," << txtcoord.x << "," << txtcoord.y << "," << txtcoord.z << ")" << endl;
+	//		
+	//		VertexData vd;
+	//		vd.position.x = position.x;
+	//		vd.position.y = position.y;
+	//		vd.position.z = position.z;
+
+	//		
+	//		vd.normal.x = normal.x;
+	//		vd.normal.y = normal.y;
+	//		vd.normal.z = normal.z;
+
+	//		vd.texCoord.x = txtcoord.x;
+	//		vd.texCoord.y = txtcoord.y;
+	//		vecVertices.emplace_back(vd);
+	//		vecValue.push_back(position.x);
+	//		vecValue.push_back(position.y);
+	//		vecValue.push_back(position.z);
+	//		//texCoord
+	//	}
+
+	//	
+
+	//	//获取面的数量和面数组
+	//	auto numFaecs = ptrMesh->mNumFaces;
+	//	auto faces = ptrMesh->mFaces;
+	//	cout << "第" << i << "个mesh 有" << numFaecs <<"个面" << endl;
+	//	for (auto j = 0; j < numFaecs; j++)
+	//	{
+	//		//获取面的索引
+	//		auto face = faces[j];
+	//		auto numIndices = face.mNumIndices;
+	//		auto indices = face.mIndices;
+	//		for (auto k = 0; k < numIndices; k++)
+	//		{
+	//			vecIndices.emplace_back(indices[k]);
+	//		}
+	//	}
+	//	for (auto ids : vecIndices)
+	//	{
+	//		cout << ids << ",";
+	//	}
+	//	cout << endl;
+	//	break;
 	//}
 	
+	vector<vertex_attribute> vecAttrib;
+	vecAttrib.emplace_back(vertex_attribute::position);
+	vecAttrib.emplace_back(vertex_attribute::normal);
+	vecAttrib.emplace_back(vertex_attribute::texcoord);
+	map<vertex_attribute, int> mapAttrib2Size;
+	mapAttrib2Size[vertex_attribute::position] = 3;
+	mapAttrib2Size[vertex_attribute::normal] = 3;
+	mapAttrib2Size[vertex_attribute::texcoord] = 2;
 	VAOBuffer vaoBuffer;
-	vaoBuffer.BuildVAO(vecVertices, vecIndices);
+	vaoBuffer.BuildVAO(cubeVertices, sizeof(cubeVertices), nullptr, 0, vecAttrib, mapAttrib2Size);
+	//vaoBuffer.BuildVAO(vecVertices, vecIndices);
 	//vaoBuffer.BuildVAO(vecPosition,  vecUV, vecNormal, vecIndices);
 	auto vaoId = vaoBuffer.GetVAO();
 	auto vboId = vaoBuffer.GetVBO();
+	auto nvetex = sizeof(cubeVertices) / (sizeof(float) * 8);
 	Shader shader("model.vertex", "model.frag");
 
 	BoundingBox box;
-	box.Merge(vecValue.data(), vecValue.size(), 3);
-	
-	camera.InitCamera(box, 1.2);
+	//box.Merge(vecValue.data(), vecValue.size(), 3);
+	box.Merge(cubeVertices, sizeof(cubeVertices)/sizeof(float), 8);
+	camera.InitCamera(box, 0.8);
 	glm::vec3 targetPos = box.GetCenter();
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	
 	glEnable(GL_DEPTH_TEST);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -209,7 +213,7 @@ int main(int argc, char** argv)
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		vaoBuffer.Bind();
+		glBindVertexArray(vaoId);
 		shader.use();
 		glm::mat4 model(1.0);
 		glm::mat4 view(1.0);
@@ -221,8 +225,8 @@ int main(int argc, char** argv)
 		
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
-		//glDrawElements(GL_TRIANGLES, vecIndices.size(), GL_UNSIGNED_INT, &vecIndices[0]);
-		glDrawArrays(GL_TRIANGLES, 0, vecVertices.size());
+		//glDrawElements(GL_TRIANGLES, static_cast<int>(vecIndices.size()), GL_UNSIGNED_INT, &vecIndices[0]);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		//shader.unUse();
 		//nanosuit.Draw(shader);
 		//glBindBuffer(GL_ARRAY_BUFFER, 0);

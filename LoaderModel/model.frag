@@ -4,5 +4,5 @@ in vec2 texcoord;
 in vec3 nor;
 void main()
 {
-	color = vec4(nor,1.0f);
+	color = vec4(1.0,0.0,0.0,1.0f);
 }
