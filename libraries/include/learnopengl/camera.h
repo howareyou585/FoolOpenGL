@@ -26,6 +26,9 @@ const float ZOOM        =  45.0f;
 const float FAR         = 10000.0f;
 const float NEAR        = 0.1f;
 
+const  float NEAR_PLANE_FACTOR = 0.01f;  // 近平面比例
+const  float FAR_PLANE_FACTOR = 10.f;    // 远平面比例
+
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera
@@ -101,6 +104,10 @@ public:
 		//Front = glm::normalize(center - Position);
         Position = center - Front * length * factor;
         //Right = glm::normalize(glm::cross(Front, Up));
+
+        SetNearPlane(length *1.5 * NEAR_PLANE_FACTOR);
+        SetFarPlane(length * 1.5 * FAR_PLANE_FACTOR);
+
         bRet = true;
         return bRet;
     }
@@ -153,6 +160,15 @@ public:
     void SetPosition(glm::vec3 & pnt)
     {
         Position = pnt;
+    }
+
+    void SetNearPlane(float nearVal)
+    {
+        NearPlane = nearVal;
+    }
+    void SetFarPlane(float farVal)
+    {
+        FarPlane = farVal;
     }
 private:
     // calculates the front vector from the Camera's (updated) Euler Angles
