@@ -18,6 +18,12 @@
 #include "learnopengl/vaobuffer.h"
 #include "learnopengl/vertexset.h"
 
+struct MeshData
+{
+	int vertNum; 
+	int indexNum;
+	int offsetIndex;
+};
 using namespace std;
 // 键盘回调函数原型声明
 void processInput(GLFWwindow* window, Camera& camera);
@@ -31,7 +37,138 @@ float lastFrame = 0.0f; // 上一帧的时间
 float lastX = WINDOW_WIDTH / 2.0f;
 float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
+GLuint vaoId = 0;
+GLuint vboId = 0;
 Camera camera;
+
+bool importFile(
+				string & strModelFile,// 模型文件路径
+				vector<VertexData>&vecVertices,//定义vecVertices用来缓存顶点
+				vector<float>& vecValue,//定义vecIndices用来缓存索引
+				vector<unsigned int> &vecIndices,
+				vector<MeshData>&vecMeshData)
+{
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(strModelFile.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	// check for errors
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
+	{
+		std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+		return false;
+	}
+
+	auto numMeshes = scene->mNumMeshes;
+	std::cout << "mesh count = " << numMeshes << endl;
+	auto meshes = scene->mMeshes;
+
+	//vector<int>vecOffset;//记录每个mesh顶点索引的偏移
+	//vector<int>vecLength;//记录顶点索引的数量
+	
+	int nvextex = 0;
+	int offset = 0;
+	for (int i = 0; i < numMeshes; i++)
+	{
+
+		auto ptrMesh = meshes[i];
+		if (!ptrMesh)
+		{
+			std::cout << "第" << i << "个mesh 为 NULL" << endl;
+		}
+
+		string strName(ptrMesh->mName.C_Str());
+		//获取顶点的数量和顶点数组
+		auto numVertices = ptrMesh->mNumVertices;
+		//auto numNormals = ptrMesh->mNormals;
+
+		auto ptrVertices = ptrMesh->mVertices;
+		auto ptrNormals = ptrMesh->mNormals;
+		auto ptrTextureCoords = ptrMesh->mTextureCoords;
+		auto textureCoord = ptrTextureCoords[0];
+
+		//mesh中的顶点信息
+		std::cout << "-------------------------------------------" << endl;
+		std::cout << "第" << i << "个 mesh 的顶点数量" << numVertices << endl;
+		for (auto j = 0; j < numVertices; j++)
+		{
+			auto position = ptrVertices[j];
+			auto normal = ptrNormals[j];
+			auto txtcoord = textureCoord[j];
+			std::cout << "(" << position.x << "," << position.y << "," << position.z << "," << normal.x << "," << normal.y << "," << normal.z << "," << txtcoord.x << "," << txtcoord.y << "," << txtcoord.z << ")" << endl;
+
+			VertexData vd;
+			vd.position.x = position.x;
+			vd.position.y = position.y;
+			vd.position.z = position.z;
+
+
+			vd.normal.x = normal.x;
+			vd.normal.y = normal.y;
+			vd.normal.z = normal.z;
+
+			vd.texCoord.x = txtcoord.x;
+			vd.texCoord.y = txtcoord.y;
+			vecVertices.emplace_back(vd);
+			vecValue.push_back(position.x);
+			vecValue.push_back(position.y);
+			vecValue.push_back(position.z);
+			//texCoord
+		}
+
+		//获取面的数量和面数组
+		auto numFaecs = ptrMesh->mNumFaces;
+		auto faces = ptrMesh->mFaces;
+		std::cout << "第" << i << "个mesh 有" << numFaecs << "个面" << endl;
+		MeshData md;
+		md.indexNum = numFaecs * 3; // mesh中索引的数量
+		//vecLength.emplace_back(nIndex);
+		for (auto j = 0; j < numFaecs; j++)
+		{
+			//获取面的索引
+			auto face = faces[j];
+			auto numIndices = face.mNumIndices;
+			auto indices = face.mIndices;
+			for (auto k = 0; k < numIndices; k++)
+			{
+				vecIndices.emplace_back(indices[k] + nvextex); // 索引要加上一个Mesh的顶点数量
+			}
+
+		}
+		md.offsetIndex = offset;
+		md.vertNum = numVertices;
+		vecMeshData.emplace_back(md);
+		nvextex += numVertices;
+		offset += numFaecs * 3;//下一个mesh 顶点索引的偏移
+		//cout << "第" << i << "个mesh 有" << vecIndices.size() << "索引" << endl;
+
+	}
+	return true;
+}
+
+void draw(MeshData& meshData, Shader& shader,
+	glm::mat4 &v,
+	glm::mat4 &p,
+	glm::vec3 translate = glm::vec3(0, 0, 0),
+	double angle = 0.0,
+	glm::vec3 ratation = glm::vec3(0, 1, 0),
+	glm::vec3 scale = glm::vec3(1, 1, 1))
+	
+{
+	shader.setMat4("view", v);
+	shader.setMat4("projection", p);
+	glBindVertexArray(vaoId);
+	/*for (auto i = 0; i < vecMeshData.size(); i++)
+	{*/
+		glm::mat4 model(1.0f);
+		model = glm::translate(model, translate);
+
+		model = glm::scale(model, scale);
+		model = glm::rotate(model, glm::radians(float(angle)), ratation);
+		shader.setMat4("model", model);
+		
+		glDrawElements(GL_TRIANGLES, meshData.indexNum, GL_UNSIGNED_INT, (void*)(meshData.offsetIndex * sizeof(float)));//最后一个参数为索引在EBO中的偏移
+		
+	//}
+}
 int main(int argc, char** argv)
 {
 
@@ -81,107 +218,20 @@ int main(int argc, char** argv)
 	}
 
 	GL_INPUT_ERROR
-	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile("../resources/models/3dmax/baseModel.obj", aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-	// check for errors
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
-	{
-		std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
-		return 0;
-	}
-	
-	//定义vecVertices用来缓存顶点
-	vector<VertexData>vecVertices;
-	vector<float> vecValue;
-	//定义vecIndices用来缓存索引
+	vector<VertexData>vecVertices;//定义vecVertices用来缓存顶点
+	vector<float> vecValue;//定义vecIndices用来缓存索引
 	vector<unsigned int> vecIndices;
-
-	
-	auto numMeshes = scene->mNumMeshes;
-	std::cout << "mesh count = " << numMeshes << endl;
-	auto meshes = scene->mMeshes;
-
-	vector<int>vecOffset;//记录每个mesh顶点索引的偏移
-	vector<int>vecLength;//记录顶点索引的数量
-	int offset = 0;
-	for (int i = 0; i < numMeshes; i++)
+	vector<MeshData>vecMeshData;
+	string strPath = "../resources/models/3dmax/baseModel.obj";
+	if (!importFile(strPath, vecVertices, vecValue, vecIndices, vecMeshData))
 	{
-		
-		auto ptrMesh = meshes[i];
-		if (!ptrMesh)
-		{
-			std::cout << "第" << i << "个mesh 为 NULL" << endl;
-		}
-		
-		string strName(ptrMesh->mName.C_Str());
-		//获取顶点的数量和顶点数组
-		auto numVertices = ptrMesh->mNumVertices;
-		//auto numNormals = ptrMesh->mNormals;
-		
-		auto ptrVertices = ptrMesh->mVertices;
-		auto ptrNormals = ptrMesh->mNormals;
-		auto ptrTextureCoords = ptrMesh->mTextureCoords;
-		auto textureCoord = ptrTextureCoords[0];
-		
-		//mesh中的顶点信息
-		std::cout << "-------------------------------------------" << endl;
-		std::cout << "第" << i <<"个 mesh 的顶点数量" << numVertices  << endl;
-		for (auto j = 0; j < numVertices; j++)
-		{
-			auto position = ptrVertices[j];
-			auto normal = ptrNormals[j];
-			auto txtcoord = textureCoord[j];
-			std::cout << "(" << position.x << "," << position.y << "," << position.z <<","<< normal.x << "," << normal.y << "," << normal.z << "," << txtcoord.x << "," << txtcoord.y << "," << txtcoord.z << ")" << endl;
-			
-			VertexData vd;
-			vd.position.x = position.x;
-			vd.position.y = position.y;
-			vd.position.z = position.z;
-
-			
-			vd.normal.x = normal.x;
-			vd.normal.y = normal.y;
-			vd.normal.z = normal.z;
-
-			vd.texCoord.x = txtcoord.x;
-			vd.texCoord.y = txtcoord.y;
-			vecVertices.emplace_back(vd);
-			vecValue.push_back(position.x);
-			vecValue.push_back(position.y);
-			vecValue.push_back(position.z);
-			//texCoord
-		}
-
-		//获取面的数量和面数组
-		auto numFaecs = ptrMesh->mNumFaces;
-		auto faces = ptrMesh->mFaces;
-		std::cout << "第" << i << "个mesh 有" << numFaecs <<"个面" << endl;
-		int nIndex = numFaecs * 3;
-		vecLength.emplace_back(nIndex);
-		for (auto j = 0; j < numFaecs; j++)
-		{
-			//获取面的索引
-			auto face = faces[j];
-			auto numIndices = face.mNumIndices;
-			auto indices = face.mIndices;
-			for (auto k = 0; k < numIndices; k++)
-			{
-				vecIndices.emplace_back(indices[k]);
-			}
-			
-		}
-		vecOffset.emplace_back(offset);
-		offset += nIndex;
-		
-		//cout << "第" << i << "个mesh 有" << vecIndices.size() << "索引" << endl;
-		
+		return -1;
 	}
-	
 	
 	VAOBuffer vaoBuffer;
 	vaoBuffer.BuildVAO(vecVertices, vecIndices);
-	auto vaoId = vaoBuffer.GetVAO();
-	auto vboId = vaoBuffer.GetVBO();
+	vaoId = vaoBuffer.GetVAO();
+	vboId = vaoBuffer.GetVBO();
 	
 	Shader shader("model.vertex", "model.frag");
 
@@ -218,20 +268,18 @@ int main(int argc, char** argv)
 		
 		glm::mat4 projection = camera.GetProjectionMatrix(((float)WINDOW_WIDTH)/((float)WINDOW_HEIGHT));
 		
-		
-		shader.setMat4("view", view);
-		shader.setMat4("projection", projection);
-		glBindVertexArray(vaoId);
-		for (auto i = 0; i < vecOffset.size(); i++)
+		/*for (auto i = 0; i < 10; i++)
 		{
-			glm::mat4 model(1.0f);
-			model = glm::translate(model, glm::vec3(i * 10, i * 10, i * 10));
-
-			model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
-			model = glm::rotate(model,glm::radians(float(angle)), glm::vec3(0.0, 1.0, 0.0));
-			shader.setMat4("model", model);
-			//glDrawElements(GL_TRIANGLES, static_cast<int>(vecIndices.size()), GL_UNSIGNED_INT, 0);
-			glDrawElements(GL_TRIANGLES, vecLength[i], GL_UNSIGNED_INT, (void*)vecOffset[i]);
+			glm::vec3 vec(i * 40,0,0);
+			draw(vecMeshData, shader, view, projection, vec);
+		}*/
+		for (auto i = 0; i < vecMeshData.size(); i++)
+		{
+			draw(vecMeshData[i], shader, 
+				view, projection,
+				glm::vec3(i * 10, i * 10, i * 10),
+				angle, glm::vec3(0.f, 1.f, 0.f), 
+				glm::vec3(0.5f, 0.5f, 0.5f));
 		}
 		
 		glBindVertexArray(0);
