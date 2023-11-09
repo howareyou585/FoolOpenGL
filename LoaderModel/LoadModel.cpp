@@ -57,13 +57,62 @@ bool importFile(
 		return false;
 	}
 
+	vector<string> vecTextureFilePath;
+	auto numMaterail = scene->mNumMaterials;
+	cout << "模型中材质的数量:" << numMaterail << endl;
+
+	map< aiTextureType, string> mapTextureType2Name;
+	mapTextureType2Name[aiTextureType_DIFFUSE] = "diffuse map";
+	mapTextureType2Name[aiTextureType_SPECULAR] = "specular map";
+	mapTextureType2Name[aiTextureType_HEIGHT] = "normal map";
+
+	for (int i = 0; i < numMaterail; i++)
+	{
+		auto ptrMaterail = scene->mMaterials[i];
+		aiString aiTexturePath;
+		cout << "第" << i << "个贴图：" << endl;
+		ptrMaterail->GetTexture(aiTextureType::aiTextureType_DIFFUSE, 0, &aiTexturePath);
+		if (aiTexturePath.length > 0)
+		{
+			
+			cout << "diffuse 贴图路径=>" << aiTexturePath.C_Str() << endl;
+			vecTextureFilePath.emplace_back(string(aiTexturePath.C_Str()));
+		}
+		else
+		{
+
+		}
+
+		aiTexturePath = "";
+		ptrMaterail->GetTexture(aiTextureType::aiTextureType_SPECULAR, 0, &aiTexturePath);
+
+		if (aiTexturePath.length > 0)
+		{
+			cout << "specular 贴图路径=>" << aiTexturePath.C_Str() << endl;
+			vecTextureFilePath.emplace_back(string(aiTexturePath.C_Str()));
+		}
+		else
+		{
+
+		}
+
+		aiTexturePath = "";
+		ptrMaterail->GetTexture(aiTextureType::aiTextureType_HEIGHT, 0, &aiTexturePath);
+		if (aiTexturePath.length > 0)
+		{
+			cout << "normal 贴图路径=>" << aiTexturePath.C_Str() << endl;
+			vecTextureFilePath.emplace_back(string(aiTexturePath.C_Str()));
+		}
+		else
+		{
+
+		}
+	}
+
 	auto numMeshes = scene->mNumMeshes;
 	std::cout << "mesh count = " << numMeshes << endl;
 	auto meshes = scene->mMeshes;
 
-	//vector<int>vecOffset;//记录每个mesh顶点索引的偏移
-	//vector<int>vecLength;//记录顶点索引的数量
-	
 	int nvextex = 0;
 	int offset = 0;
 	for (int i = 0; i < numMeshes; i++)
@@ -93,7 +142,7 @@ bool importFile(
 			auto position = ptrVertices[j];
 			auto normal = ptrNormals[j];
 			auto txtcoord = textureCoord[j];
-			std::cout << "(" << position.x << "," << position.y << "," << position.z << "," << normal.x << "," << normal.y << "," << normal.z << "," << txtcoord.x << "," << txtcoord.y << "," << txtcoord.z << ")" << endl;
+			//std::cout << "(" << position.x << "," << position.y << "," << position.z << "," << normal.x << "," << normal.y << "," << normal.z << "," << txtcoord.x << "," << txtcoord.y << "," << txtcoord.z << ")" << endl;
 
 			VertexData vd;
 			vd.position.x = position.x;
@@ -138,7 +187,7 @@ bool importFile(
 		vecMeshData.emplace_back(md);
 		nvextex += numVertices;
 		offset += numFaecs * 3;//下一个mesh 顶点索引的偏移
-		//cout << "第" << i << "个mesh 有" << vecIndices.size() << "索引" << endl;
+		
 
 	}
 	return true;
@@ -222,7 +271,8 @@ int main(int argc, char** argv)
 	vector<float> vecValue;//定义vecIndices用来缓存索引
 	vector<unsigned int> vecIndices;
 	vector<MeshData>vecMeshData;
-	string strPath = "../resources/models/3dmax/baseModel.obj";
+	//string strPath = "../resources/models/3dmax/baseModel.obj";//baseScene.FBX
+	string strPath = "../resources/models/3dmax/baseScene.FBX";
 	if (!importFile(strPath, vecVertices, vecValue, vecIndices, vecMeshData))
 	{
 		return -1;
@@ -268,18 +318,16 @@ int main(int argc, char** argv)
 		
 		glm::mat4 projection = camera.GetProjectionMatrix(((float)WINDOW_WIDTH)/((float)WINDOW_HEIGHT));
 		
-		/*for (auto i = 0; i < 10; i++)
-		{
-			glm::vec3 vec(i * 40,0,0);
-			draw(vecMeshData, shader, view, projection, vec);
-		}*/
+	
+		int index = 0;
 		for (auto i = 0; i < vecMeshData.size(); i++)
 		{
-			draw(vecMeshData[i], shader, 
+			index = i * (-1);
+			/*draw(vecMeshData[i], shader, 
 				view, projection,
-				glm::vec3(i * 10, i * 10, i * 10),
+				glm::vec3(index * 3, index * 3, index * 3),
 				angle, glm::vec3(0.f, 1.f, 0.f), 
-				glm::vec3(0.5f, 0.5f, 0.5f));
+				glm::vec3(0.15f, 0.15f, 0.15f));*/
 		}
 		
 		glBindVertexArray(0);
