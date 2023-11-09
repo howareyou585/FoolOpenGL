@@ -26,16 +26,19 @@ float lastFrame = 0.0f; // 上一帧的时间
 float lastX = WINDOW_WIDTH / 2.0f;
 float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
-Camera camera(glm::vec3(0.0f,0.f,10.f));
+Camera camera(glm::vec3(0.0f,0.f,50.f));
 GLuint vaoId = 0;
 GLuint vboId = 0;
 void updateBillBoardVBO(glm::vec2& vsize, glm::vec3 & position)
 {
 	
-	//左下角 0,0,
-	//左上角 0,1,
-	//右上角 1,1
-	//右下角 1,0
+	//左上角 0,0,
+	//左下角 0,1,
+	//右下角 1,1，
+
+	//左上角 0,0,
+	//右下角 1,1，
+	//右上角 1,0
 	glm::vec3 rightDir = camera.Right;
 	glm::vec3 lbPnt = position - rightDir * vsize.x*0.5f; // 左下角
 	glm::vec3 rbPnt = position + rightDir * vsize.x*0.5f; // 右下角
@@ -43,10 +46,14 @@ void updateBillBoardVBO(glm::vec2& vsize, glm::vec3 & position)
 	ltpnt.y+= vsize.y; //左上角
 	glm::vec3 rtpnt = rbPnt;
 	rtpnt.y+= vsize.y; //右上角
-	GLfloat vertices[20] = { lbPnt.x, lbPnt.y, lbPnt.z, 0,0, 
-							 ltpnt.x, ltpnt.y, ltpnt.z, 0,1,
-							 rtpnt.x, rtpnt.y, rtpnt.z, 1,1,
-							 rbPnt.x, rbPnt.y, rbPnt.z, 1,0,
+	GLfloat vertices[30] = {
+		ltpnt.x, ltpnt.y, ltpnt.z, 0,0, //左上角
+		lbPnt.x, lbPnt.y, lbPnt.z, 0,1,  //左下角
+		rbPnt.x, rbPnt.y, rbPnt.z, 1,1,//右下角
+
+		ltpnt.x, ltpnt.y, ltpnt.z, 0,0,					 
+		rbPnt.x, rbPnt.y, rbPnt.z, 1,1,
+		rtpnt.x, rtpnt.y, rtpnt.z, 1,0
 							 };
 	glBindVertexArray(vaoId);
 	glBindBuffer(GL_ARRAY_BUFFER, vboId);
@@ -122,18 +129,31 @@ int main(int argc, char** argv)
 	vecAttrib.emplace_back(vertex_attribute::texcoord);
 	mapAttrib2Size[vertex_attribute::position] = 3;
 	mapAttrib2Size[vertex_attribute::texcoord] = 2;
-	float billboardVertices[20] = {
-	//左下角 0,0,
-    //左上角 0,1,
-    //右上角 1,1
-	//右下角 1,0
+	float billboardVertices[30] = {
+	//左上角 0,0,
+	//左下角 0,1,
+	//右下角 1,1，
+
+    //左上角 0,0,
+    //右下角 1,1，
+	//右上角 1,0
+
+	
+		// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+		/*0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+		0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+		0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+		1.0f,  0.5f,  0.0f,  1.0f,  0.0f*/
 	};
 	unsigned int billboardIndices[6] = { 0,1,2,1,2,3 };
 	glm::vec3 billboardPos(0, 0, 0);
 	glm::vec2 billboardSize(4, 4);
 	
-	vaoBuffer.BuildVAO(billboardVertices, sizeof(billboardVertices), billboardIndices,
-		sizeof(billboardIndices), vecAttrib, mapAttrib2Size, GL_DYNAMIC_DRAW);
+	vaoBuffer.BuildVAO(billboardVertices, sizeof(billboardVertices), NULL,
+		0, vecAttrib, mapAttrib2Size, GL_DYNAMIC_DRAW);
 	error = glGetError();
 	// 创建缓存对象
 	vaoId = vaoBuffer.GetVAO();
@@ -180,13 +200,28 @@ int main(int argc, char** argv)
 		glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
 		shader.setMat4("projection", projectionMatrix);
 
-		glm::mat4 model(1.0f);
+		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texId);
 		//for(auto i = 0; i <100; i+=)
-		shader.setMat4("model", model);
 		
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		error = glGetError();
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//float offset = 0;
+		glm::vec3 offset(0, 0, 0);
+	    
+		for (auto i = 0; i < 10;i++)
+		{
+			glm::mat4 model(1.0f);
+			if(i%2==0)
+			model = glm::translate(model,glm::vec3( i * 5, 0, 0));
+			else
+			{
+				model = glm::translate(model, glm::vec3(-i * 5, 0, 0));
+			}
+			shader.setMat4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 		
 		shader.unUse();
 		glBindVertexArray(0);
