@@ -72,7 +72,7 @@ public:
 	bool BuildVAO(GLfloat* ptrVertex, unsigned int length,
 		GLuint* ptrIndex, unsigned int indexLength,
 		vector<vertex_attribute>& vecAttrib,
-		map<vertex_attribute, int>& mapAttrib2Size)
+		map<vertex_attribute, int>& mapAttrib2Size, int drawType = GL_STATIC_DRAW)
 	{
 		bool bRet = false;
 		if (!ptrVertex || !length || !vecAttrib.size() || !mapAttrib2Size.size())
@@ -81,7 +81,7 @@ public:
 		}
 		glGenVertexArrays(1, &m_vaoId);
 		glBindVertexArray(m_vaoId);
-		bRet = BulidVBO(ptrVertex, length, vecAttrib, mapAttrib2Size);
+		bRet = BulidVBO(ptrVertex, length, vecAttrib, mapAttrib2Size,drawType);
 		if (!bRet)
 		{
 			return bRet;
@@ -99,7 +99,7 @@ public:
 	}
 	bool BulidVBO(GLfloat* ptrVertex, unsigned int length,
 		vector<vertex_attribute>& vecAttrib,
-		map<vertex_attribute, int>& mapAttrib2Size)
+		map<vertex_attribute, int>& mapAttrib2Size,int drawType = GL_STATIC_DRAW)
 	{
 		bool bRet = false;
 		if (!ptrVertex || !length || !vecAttrib.size() || !mapAttrib2Size.size())
@@ -108,7 +108,7 @@ public:
 		}
 		glGenBuffers(1, &m_vboId);
 		glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
-		glBufferData(GL_ARRAY_BUFFER, length, ptrVertex, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, length, ptrVertex, drawType);
 		int strid = 0;
 		for (auto it = mapAttrib2Size.begin(); it != mapAttrib2Size.end(); it++)
 		{
