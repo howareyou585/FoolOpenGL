@@ -26,7 +26,7 @@ float lastFrame = 0.0f; // 上一帧的时间
 float lastX = WINDOW_WIDTH / 2.0f;
 float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
-Camera camera(glm::vec3(0.0f,0.f,50.f));
+Camera camera(glm::vec3(50.0f,5.f,20.f));
 GLuint vaoId = 0;
 GLuint vboId = 0;
 void updateBillBoardVBO(glm::vec2& vsize, glm::vec3 & position)
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
 	vaoId = vaoBuffer.GetVAO();
 	vboId = vaoBuffer.GetVBO();
 	//加载材质
-	GLuint texId = TextureFromFile("grass.png", "../resources/textures");
+	GLuint texId = TextureFromFile("grass.png", "../resources/textures", false, GL_CLAMP_TO_EDGE);
 	
 	// Section2 准备着色器程序
 	Shader shader("BillBorad.vertex", "BillBorad.frag");
@@ -210,17 +210,18 @@ int main(int argc, char** argv)
 		//float offset = 0;
 		glm::vec3 offset(0, 0, 0);
 	    
-		for (auto i = 0; i < 10;i++)
+		for (auto i = 0; i < 100;i+=5)
 		{
-			glm::mat4 model(1.0f);
-			if(i%2==0)
-			model = glm::translate(model,glm::vec3( i * 5, 0, 0));
-			else
+			for (auto j = 0; j > -100; j -= 5)
 			{
-				model = glm::translate(model, glm::vec3(-i * 5, 0, 0));
+				glm::mat4 model(1.0f);
+
+				model = glm::translate(model, glm::vec3(i, 0, j));
+
+				shader.setMat4("model", model);
+				glDrawArrays(GL_TRIANGLES, 0, 6);
 			}
-			shader.setMat4("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			
 		}
 		
 		shader.unUse();
