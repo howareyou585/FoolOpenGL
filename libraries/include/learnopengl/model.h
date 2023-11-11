@@ -297,7 +297,8 @@ unsigned int TextureArrayFromFile(const vector<string>& vecFile, const string &d
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma, int wrapType)
 {
     string filename = string(path);
-    filename = directory + '/' + filename;
+	if(!directory.empty())
+		filename = directory + '/' + filename;
 
     unsigned int textureID;
     glGenTextures(1, &textureID);

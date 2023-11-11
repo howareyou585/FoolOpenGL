@@ -23,7 +23,16 @@ struct MeshData
 	int vertNum; 
 	int indexNum;
 	int offsetIndex;
+	int materialId;//材质ID
 };
+//材质的定义
+struct MaterialData
+{
+	string diffuse; //颜色贴图
+	string specular;//高光贴图
+	string normal; //法线贴图
+};
+
 using namespace std;
 // 键盘回调函数原型声明
 void processInput(GLFWwindow* window, Camera& camera);
@@ -41,12 +50,17 @@ GLuint vaoId = 0;
 GLuint vboId = 0;
 Camera camera;
 
+
+
 bool importFile(
 				string & strModelFile,// 模型文件路径
 				vector<VertexData>&vecVertices,//定义vecVertices用来缓存顶点
 				vector<float>& vecValue,//定义vecIndices用来缓存索引
 				vector<unsigned int> &vecIndices,
-				vector<MeshData>&vecMeshData)
+				vector<MeshData>&vecMeshData,
+				vector<MaterialData>& vecMaterialData,
+				vector<string>& vecTextureFilePath
+	)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(strModelFile.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
@@ -57,56 +71,69 @@ bool importFile(
 		return false;
 	}
 
-	vector<string> vecTextureFilePath;
-	auto numMaterail = scene->mNumMaterials;
+	
+	auto numMaterail = scene->mNumMaterials; //模型中材质的数量
 	cout << "模型中材质的数量:" << numMaterail << endl;
 
-	map< aiTextureType, string> mapTextureType2Name;
-	mapTextureType2Name[aiTextureType_DIFFUSE] = "diffuse map";
+	//map< aiTextureType, string> mapTextureType2FilePath;
+	/*mapTextureType2Name[aiTextureType_DIFFUSE] = "diffuse map";
 	mapTextureType2Name[aiTextureType_SPECULAR] = "specular map";
-	mapTextureType2Name[aiTextureType_HEIGHT] = "normal map";
-
+	mapTextureType2Name[aiTextureType_HEIGHT] = "normal map";*/
+	/*vector<string> vecDefaultFile;
+	vecDefaultFile.emplace_back("..\resources\textures\black.png");
+	vecDefaultFile.emplace_back("..\resources\textures\white.png");
+	vecDefaultFile.emplace_back("..\resources\textures\normal.png");*/
+	aiTextureType textureType[] = { aiTextureType_DIFFUSE , aiTextureType_SPECULAR,aiTextureType_HEIGHT };
+	string textureTypeStr[] = { "颜色","高光","法线" };
+	string defaultTexture[] = {
+		"..\\resources\\textures\\white.png", //颜色默认图片
+		"..\\resources\\textures\\black.png", //高光默认图片
+		"..\\resources\\textures\\normal.png"};//法线默认图片
+	
 	for (int i = 0; i < numMaterail; i++)
 	{
 		auto ptrMaterail = scene->mMaterials[i];
 		aiString aiTexturePath;
-		cout << "第" << i << "个贴图：" << endl;
-		ptrMaterail->GetTexture(aiTextureType::aiTextureType_DIFFUSE, 0, &aiTexturePath);
-		if (aiTexturePath.length > 0)
+		string strTexturePath;
+		cout << "-------------------------------------------" << endl;
+		cout << "第" << i << "个贴图的信息：" << endl;
+		MaterialData tempMaterialData;
+		string *ptrStr = nullptr;
+		int nType = sizeof(textureType) / sizeof(aiTextureType);
+		ptrStr = &tempMaterialData.diffuse;
+		for (auto j = 0; j < nType; j++)
 		{
+			aiTexturePath = "";
+			ptrMaterail->GetTexture(textureType[j], 0, &aiTexturePath);
 			
-			cout << "diffuse 贴图路径=>" << aiTexturePath.C_Str() << endl;
-			vecTextureFilePath.emplace_back(string(aiTexturePath.C_Str()));
+			if (aiTexturePath.length > 0)
+			{
+				cout << textureTypeStr[j] << " 贴图路径=>" << aiTexturePath.C_Str() << endl;
+				strTexturePath = string(aiTexturePath.C_Str());
+				vecTextureFilePath.emplace_back(strTexturePath);
+				*ptrStr = strTexturePath; //
+			}
+			else
+			{
+				*ptrStr = defaultTexture[j];
+				cout << textureTypeStr[j] << " 贴图路径=>" << defaultTexture[j]<< endl;
+			}
+			
+			ptrStr++;
 		}
-		else
-		{
-
-		}
-
-		aiTexturePath = "";
-		ptrMaterail->GetTexture(aiTextureType::aiTextureType_SPECULAR, 0, &aiTexturePath);
-
-		if (aiTexturePath.length > 0)
-		{
-			cout << "specular 贴图路径=>" << aiTexturePath.C_Str() << endl;
-			vecTextureFilePath.emplace_back(string(aiTexturePath.C_Str()));
-		}
-		else
-		{
-
-		}
-
-		aiTexturePath = "";
-		ptrMaterail->GetTexture(aiTextureType::aiTextureType_HEIGHT, 0, &aiTexturePath);
-		if (aiTexturePath.length > 0)
-		{
-			cout << "normal 贴图路径=>" << aiTexturePath.C_Str() << endl;
-			vecTextureFilePath.emplace_back(string(aiTexturePath.C_Str()));
-		}
-		else
-		{
-
-		}
+		vecMaterialData.emplace_back(tempMaterialData);
+	}
+	//去重：去掉重复的贴图
+	std::sort(vecTextureFilePath.begin(), vecTextureFilePath.end());
+	auto it = std::unique(vecTextureFilePath.begin(), vecTextureFilePath.end());
+	if (it != vecTextureFilePath.end())
+	{
+		vecTextureFilePath.erase(it, vecTextureFilePath.end());
+	}
+	//将默认的贴图插入到vecTextureFilePath
+	for (int i = 0; i < 3; i++)
+	{
+		vecTextureFilePath.emplace_back(string(defaultTexture[i]));
 	}
 
 	auto numMeshes = scene->mNumMeshes;
@@ -117,13 +144,12 @@ bool importFile(
 	int offset = 0;
 	for (int i = 0; i < numMeshes; i++)
 	{
-
 		auto ptrMesh = meshes[i];
 		if (!ptrMesh)
 		{
 			std::cout << "第" << i << "个mesh 为 NULL" << endl;
 		}
-
+		
 		string strName(ptrMesh->mName.C_Str());
 		//获取顶点的数量和顶点数组
 		auto numVertices = ptrMesh->mNumVertices;
@@ -169,6 +195,8 @@ bool importFile(
 		std::cout << "第" << i << "个mesh 有" << numFaecs << "个面" << endl;
 		MeshData md;
 		md.indexNum = numFaecs * 3; // mesh中索引的数量
+		md.materialId = ptrMesh->mMaterialIndex;
+		std::cout << "第" << i << "个mesh 材质ID:" << md.materialId << endl;
 		//vecLength.emplace_back(nIndex);
 		for (auto j = 0; j < numFaecs; j++)
 		{
@@ -184,11 +212,10 @@ bool importFile(
 		}
 		md.offsetIndex = offset;
 		md.vertNum = numVertices;
+		
 		vecMeshData.emplace_back(md);
 		nvextex += numVertices;
 		offset += numFaecs * 3;//下一个mesh 顶点索引的偏移
-		
-
 	}
 	return true;
 }
@@ -271,9 +298,11 @@ int main(int argc, char** argv)
 	vector<float> vecValue;//定义vecIndices用来缓存索引
 	vector<unsigned int> vecIndices;
 	vector<MeshData>vecMeshData;
+	vector<MaterialData> vecMaterialData;
+	vector<string> vecTextureFilePath;
 	//string strPath = "../resources/models/3dmax/baseModel.obj";//baseScene.FBX
 	string strPath = "../resources/models/3dmax/baseScene.FBX";
-	if (!importFile(strPath, vecVertices, vecValue, vecIndices, vecMeshData))
+	if (!importFile(strPath, vecVertices, vecValue, vecIndices, vecMeshData,vecMaterialData,vecTextureFilePath))
 	{
 		return -1;
 	}
@@ -284,7 +313,13 @@ int main(int argc, char** argv)
 	vboId = vaoBuffer.GetVBO();
 	
 	Shader shader("model.vertex", "model.frag");
-
+	shader.use();
+	for (auto i = 0; i < vecTextureFilePath.size(); i++)
+	{
+		auto texid = TextureFromFile(vecTextureFilePath[i].c_str(), "");
+		cout << "";
+	}
+	shader.unUse();
 	BoundingBox box;
 	box.Merge(vecValue.data(), vecValue.size(), 3);
 	
@@ -323,11 +358,11 @@ int main(int argc, char** argv)
 		for (auto i = 0; i < vecMeshData.size(); i++)
 		{
 			index = i * (-1);
-			/*draw(vecMeshData[i], shader, 
+			draw(vecMeshData[i], shader, 
 				view, projection,
 				glm::vec3(index * 3, index * 3, index * 3),
 				angle, glm::vec3(0.f, 1.f, 0.f), 
-				glm::vec3(0.15f, 0.15f, 0.15f));*/
+				glm::vec3(0.15f, 0.15f, 0.15f));
 		}
 		
 		glBindVertexArray(0);
