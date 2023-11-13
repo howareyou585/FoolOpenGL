@@ -17,6 +17,8 @@
 #include "learnopengl/camera.h"
 #include "learnopengl/vaobuffer.h"
 #include "learnopengl/vertexset.h"
+#include "learnopengl/Light.h"
+
 
 struct MeshData
 {
@@ -49,7 +51,7 @@ bool  bFirstMove = true;
 GLuint vaoId = 0;
 GLuint vboId = 0;
 Camera camera;
-
+BoundingBox totalBox;
 
 
 bool importFile(
@@ -223,6 +225,16 @@ void draw(MeshData& meshData, Shader& shader,
 {
 	shader.setMat4("view", v);
 	shader.setMat4("projection", p);
+	shader.setVec3("eyePos", camera.Position);
+
+	float tv = glfwGetTime();
+
+	glm::vec3 lightPos = camera.Position;
+	float raduis = glm::length(camera.Position - totalBox.GetCenter());
+	lightPos.x = raduis * glm::sin(tv);
+	lightPos.z = raduis * fabs(glm::cos(tv));
+	shader.setVec3("spotlight.position", lightPos);
+	shader.setBool("enableAttenuation", true);
 	glBindVertexArray(vaoId);
 	/*for (auto i = 0; i < vecMeshData.size(); i++)
 	{*/
@@ -306,6 +318,7 @@ int main(int argc, char** argv)
 	vector<string> vecTextureFilePath;
 	//string strPath = "../resources/models/3dmax/baseModel.obj";//baseScene.FBX
 	string strPath = "../resources/models/3dmax/baseScene.FBX";
+	//string strPath = "../resources/models/nanosuit/nanosuit.obj";
 	if (!importFile(strPath, vecVertices, vecValue, vecIndices, vecMeshData,vecMaterialData,vecTextureFilePath))
 	{
 		return -1;
@@ -315,9 +328,65 @@ int main(int argc, char** argv)
 	vaoBuffer.BuildVAO(vecVertices, vecIndices);
 	vaoId = vaoBuffer.GetVAO();
 	vboId = vaoBuffer.GetVBO();
+
+	// positions of the point lights
+	glm::vec3 pointLightPositions[] = {
+		glm::vec3(0.7f,  0.2f,  2.0f),
+		glm::vec3(2.3f, -3.3f, -4.0f),
+		glm::vec3(-4.0f,  2.0f, -12.0f),
+		glm::vec3(0.0f,  0.0f, -3.0f)
+	};
 	
 	map< int, GLuint >mapTexUnit2TextureId;
 	Shader shader("model.vertex", "model.frag");
+
+	//设置灯光的参数
+	//设置平行光参数
+	glm::vec3 ambimentColor(0.05f, 0.05f, 0.05f);
+	glm::vec3 diffuseColor(0.4f, 0.4f, 0.4f);
+	glm::vec3 specularColor(0.5f, 0.5f, 0.5f);
+	glm::vec3 lightDir(-0.2f, -1.0f, -0.3f);
+	Directionlight dirLight(ambimentColor,
+		diffuseColor,
+		specularColor, lightDir);
+	shader.use();
+	dirLight.SetLightUniformParam(shader, "directionlight.");
+	//设置点光源参数
+	ambimentColor = glm::vec3(0.05f, 0.05f, 0.05f);
+	diffuseColor = glm::vec3(0.8f, 0.8f, 0.8f);
+	specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	float constant = 1.0f;
+	float linear = 0.09f;
+	float quadratic = 0.032f;
+	vector<PointLight> vecPointLight;
+	for (auto i = 0; i < sizeof(pointLightPositions) / sizeof(glm::vec3); i++)
+	{
+		PointLight pointLight(ambimentColor, diffuseColor, specularColor, pointLightPositions[i]);
+		pointLight.SetAttenuatedConstant(constant);
+		pointLight.SetAttenuatedLinear(linear);
+		pointLight.SetAttenuatedQuadratic(quadratic);
+		string strParamName = string("pointlights[") + to_string(i) + string("].");
+		pointLight.SetLightUniformParam(shader, strParamName);
+	}
+	//设置聚光灯的参数
+	 // spotLight
+	ambimentColor = glm::vec3(0.0f, 0.0f, 0.0f);
+	diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	specularColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	float cutOff = glm::cos(glm::radians(12.5f));
+	float outerCutOff = glm::cos(glm::radians(15.0f));
+	//glm::vec3 spotPosition = camera.Position + camera.Front * 2.0f;
+	Spotlight spotlight(ambimentColor, diffuseColor, specularColor, camera.Position, camera.Front, cutOff, outerCutOff);
+	spotlight.SetAttenuatedConstant(constant);
+	spotlight.SetAttenuatedLinear(linear);
+	spotlight.SetAttenuatedQuadratic(quadratic);
+	spotlight.SetLightUniformParam(shader, "spotlight.");
+	//设置材质参数
+	shader.setInt("material.diffuse", 0);
+	shader.setInt("material.spacular", 1);
+	shader.setFloat("material.shiness", 256.0f);
+	shader.unUse();
+
 	//绑定纹理单元
 	
 	for (auto i = 0; i < vecTextureFilePath.size(); i++)
@@ -330,8 +399,9 @@ int main(int argc, char** argv)
 
 	BoundingBox box;
 	box.Merge(vecValue.data(), vecValue.size(), 3);
-	
+	totalBox = box;
 	camera.InitCamera(box, 0.8);
+	
 	glm::vec3 targetPos = box.GetCenter();
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -367,17 +437,31 @@ int main(int argc, char** argv)
 		{
 			auto& meshData = vecMeshData[i];
 			auto materialId = meshData.materialId;
-			
+			//根据材质的索引，查找diffuse贴图的纹理单元
 			auto texUnitId = getTexId(vecTextureFilePath, vecMaterialData[materialId].diffuse);
 			if (texUnitId <0)
 			{
 				continue;
 			}
-			shader.setInt("t0", texUnitId);
-
+			//shader.setInt("t0", texUnitId);
+			shader.setInt("material.diffuse", texUnitId);
+			
 			glActiveTexture(GL_TEXTURE0+ texUnitId);
 			auto texId = mapTexUnit2TextureId[texUnitId];
 			glBindTexture(GL_TEXTURE_2D, texId);
+
+			//根据材质的索引，查找specular贴图的纹理单元
+			texUnitId = getTexId(vecTextureFilePath, vecMaterialData[materialId].specular);
+			if (texUnitId < 0)
+			{
+				continue;
+			}
+			shader.setInt("material.spacular", texUnitId);
+			shader.setFloat("material.shiness", 256.0f);
+			glActiveTexture(GL_TEXTURE0 + texUnitId);
+			texId = mapTexUnit2TextureId[texUnitId];
+			glBindTexture(GL_TEXTURE_2D, texId);
+
 			index = i * (-1);
 			draw(meshData, shader,
 				view, projection,
