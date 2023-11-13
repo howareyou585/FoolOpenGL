@@ -75,14 +75,6 @@ bool importFile(
 	auto numMaterail = scene->mNumMaterials; //模型中材质的数量
 	cout << "模型中材质的数量:" << numMaterail << endl;
 
-	//map< aiTextureType, string> mapTextureType2FilePath;
-	/*mapTextureType2Name[aiTextureType_DIFFUSE] = "diffuse map";
-	mapTextureType2Name[aiTextureType_SPECULAR] = "specular map";
-	mapTextureType2Name[aiTextureType_HEIGHT] = "normal map";*/
-	/*vector<string> vecDefaultFile;
-	vecDefaultFile.emplace_back("..\resources\textures\black.png");
-	vecDefaultFile.emplace_back("..\resources\textures\white.png");
-	vecDefaultFile.emplace_back("..\resources\textures\normal.png");*/
 	aiTextureType textureType[] = { aiTextureType_DIFFUSE , aiTextureType_SPECULAR,aiTextureType_HEIGHT };
 	string textureTypeStr[] = { "颜色","高光","法线" };
 	string defaultTexture[] = {
@@ -245,6 +237,18 @@ void draw(MeshData& meshData, Shader& shader,
 		
 	//}
 }
+//根据贴片的路径获取纹理ID
+unsigned int getTexId(const vector<string>&vecFilePath, const string& filePath)
+{
+	int texId = 0;
+	auto it = std::find(vecFilePath.begin(), vecFilePath.end(), filePath);
+	if (it != vecFilePath.end())
+	{
+		texId = std::distance(vecFilePath.begin(), it);
+	}
+	return texId;
+}
+
 int main(int argc, char** argv)
 {
 
@@ -312,14 +316,18 @@ int main(int argc, char** argv)
 	vaoId = vaoBuffer.GetVAO();
 	vboId = vaoBuffer.GetVBO();
 	
+	map< int, GLuint >mapTexUnit2TextureId;
 	Shader shader("model.vertex", "model.frag");
-	shader.use();
+	//绑定纹理单元
+	
 	for (auto i = 0; i < vecTextureFilePath.size(); i++)
 	{
 		auto texid = TextureFromFile(vecTextureFilePath[i].c_str(), "");
-		cout << "";
+		mapTexUnit2TextureId[i] = texid;
+	
 	}
-	shader.unUse();
+	
+
 	BoundingBox box;
 	box.Merge(vecValue.data(), vecValue.size(), 3);
 	
@@ -353,12 +361,25 @@ int main(int argc, char** argv)
 		
 		glm::mat4 projection = camera.GetProjectionMatrix(((float)WINDOW_WIDTH)/((float)WINDOW_HEIGHT));
 		
-	
+		
 		int index = 0;
 		for (auto i = 0; i < vecMeshData.size(); i++)
 		{
+			auto& meshData = vecMeshData[i];
+			auto materialId = meshData.materialId;
+			
+			auto texUnitId = getTexId(vecTextureFilePath, vecMaterialData[materialId].diffuse);
+			if (texUnitId <0)
+			{
+				continue;
+			}
+			shader.setInt("t0", texUnitId);
+
+			glActiveTexture(GL_TEXTURE0+ texUnitId);
+			auto texId = mapTexUnit2TextureId[texUnitId];
+			glBindTexture(GL_TEXTURE_2D, texId);
 			index = i * (-1);
-			draw(vecMeshData[i], shader, 
+			draw(meshData, shader,
 				view, projection,
 				glm::vec3(index * 3, index * 3, index * 3),
 				angle, glm::vec3(0.f, 1.f, 0.f), 
