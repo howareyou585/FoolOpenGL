@@ -84,6 +84,13 @@ int main(int argc, char** argv)
 
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	float tempVertices[] = {
+		10.f,  10.f, 0.f,  0.f,1.f,
+		410.f, 10.f, 0.f,  1.f,1.f,
+		10.f,  410.f,0.f,  0.f,  0.f,
+		410.f, 410.f,0.f,  1.f,0.f,
+	};
+	GLuint tempIndexes[] = { 0,1,2,1,2,3};
 	VAOBuffer vaoBuffer;
 	vector<vertex_attribute> vecAttrib;
 	map<vertex_attribute, int> mapAttrib2Size;
@@ -91,21 +98,21 @@ int main(int argc, char** argv)
 	vecAttrib.emplace_back(vertex_attribute::texcoord);
 	mapAttrib2Size[vertex_attribute::position] = 3;
 	mapAttrib2Size[vertex_attribute::texcoord] = 2;
-	vaoBuffer.BuildVAO(squareVertices, sizeof(squareVertices), squareIndexes,
-		sizeof(squareIndexes), vecAttrib, mapAttrib2Size);
+	vaoBuffer.BuildVAO(tempVertices, sizeof(tempVertices), tempIndexes,
+		sizeof(tempIndexes), vecAttrib, mapAttrib2Size);
 
 	// 创建缓存对象
 	GLuint VAOId = vaoBuffer.GetVAO();
 	GLuint VBOId = vaoBuffer.GetVBO();
 	//加载材质
 
-	GLuint texId = TextureFromFile("brickwall.jpg", "../resources/textures");
+	GLuint texId = TextureFromFile("flower.jpg", "../resources/textures");
 
 	BoundingBox box;
-	int nVal = sizeof(squareVertices) / sizeof(GLfloat);
+	int nVal = sizeof(tempVertices) / sizeof(GLfloat);
 	for (int i = 0; i < nVal; i += 5)
 	{
-		glm::vec3 pnt(squareVertices[i], squareVertices[i + 1], squareVertices[i + 2]);
+		glm::vec3 pnt(tempVertices[i], tempVertices[i + 1], tempVertices[i + 2]);
 		box.Merge(pnt);
 	}
 	
@@ -114,23 +121,54 @@ int main(int argc, char** argv)
 	float radius = box.GetLength() * 0.8f;
 
 	// Section2 准备着色器程序
-	Shader shader("TextureUVOffset.vertex", "TextureUVOffset.frag");
+	Shader shader("TextureFrameAnimation.vertex", "TextureFrameAnimation.frag");
 	shader.use();
 	shader.setInt("sampler2d", 0);
-	
+	glm::mat4 view = camera.GetViewMatrix();
+	glm::mat4 projection = camera.GetProjectionMatrix((float)WINDOW_WIDTH/(float)(WINDOW_HEIGHT));
+	glm::mat4 model(1.0f);
+	model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+	shader.setMat4("model", model);
+	shader.setMat4("view", view);
+	shader.setMat4("projection", projection);
 	shader.unUse();
-	int nVertex = sizeof(squareVertices) / (sizeof(GLuint) * 5);
+	int nVertex = sizeof(tempVertices) / (sizeof(GLuint) * 5);
 	// 开始游戏主循环
 	glEnable(GL_DEPTH_TEST);
 	//glCullFace(GL_BACK);
 	glm::vec3 targetPos = box.GetCenter();
 	float distance = glm::length(targetPos - camera.Position);
 	float angle = 0.0f;
-	glm::vec2 uvOffset(0.0, 0.0);
+	
+	lastFrame = 0;
+	int row = 3; //纹理帧动画 有3行 
+	int col = 3; //纹理帧动画 有3列 
+	float scale = 1.0 / 3;
+	glm::vec2 uvSize(scale, scale);
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
+		//超过9的话，从头（0）开始
+		int frame = ((int)currentFrame) % 9;
+		//当前行
+		int curRow = frame / row;
+		//当前列
+		int curCol = frame % col;
+		for (int i = 0; i < nVal; i+=5)
+		{
+			tempVertices[i + 3] *= scale;
+			tempVertices[i + 4] *= scale;
+			tempVertices[i + 3] += scale * curCol;
+			tempVertices[i + 4] += scale * curRow;
+		}
+		glBindVertexArray(VAOId);
+		glBindBuffer(GL_ARRAY_BUFFER, VBOId);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tempVertices), tempVertices);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		cout << "currentFrame:" << currentFrame << ", " << "frame:" << frame << endl;
+		deltaTime = currentFrame - lastFrame; //渲染一帧用时
+		//cout << to_string(deltaTime) << endl;
 		lastFrame = currentFrame; // 上一帧的时间
 		processInput(window, camera);
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
@@ -141,17 +179,16 @@ int main(int argc, char** argv)
 
 		// 这里填写场景绘制代码
 		glBindVertexArray(VAOId);
+		
 		shader.use();
-		//鼠标移动，镜头方向不变
-		targetPos = camera.Position + distance * camera.Front;
-		shader.setVec2("uvOffset", uvOffset);
-		uvOffset.x += 0.01;
+		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D_ARRAY, texId);
 		
 		//这里一定要绑定EBO，否则执行glDrawElements时挂机
 		vaoBuffer.BindEBO();
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		shader.unUse();
 		glBindVertexArray(0);
 		glUseProgram(0);

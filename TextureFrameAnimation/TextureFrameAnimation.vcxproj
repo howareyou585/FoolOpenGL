@@ -10,6 +10,13 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TextureFrameAnimation.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TextureFrameAnimation.frag" />
+    <None Include="TextureFrameAnimation.vertex" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8ADA58F5-0EDB-4662-B8A0-FCBA895605B5}</ProjectGuid>
     <RootNamespace>TextureFrameAnimation</RootNamespace>
