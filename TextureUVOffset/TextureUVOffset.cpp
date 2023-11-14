@@ -149,9 +149,10 @@ int main(int argc, char** argv)
 		uvOffset.x += 0.01;
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D_ARRAY, texId);
-		//glDrawArrays(GL_TRIANGLES, 0, nVertex);
-		//glDrawArrays(GL_LINES, 0, nVertex);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, squareIndexes);
+		
+		//这里一定要绑定EBO，否则执行glDrawElements时挂机
+		vaoBuffer.BindEBO();
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		shader.unUse();
 		glBindVertexArray(0);
 		glUseProgram(0);
