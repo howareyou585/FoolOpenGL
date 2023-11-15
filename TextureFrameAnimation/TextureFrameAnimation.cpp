@@ -32,6 +32,45 @@ float lastX = WINDOW_WIDTH / 2.0f;
 float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
 Camera camera;
+
+
+void updateUVByFrame(float currentFrame,int row, int col, float*tempVertices,int nVal)
+{
+	int framCout = row * col;
+	//float currentFrame = glfwGetTime();
+	//超过9的话，从头（0）开始
+	int frame = ((int)(currentFrame * framCout)) % framCout; // 此处一定要注意：括号里*9后，再强制转为int,
+											 // 如果没有（）则取模一定为0
+
+	//当前行
+	int curRow = frame / row;
+	//当前列
+	int curCol = frame % col;
+
+	float scale = 1.0f / row;
+	for (int i = 0; i < nVal; i += 5)
+	{
+
+		tempVertices[i + 3] *= scale;
+		tempVertices[i + 4] *= scale;
+
+		tempVertices[i + 3] += scale * curCol;
+		tempVertices[i + 4] += scale * curRow;
+		float x = tempVertices[i + 0];
+		float y = tempVertices[i + 1];
+		float z = tempVertices[i + 2];
+		float u = tempVertices[i + 3];
+		float v = tempVertices[i + 4];
+
+
+		/*string strXYZ = "(" + to_string(x) + "," + to_string(y) + "," + to_string(z) + ")";
+		string strUV = "(" + to_string(u) + "," + to_string(v) + ")";
+		cout << strXYZ << "  " << strUV << endl;*/
+	}
+	cout << "currentFrame:" << currentFrame << ", " << "frame:" << frame << endl;
+	cout << endl;
+}
+
 int main(int argc, char** argv)
 {
 
@@ -111,7 +150,7 @@ int main(int argc, char** argv)
 	GLuint VBOId = vaoBuffer.GetVBO();
 	//加载材质
 	//
-	GLuint texId = TextureFromFile("flower.jpg", "../resources/textures",false, GL_CLAMP_TO_EDGE);
+	GLuint texId = TextureFromFile("explore.jpg", "../resources/textures");
 	//GLuint texId = TextureFromFile("explore.jpg", "../resources/textures");
 
 	BoundingBox box;
@@ -147,45 +186,14 @@ int main(int argc, char** argv)
 	float angle = 0.0f;
 	
 	lastFrame = 0;
-	int row = 3; //纹理帧动画 有3行 
-	int col = 3; //纹理帧动画 有3列 
-	float scale = 1.0 / row;
-	glm::vec2 uvSize(scale, scale);
+	int row = 6; //纹理帧动画 有3行 
+	int col = 6; //纹理帧动画 有3列 
+
 	//int frame = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
-		//超过9的话，从头（0）开始
-		int frame = ((int)(currentFrame*9)) % 9; // 此处一定要注意：括号里*9后，再强制转为int,
-												 // 如果没有（）则取模一定为0
-	
-		//当前行
-		int curRow = frame / row;
-		//当前列
-		int curCol = frame % col;
-
-		
-		for (int i = 0; i < nVal; i+=5)
-		{
-			
-			tempVertices[i + 3] *= scale;
-			tempVertices[i + 4] *= scale;
-
-			tempVertices[i + 3] += scale * curCol;
-			tempVertices[i + 4] += scale * curRow;
-			float x = tempVertices[i + 0];
-			float y = tempVertices[i + 1];
-			float z = tempVertices[i + 2];
-			float u = tempVertices[i + 3];
-			float v = tempVertices[i + 4];
-			
-
-			string strXYZ = "(" + to_string(x)+ ","+ to_string(y) + "," + to_string(z)+ ")";
-			string strUV  = "(" + to_string(u)+ "," + to_string(v)+ ")";
-			cout << strXYZ << "  " << strUV << endl;
-		}
-		cout << "currentFrame:" << currentFrame << ", " << "frame:" << frame << endl;
-		cout << endl;
+		updateUVByFrame(currentFrame,row, col, tempVertices,nVal);
 		glBindVertexArray(VAOId);
 		glBindBuffer(GL_ARRAY_BUFFER, VBOId);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tempVertices), tempVertices);
@@ -221,8 +229,7 @@ int main(int argc, char** argv)
 		glUseProgram(0);
 
 		glfwSwapBuffers(window); // 交换缓存
-		//std::this_thread::sleep_for(std::chrono::seconds(1));
-		
+		//std::this_thread::sleep_for(std::chrono::seconds(2));
 	}
 	if (ptrVerticesBak)
 	{
