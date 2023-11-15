@@ -16,6 +16,8 @@
 #include "learnopengl/boundingbox.h"
 #include "learnopengl/model.h"
 #include "learnopengl/camera.h"
+#include <thread>
+#include <chrono>
 // 键盘回调函数原型声明
 //void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow *window, Camera & camera);
@@ -88,8 +90,11 @@ int main(int argc, char** argv)
 		10.f,  10.f, 0.f,  0.f,1.f,
 		410.f, 10.f, 0.f,  1.f,1.f,
 		10.f,  410.f,0.f,  0.f,  0.f,
-		410.f, 410.f,0.f,  1.f,0.f,
+		410.f, 410.f,0.f,  1.f,0.
 	};
+	int nVal = sizeof(tempVertices) / sizeof(GLfloat);
+	float* ptrVerticesBak = new float[nVal];
+	memcpy(ptrVerticesBak, tempVertices, sizeof(tempVertices));
 	GLuint tempIndexes[] = { 0,1,2,1,2,3};
 	VAOBuffer vaoBuffer;
 	vector<vertex_attribute> vecAttrib;
@@ -105,20 +110,21 @@ int main(int argc, char** argv)
 	GLuint VAOId = vaoBuffer.GetVAO();
 	GLuint VBOId = vaoBuffer.GetVBO();
 	//加载材质
-
-	GLuint texId = TextureFromFile("flower.jpg", "../resources/textures");
+	//
+	GLuint texId = TextureFromFile("flower.jpg", "../resources/textures",false, GL_CLAMP_TO_EDGE);
+	//GLuint texId = TextureFromFile("explore.jpg", "../resources/textures");
 
 	BoundingBox box;
-	int nVal = sizeof(tempVertices) / sizeof(GLfloat);
+	
 	for (int i = 0; i < nVal; i += 5)
 	{
 		glm::vec3 pnt(tempVertices[i], tempVertices[i + 1], tempVertices[i + 2]);
 		box.Merge(pnt);
 	}
 	
-
-	camera.InitCamera(box, 0.8f);
-	float radius = box.GetLength() * 0.8f;
+	
+	camera.InitCamera(box, 1.8f);
+	float radius = box.GetLength() * 1.8f;
 
 	// Section2 准备着色器程序
 	Shader shader("TextureFrameAnimation.vertex", "TextureFrameAnimation.frag");
@@ -143,30 +149,51 @@ int main(int argc, char** argv)
 	lastFrame = 0;
 	int row = 3; //纹理帧动画 有3行 
 	int col = 3; //纹理帧动画 有3列 
-	float scale = 1.0 / 3;
+	float scale = 1.0 / row;
 	glm::vec2 uvSize(scale, scale);
+	//int frame = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
 		//超过9的话，从头（0）开始
-		int frame = ((int)currentFrame) % 9;
+		int frame = ((int)(currentFrame*9)) % 9; // 此处一定要注意：括号里*9后，再强制转为int,
+												 // 如果没有（）则取模一定为0
+	
 		//当前行
 		int curRow = frame / row;
 		//当前列
 		int curCol = frame % col;
+
+		
 		for (int i = 0; i < nVal; i+=5)
 		{
+			
 			tempVertices[i + 3] *= scale;
 			tempVertices[i + 4] *= scale;
+
 			tempVertices[i + 3] += scale * curCol;
 			tempVertices[i + 4] += scale * curRow;
+			float x = tempVertices[i + 0];
+			float y = tempVertices[i + 1];
+			float z = tempVertices[i + 2];
+			float u = tempVertices[i + 3];
+			float v = tempVertices[i + 4];
+			
+
+			string strXYZ = "(" + to_string(x)+ ","+ to_string(y) + "," + to_string(z)+ ")";
+			string strUV  = "(" + to_string(u)+ "," + to_string(v)+ ")";
+			cout << strXYZ << "  " << strUV << endl;
 		}
+		cout << "currentFrame:" << currentFrame << ", " << "frame:" << frame << endl;
+		cout << endl;
 		glBindVertexArray(VAOId);
 		glBindBuffer(GL_ARRAY_BUFFER, VBOId);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tempVertices), tempVertices);
+		
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
-		cout << "currentFrame:" << currentFrame << ", " << "frame:" << frame << endl;
+		memcpy(tempVertices, ptrVerticesBak, sizeof(tempVertices));
+		
 		deltaTime = currentFrame - lastFrame; //渲染一帧用时
 		//cout << to_string(deltaTime) << endl;
 		lastFrame = currentFrame; // 上一帧的时间
@@ -194,6 +221,13 @@ int main(int argc, char** argv)
 		glUseProgram(0);
 
 		glfwSwapBuffers(window); // 交换缓存
+		//std::this_thread::sleep_for(std::chrono::seconds(1));
+		
+	}
+	if (ptrVerticesBak)
+	{
+		delete[] ptrVerticesBak;
+		ptrVerticesBak = nullptr;
 	}
 	// 释放资源
 	glDeleteVertexArrays(1, &VAOId);
