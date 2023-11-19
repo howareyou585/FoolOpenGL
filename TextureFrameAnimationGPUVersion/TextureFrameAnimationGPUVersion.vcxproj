@@ -11,15 +11,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BlendOIT.cpp" />
+    <None Include="TextureFrameAnimationGPUVer.frag" />
+    <None Include="TextureFrameAnimationGPUVer.vertex" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="OIT.frag" />
-    <None Include="OIT.vertex" />
+    <ClCompile Include="TextureFrameAnimationGPUVersion.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5303AF1F-52FD-4F89-888D-3410AE15D49A}</ProjectGuid>
-    <RootNamespace>BlendOIT</RootNamespace>
+    <ProjectGuid>{118377A9-0EC2-445B-9BDB-F0826832B457}</ProjectGuid>
+    <RootNamespace>TextureFrameAnimation</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -58,7 +58,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32s.lib;SOIL.lib;freeglut.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32s.lib;SOIL.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
