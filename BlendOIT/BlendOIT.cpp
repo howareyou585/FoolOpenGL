@@ -5,25 +5,22 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
-
 // 包含着色器加载库
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include "learnopengl/shader.h"
 #include "learnopengl/vaoBuffer.h"
-#include "learnopengl/vertexset.h"
 #include "learnopengl/boundingbox.h"
 #include "learnopengl/model.h"
 #include "learnopengl/camera.h"
-#include <thread>
-#include <chrono>
+#include "GL/glut.h"
+#include "GLBatch.h"
 // 键盘回调函数原型声明
 //void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void processInput(GLFWwindow *window, Camera & camera);
+void processInput(GLFWwindow* window, Camera& camera);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
+//
 // 定义程序常量
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
 float deltaTime = 0.0f; // 当前帧与上一帧的时间差
@@ -32,45 +29,6 @@ float lastX = WINDOW_WIDTH / 2.0f;
 float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
 Camera camera;
-
-
-void updateUVByFrame(float currentFrame,int row, int col, float*tempVertices,int nVal)
-{
-	int framCout = row * col;
-	//float currentFrame = glfwGetTime();
-	//超过9的话，从头（0）开始
-	int frame = ((int)(currentFrame * framCout)) % framCout; // 此处一定要注意：括号里*9后，再强制转为int,
-											 // 如果没有（）则取模一定为0
-
-	//当前行
-	int curRow = frame / row;
-	//当前列
-	int curCol = frame % col;
-	
-	float scale = 1.0f / row;
-	for (int i = 0; i < nVal; i += 5)
-	{
-
-		tempVertices[i + 3] *= scale;
-		tempVertices[i + 4] *= scale;
-
-		tempVertices[i + 3] += scale * curCol;
-		tempVertices[i + 4] += scale * curRow;
-		float x = tempVertices[i + 0];
-		float y = tempVertices[i + 1];
-		float z = tempVertices[i + 2];
-		float u = tempVertices[i + 3];
-		float v = tempVertices[i + 4];
-
-
-		/*string strXYZ = "(" + to_string(x) + "," + to_string(y) + "," + to_string(z) + ")";
-		string strUV = "(" + to_string(u) + "," + to_string(v) + ")";
-		cout << strXYZ << "  " << strUV << endl;*/
-	}
-	cout << "currentFrame:" << currentFrame << ", " << "frame:" << frame << endl;
-	cout << endl;
-}
-
 int main(int argc, char** argv)
 {
 
@@ -89,7 +47,7 @@ int main(int argc, char** argv)
 
 	// 创建窗口
 	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT,
-		"Demo of triangle", NULL, NULL);
+		"Demo of blend", NULL, NULL);
 	if (!window)
 	{
 		std::cout << "Error::GLFW could not create winddow!" << std::endl;
@@ -125,85 +83,88 @@ int main(int argc, char** argv)
 
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-	float tempVertices[] = {
-		10.f,  10.f, 0.f,  0.f,1.f,
-		410.f, 10.f, 0.f,  1.f,1.f,
-		10.f,  410.f,0.f,  0.f,  0.f,
-		410.f, 410.f,0.f,  1.f,0.
-	};
-	int nVal = sizeof(tempVertices) / sizeof(GLfloat);
-	float* ptrVerticesBak = new float[nVal];
-	memcpy(ptrVerticesBak, tempVertices, sizeof(tempVertices));
-	GLuint tempIndexes[] = { 0,1,2,1,2,3};
-	VAOBuffer vaoBuffer;
+
+	//创建透明GPU 缓存
+	VAOBuffer vaoTransparentBuffer;
 	vector<vertex_attribute> vecAttrib;
 	map<vertex_attribute, int> mapAttrib2Size;
 	vecAttrib.emplace_back(vertex_attribute::position);
 	vecAttrib.emplace_back(vertex_attribute::texcoord);
 	mapAttrib2Size[vertex_attribute::position] = 3;
 	mapAttrib2Size[vertex_attribute::texcoord] = 2;
-	vaoBuffer.BuildVAO(tempVertices, sizeof(tempVertices), tempIndexes,
-		sizeof(tempIndexes), vecAttrib, mapAttrib2Size);
+	float transparentVertices[] = {
+		// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+		0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+		0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+		0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+		1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+	};
+	vaoTransparentBuffer.BuildVAO(transparentVertices, sizeof(transparentVertices), nullptr,
+		0, vecAttrib, mapAttrib2Size);
 
 	// 创建缓存对象
-	GLuint VAOId = vaoBuffer.GetVAO();
-	GLuint VBOId = vaoBuffer.GetVBO();
+	GLuint transparentVAOId = vaoTransparentBuffer.GetVAO();
+	GLuint transparentVBOId = vaoTransparentBuffer.GetVBO();
 	//加载材质
-	//
-	GLuint texId = TextureFromFile("explore.jpg", "../resources/textures");
-	//GLuint texId = TextureFromFile("explore.jpg", "../resources/textures");
-
+	//gltMakeCylinder(bckgrndCylBatch, 4.0, 4.0, 5.2, 1024, 1);
+	//GLTriangleBatch
+	GLuint texWindowId = TextureFromFile("window.png", "../resources/textures");
+	// world space positions of our cubes
+	glm::vec3 vegetation[] = {
+		glm::vec3(-1.5f, 0.0f, -0.48f),
+		glm::vec3(1.5f, 0.0f, 0.51f),
+		glm::vec3(0.0f, 0.0f, 0.7f),
+		glm::vec3(-0.3f, 0.0f, -2.3f),
+		glm::vec3(0.5f, 0.0f, -0.6f)
+	};
 	BoundingBox box;
-	
+	int nVal = sizeof(transparentVertices) / sizeof(GLfloat);
 	for (int i = 0; i < nVal; i += 5)
 	{
-		glm::vec3 pnt(tempVertices[i], tempVertices[i + 1], tempVertices[i + 2]);
+		glm::vec3 pnt(transparentVertices[i], transparentVertices[i + 1], transparentVertices[i + 2]);
 		box.Merge(pnt);
 	}
+	BoundingBox totalBoundingBox;
 	
-	
-	camera.InitCamera(box, 1.8f);
-	float radius = box.GetLength() * 1.8f;
+	vector<glm::mat4> vecModelMatrix;
+
+	int nModelMatrix = sizeof(vegetation)/sizeof(glm::vec3) ;
+	vecModelMatrix.reserve(nModelMatrix);
+	for (int i = 0; i < nModelMatrix; i++)
+	{
+		glm::mat4 model(1.0f);
+		model = glm::translate(model, vegetation[i]);
+		BoundingBox tmpBoundingBox = box.Transformed(model);
+		totalBoundingBox.Merge(tmpBoundingBox);
+		vecModelMatrix.emplace_back(model);
+		
+	}
+	//float raduis = totalBoundingBox.GetLength()*0.8f;
+
+	camera.InitCamera(totalBoundingBox, 0.8f);
+	float radius = totalBoundingBox.GetLength() * 0.8f;
 
 	// Section2 准备着色器程序
-	Shader shader("TextureFrameAnimation.vertex", "TextureFrameAnimation.frag");
+	Shader shader("OIT.vertex", "OIT.frag");
 	shader.use();
-	shader.setInt("sampler2d", 0);
-	glm::mat4 view = camera.GetViewMatrix();
-	glm::mat4 projection = camera.GetProjectionMatrix((float)WINDOW_WIDTH/(float)(WINDOW_HEIGHT));
-	glm::mat4 model(1.0f);
-	model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-	shader.setMat4("model", model);
-	shader.setMat4("view", view);
-	shader.setMat4("projection", projection);
+	shader.setInt("s_texture", 0);
 	shader.unUse();
-	int nVertex = sizeof(tempVertices) / (sizeof(GLuint) * 5);
+	int nVertex = sizeof(transparentVertices) / (sizeof(GLuint) * 5);
 	// 开始游戏主循环
-	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST); //一定要开启深度测试
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glCullFace(GL_BACK);
-	glm::vec3 targetPos = box.GetCenter();
+	glm::vec3 targetPos = totalBoundingBox.GetCenter();
 	float distance = glm::length(targetPos - camera.Position);
-	float angle = 0.0f;
-	
-	lastFrame = 0;
-	int row = 6; //纹理帧动画 有3行 
-	int col = 6; //纹理帧动画 有3列 
-
-	//int frame = 0;
+	map<float, glm::mat4> mapDistance2Matrix;
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
-		updateUVByFrame(currentFrame,row, col, tempVertices,nVal);
-		glBindVertexArray(VAOId);
-		glBindBuffer(GL_ARRAY_BUFFER, VBOId);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tempVertices), tempVertices);
-		
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		memcpy(tempVertices, ptrVerticesBak, sizeof(tempVertices));
-		
-		deltaTime = currentFrame - lastFrame; //渲染一帧用时
-		//cout << to_string(deltaTime) << endl;
+		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame; // 上一帧的时间
 		processInput(window, camera);
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
@@ -213,32 +174,40 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// 这里填写场景绘制代码
-		glBindVertexArray(VAOId);
-		
+		glBindVertexArray(transparentVAOId);
 		shader.use();
+		//鼠标移动，镜头方向不变
+		targetPos = camera.Position + distance * camera.Front;
+		glm::mat4 viewMatrix = camera.GetViewMatrix(targetPos);
 		
+		shader.setMat4("view", viewMatrix);
+		glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
+		shader.setMat4("projection", projectionMatrix);
+
+		for (int i = 0;i< nModelMatrix; i++)
+		{
+			auto dist = glm::length(camera.Position - vegetation[i]);
+			mapDistance2Matrix[dist] = vecModelMatrix[i];
+		}
+
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D_ARRAY, texId);
-		
-		//这里一定要绑定EBO，否则执行glDrawElements时挂机
-		vaoBuffer.BindEBO();
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glBindTexture(GL_TEXTURE_2D, texWindowId);
+		//先绘制远处的透明模型，在绘制近处的透明模型
+		for (auto rit = mapDistance2Matrix.rbegin(); rit!=mapDistance2Matrix.rend();rit++)
+		{
+			shader.setMat4("model", rit->second);
+			glDrawArrays(GL_TRIANGLES, 0, nVertex);
+			//glDrawArrays(GL_LINES, 0, nVertex);
+		}
 		shader.unUse();
 		glBindVertexArray(0);
 		glUseProgram(0);
 
 		glfwSwapBuffers(window); // 交换缓存
-		//std::this_thread::sleep_for(std::chrono::seconds(2));
-	}
-	if (ptrVerticesBak)
-	{
-		delete[] ptrVerticesBak;
-		ptrVerticesBak = nullptr;
 	}
 	// 释放资源
-	glDeleteVertexArrays(1, &VAOId);
-	glDeleteBuffers(1, &VBOId);
+	glDeleteVertexArrays(1, &transparentVAOId);
+	glDeleteBuffers(1, &transparentVBOId);
 	glfwTerminate();
 	return 0;
 }
@@ -249,7 +218,7 @@ int main(int argc, char** argv)
 //		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
 //	}
 //}
-void processInput(GLFWwindow *ptrWindow, Camera & camera)
+void processInput(GLFWwindow* ptrWindow, Camera& camera)
 {
 	if (!ptrWindow)
 	{
