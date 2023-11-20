@@ -81,14 +81,14 @@ void main()
 float calculateShadow(vec4 fragPosLightSpace)
 {
 	// perform perspective divide
-	vec3 projCoord = fragPosLightSpace.xyz/fragPosLightSpace.w;
+	vec3 projCoord = fragPosLightSpace.xyz/fragPosLightSpace.w;//在灯光空间下片元的屏幕坐标
 	// transform to [0,1] range
 	projCoord = projCoord*0.5+0.5;
 	 // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
 	//采样点在深度贴图中的最近距离
 	float closestDepth = texture(shadowMap, projCoord.xy).r;
 	// get depth of current fragment from light's perspective
-	float currentDepth = projCoord.z;
+	float currentDepth = projCoord.z;//在灯光空间下片元的屏幕坐标的深度
 	//比较采样点在深度贴图中的深度值与采样点在本次采样的深度值。要么在阴影中，要么不在阴影中
 	float shadow = currentDepth>closestDepth ? 1.0f : 0.0f;
 	return shadow;
