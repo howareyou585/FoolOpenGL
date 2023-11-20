@@ -10,6 +10,13 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BillBoradGPUVersion.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BillBoradGPU.frag" />
+    <None Include="BillBoradGPU.vertex" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{859E13E1-34A3-4778-A339-58008EAF6A9E}</ProjectGuid>
     <RootNamespace>BillBoardGPUVersion</RootNamespace>
