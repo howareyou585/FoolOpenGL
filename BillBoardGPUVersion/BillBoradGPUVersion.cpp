@@ -8,19 +8,14 @@
 
 // 包含着色器加载库
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include "learnopengl/shader.h"
 #include "learnopengl/vaoBuffer.h"
-#include "learnopengl/vertexset.h"
 #include "learnopengl/boundingbox.h"
 #include "learnopengl/model.h"
 #include "learnopengl/camera.h"
-#include <thread>
-#include <chrono>
 // 键盘回调函数原型声明
 //void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void processInput(GLFWwindow *window, Camera & camera);
+void processInput(GLFWwindow* window, Camera& camera);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
@@ -31,45 +26,9 @@ float lastFrame = 0.0f; // 上一帧的时间
 float lastX = WINDOW_WIDTH / 2.0f;
 float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
-Camera camera;
-
-
-void updateUVByFrame(float currentFrame,int row, int col, float*tempVertices,int nVal)
-{
-	int framCout = row * col;
-	//float currentFrame = glfwGetTime();
-	//超过9的话，从头（0）开始
-	int frame = ((int)(currentFrame * framCout)) % framCout; // 此处一定要注意：括号里*9后，再强制转为int,
-											 // 如果没有（）则取模一定为0
-
-	//当前行
-	int curRow = frame / row;
-	//当前列
-	int curCol = frame % col;
-	
-	float scale = 1.0f / row;
-	for (int i = 0; i < nVal; i += 5)
-	{
-
-		tempVertices[i + 3] *= scale;
-		tempVertices[i + 4] *= scale;
-
-		tempVertices[i + 3] += scale * curCol;
-		tempVertices[i + 4] += scale * curRow;
-		float x = tempVertices[i + 0];
-		float y = tempVertices[i + 1];
-		float z = tempVertices[i + 2];
-		float u = tempVertices[i + 3];
-		float v = tempVertices[i + 4];
-
-
-		/*string strXYZ = "(" + to_string(x) + "," + to_string(y) + "," + to_string(z) + ")";
-		string strUV = "(" + to_string(u) + "," + to_string(v) + ")";
-		cout << strXYZ << "  " << strUV << endl;*/
-	}
-	cout << "currentFrame:" << currentFrame << ", " << "frame:" << frame << endl;
-	cout << endl;
-}
+Camera camera(glm::vec3(50.0f,5.f,20.f));
+GLuint vaoId = 0;
+GLuint vboId = 0;
 
 int main(int argc, char** argv)
 {
@@ -89,7 +48,7 @@ int main(int argc, char** argv)
 
 	// 创建窗口
 	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT,
-		"Demo of triangle", NULL, NULL);
+		"Demo of blend", NULL, NULL);
 	if (!window)
 	{
 		std::cout << "Error::GLFW could not create winddow!" << std::endl;
@@ -122,123 +81,103 @@ int main(int argc, char** argv)
 		glfwTerminate();
 		return -1;
 	}
-
+	auto error = glGetError();
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-	float tempVertices[] = {
-		10.f,  10.f, 0.f,  0.f,1.f,
-		410.f, 10.f, 0.f,  1.f,1.f,
-		10.f,  410.f,0.f,  0.f,  0.f,
-		410.f, 410.f,0.f,  1.f,0.
-	};
-	int nVal = sizeof(tempVertices) / sizeof(GLfloat);
-	float* ptrVerticesBak = new float[nVal];
-	memcpy(ptrVerticesBak, tempVertices, sizeof(tempVertices));
-	GLuint tempIndexes[] = { 0,1,2,1,2,3};
+	error = glGetError();
 	VAOBuffer vaoBuffer;
 	vector<vertex_attribute> vecAttrib;
 	map<vertex_attribute, int> mapAttrib2Size;
 	vecAttrib.emplace_back(vertex_attribute::position);
-	vecAttrib.emplace_back(vertex_attribute::texcoord);
 	mapAttrib2Size[vertex_attribute::position] = 3;
-	mapAttrib2Size[vertex_attribute::texcoord] = 2;
-	vaoBuffer.BuildVAO(tempVertices, sizeof(tempVertices), tempIndexes,
-		sizeof(tempIndexes), vecAttrib, mapAttrib2Size);
 
+	float billboardVertices[3] = {
+	0, 0, 0
+	};
+	
+	glm::vec3 billboardPos(0, 0, 0);
+	
+	
+	vaoBuffer.BuildVAO(billboardVertices, sizeof(billboardVertices), NULL,
+		0, vecAttrib, mapAttrib2Size, GL_DYNAMIC_DRAW);
+	error = glGetError();
 	// 创建缓存对象
-	GLuint VAOId = vaoBuffer.GetVAO();
-	GLuint VBOId = vaoBuffer.GetVBO();
+	vaoId = vaoBuffer.GetVAO();
+	vboId = vaoBuffer.GetVBO();
 	//加载材质
-	//
-	GLuint texId = TextureFromFile("explore.jpg", "../resources/textures");
-	//GLuint texId = TextureFromFile("explore.jpg", "../resources/textures");
-
-	BoundingBox box;
+	GLuint texId = TextureFromFile("grass.png", "../resources/textures", false, GL_CLAMP_TO_EDGE);
 	
-	for (int i = 0; i < nVal; i += 5)
-	{
-		glm::vec3 pnt(tempVertices[i], tempVertices[i + 1], tempVertices[i + 2]);
-		box.Merge(pnt);
-	}
-	
-	
-	camera.InitCamera(box, 1.8f);
-	float radius = box.GetLength() * 1.8f;
-
 	// Section2 准备着色器程序
-	Shader shader("TextureFrameAnimation.vertex", "TextureFrameAnimation.frag");
+	Shader shader("BillBoradGPU.vertex", "BillBoradGPU.frag");
 	shader.use();
-	shader.setInt("sampler2d", 0);
-	glm::mat4 view = camera.GetViewMatrix();
-	glm::mat4 projection = camera.GetProjectionMatrix((float)WINDOW_WIDTH/(float)(WINDOW_HEIGHT));
-	glm::mat4 model(1.0f);
-	model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-	shader.setMat4("model", model);
-	shader.setMat4("view", view);
-	shader.setMat4("projection", projection);
+	shader.setInt("s_texture", 0);
 	shader.unUse();
-	int nVertex = sizeof(tempVertices) / (sizeof(GLuint) * 5);
+	
 	// 开始游戏主循环
 	glEnable(GL_DEPTH_TEST);
 	//glCullFace(GL_BACK);
-	glm::vec3 targetPos = box.GetCenter();
-	float distance = glm::length(targetPos - camera.Position);
-	float angle = 0.0f;
 	
-	lastFrame = 0;
-	int row = 6; //纹理帧动画 有3行 
-	int col = 6; //纹理帧动画 有3列 
-
-	//int frame = 0;
+	
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
-		updateUVByFrame(currentFrame,row, col, tempVertices,nVal);
-		glBindVertexArray(VAOId);
-		glBindBuffer(GL_ARRAY_BUFFER, VBOId);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(tempVertices), tempVertices);
-		
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		memcpy(tempVertices, ptrVerticesBak, sizeof(tempVertices));
-		
-		deltaTime = currentFrame - lastFrame; //渲染一帧用时
-		//cout << to_string(deltaTime) << endl;
+		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame; // 上一帧的时间
 		processInput(window, camera);
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
 
+		
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		error = glGetError();
+		
+		error = glGetError();
 		// 这里填写场景绘制代码
-		glBindVertexArray(VAOId);
+		glBindVertexArray(vaoId);
 		
 		shader.use();
+		//鼠标移动，镜头方向不变
+		float distance = (billboardPos - camera.Position).length();
+		auto targetPos = camera.Position + distance * camera.Front;
+		glm::mat4 viewMatrix = camera.GetViewMatrix(targetPos);
+
+		shader.setMat4("view", viewMatrix);
+		glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
+		shader.setMat4("projection", projectionMatrix);
+
 		
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D_ARRAY, texId);
+		glBindTexture(GL_TEXTURE_2D, texId);
+		//for(auto i = 0; i <100; i+=)
 		
-		//这里一定要绑定EBO，否则执行glDrawElements时挂机
-		vaoBuffer.BindEBO();
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		error = glGetError();
+		shader.setVec3("rightDir", camera.Right);
+		shader.setVec3("upDir", glm::vec3(0, 1, 0));
+	    
+		for (auto i = 0; i < 100;i+=5)
+		{
+			for (auto j = 0; j > -100; j -= 5)
+			{
+				glm::mat4 model(1.0f);
+
+				model = glm::translate(model, glm::vec3(i, 0, j));
+				glm::mat4 tmpMatrix = projectionMatrix * viewMatrix * model;
+				shader.setMat4("mvp", tmpMatrix);
+				glDrawArrays(GL_TRIANGLES, 0, 6);//不理解：为什么只有一个顶点却需要6个顶点的参数？
+			}
+			
+		}
+		
 		shader.unUse();
 		glBindVertexArray(0);
 		glUseProgram(0);
 
 		glfwSwapBuffers(window); // 交换缓存
-		//std::this_thread::sleep_for(std::chrono::seconds(2));
-	}
-	if (ptrVerticesBak)
-	{
-		delete[] ptrVerticesBak;
-		ptrVerticesBak = nullptr;
 	}
 	// 释放资源
-	glDeleteVertexArrays(1, &VAOId);
-	glDeleteBuffers(1, &VBOId);
+	glDeleteVertexArrays(1, &vaoId);
+	glDeleteBuffers(1, &vboId);
 	glfwTerminate();
 	return 0;
 }
@@ -249,7 +188,7 @@ int main(int argc, char** argv)
 //		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
 //	}
 //}
-void processInput(GLFWwindow *ptrWindow, Camera & camera)
+void processInput(GLFWwindow* ptrWindow, Camera& camera)
 {
 	if (!ptrWindow)
 	{
