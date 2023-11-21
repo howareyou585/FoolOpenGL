@@ -1,0 +1,25 @@
+#version 330 core
+
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec3 aNormal;
+layout(location = 2) in vec2 aTextureCoord;
+uniform mat4 lightSpaceMatrix;  //灯光坐标空间下的矩阵 ： lightPMat * lightVMat 
+uniform mat4 model;  //
+uniform mat4 projection; //当前相机的 投影矩阵  
+uniform mat4 view;//当前相机的 视矩阵
+out VS_OUT
+{
+	vec3 fragPosWorldSpace;
+	vec4 fragPosLightSpace;
+	vec3 normalDir;
+	vec2 textcoord;
+}vs_out;
+void main()
+{
+	vs_out.normalDir = transpose(inverse(mat3(model)))*aNormal;
+	vs_out.fragPosWorldSpace = vec3(model*vec4(aPosition,1.0f));
+	//将世界坐标的点变换到设备空间
+	vs_out.fragPosLightSpace = lightSpaceMatrix*vec4(vs_out.fragPosWorldSpace,1.0f);
+	vs_out.textcoord = aTextureCoord;
+	gl_Position = projection*view*model*vec4(aPosition, 1.0);
+}
