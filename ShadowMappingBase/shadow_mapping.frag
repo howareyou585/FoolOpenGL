@@ -55,28 +55,7 @@ void main()
 	vec3 result = ambientColor + diffuseColor + spacularColor;
 	FragColor = vec4(result,1.0f);
 
-//	vec3 color = texture(material.diffuseTexture, fs_in.textcoord).rgb;
-//    vec3 normal = normalize(fs_in.normalDir);
-//    vec3 lightColor = vec3(0.3);
-//    // ambient
-//    vec3 ambient = 0.3 * lightColor;
-//    // diffuse
-//    vec3 lightDir = normalize(light.position - fs_in.fragPosWorldSpace);
-//	//vec3 lightDir = normalize(light.direction);
-//    float diff = max(dot(lightDir, normal), 0.0);
-//    vec3 diffuse = diff * lightColor;
-//    // specular
-//    vec3 viewDir = normalize(eyePos - fs_in.fragPosWorldSpace);
-//    vec3 reflectDir = reflect(-lightDir, normal);
-//    float spec = 0.0;
-//    vec3 halfwayDir = normalize(lightDir + viewDir);  
-//    spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
-//    vec3 specular = spec * lightColor;    
-//    // calculate shadow
-//    float shadow = calculateShadow(fs_in.fragPosLightSpace);                      
-//    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
-//    
-//    FragColor = vec4(lighting, 1.0);
+
 }
 float calculateShadow(vec4 fragPosLightSpace)
 {
@@ -90,6 +69,6 @@ float calculateShadow(vec4 fragPosLightSpace)
 	// get depth of current fragment from light's perspective
 	float currentDepth = projCoord.z;//在灯光空间下片元的屏幕坐标的深度
 	//比较采样点在深度贴图中的深度值与采样点在本次采样的深度值。要么在阴影中，要么不在阴影中
-	float shadow = currentDepth>closestDepth ? 1.0f : 0.0f;
+	float shadow = currentDepth-0.005>closestDepth ? 1.0f : 0.0f;
 	return shadow;
 }

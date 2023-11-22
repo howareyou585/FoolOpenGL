@@ -19,6 +19,9 @@
 #include "learnopengl/Maroc.h"
 #include "learnopengl/light.h"
 #include "learnopengl/lightManager.h"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 // 键盘回调函数原型声明
 void processInput(GLFWwindow* window, Camera& camera);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -33,6 +36,7 @@ float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
 Camera camera;
 void RenderCube(const Shader& shader, vector<glm::mat4>& vecModelMatrix);
+void RenderLight(const Shader& shader, glm::mat4&modelMatrix);
 void RenderPlane(const Shader& shader);
 void RenderQuad(const Shader& shader);
 int main(int argc, char** argv)
@@ -71,7 +75,7 @@ int main(int argc, char** argv)
 	//（译注：即表示你正在操作这个程序，Windows中拥有焦点的程序标题栏通常是有颜色的那个，
 	//而失去焦点的程序标题栏则是灰色的），光标应该停留在窗口中（除非程序失去焦点或者退出）。
 	//我们可以用一个简单地配置调用来完成：
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	//在调用这个函数之后，无论我们怎么去移动鼠标，光标都不会显示了，
 	// 它也不会离开窗口。对于FPS摄像机系统来说非常完美。
 	// 初始化GLEW 获取OpenGL函数
@@ -84,6 +88,20 @@ int main(int argc, char** argv)
 		glfwTerminate();
 		return -1;
 	}
+#pragma region imgui初始化
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();//主题颜色
+	//ImGui::StyleColorsLight();
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 130");
+#pragma endregion
 	// 创建cube缓存对象
 	vector<vertex_attribute> vecVertexAttrib;
 	map< vertex_attribute, int> mapVertexAttrib2Num;
@@ -162,6 +180,7 @@ int main(int argc, char** argv)
 	// Section2 准备着色器程序
 	Shader shadowMappingShader("shadow_mapping.vertex", "shadow_mapping.frag");
 	Shader simpleDepthShader("shadow_mapping_depth.vertex", "shadow_mapping_depth.frag");
+	Shader lightShader("light_cube.vertex", "light_cube.frag");
 	//Shader quadShader("quad.vertex", "quad.frag");
 	glm::vec3 center = totalBox.GetCenter();
 	float boxLength = totalBox.GetLength();
@@ -177,36 +196,33 @@ int main(int argc, char** argv)
 	float val = 10.f;
 	glm::mat4 lightProjection = glm::ortho(-val, val, -val, val, nearPlane, farPlane);
 	glm::mat4 cameraProjection = glm::perspective(camera.Zoom, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
-	glm::mat4 lightView = glm::lookAt(lightPos,
-		glm::vec3(0.f, 0.f, 0.f),
-		glm::vec3(0.f, 1.0f, 0.0f));
-	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-
-	simpleDepthShader.use();
-	simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-	simpleDepthShader.unUse();
+	
 
 	shadowMappingShader.use();
 	//设置相机参数
 	shadowMappingShader.setMat4("view", camera.GetViewMatrix());
 	shadowMappingShader.setMat4("projection", cameraProjection);
-	shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+	
 	shadowMappingShader.setVec3("eyePos", camera.Position);
 	//设置平行灯光参数
 	glm::vec3 ambient(0.09f, 0.09f, 0.09f);
 	glm::vec3 diffuse(0.3f, 0.3f, 0.3f);
 	glm::vec3 spacular(0.3f, 0.3f, 0.3f);
-	/*glm::vec3 diffuse(0.8f, 0.8f, 0.8f);
-	glm::vec3 spacular(1.0f, 1.0f, 1.0f);*/
+	
 	glm::vec3 lightDir = glm::normalize(center - lightPos);
 	Directionlight dirLight(ambient, diffuse, spacular, lightDir);
 	dirLight.SetLightUniformParam(shadowMappingShader, "light.");
 	//设置材质参数
-	shadowMappingShader.setVec3("light.position", lightPos);
+	
 	shadowMappingShader.setInt("material.diffuseTexture", 0);
 	shadowMappingShader.setInt("shadowMap", 1);
 	shadowMappingShader.setFloat("material.shiness", 256.0f);
 	shadowMappingShader.unUse();
+
+	lightShader.use();
+	lightShader.setMat4("view", camera.GetViewMatrix());
+	lightShader.setMat4("projection", cameraProjection);
+	lightShader.unUse();
 	/*quadShader.use();
 	quadShader.setInt("depthMap", 0);
 	quadShader.unUse();*/
@@ -230,6 +246,12 @@ int main(int argc, char** argv)
 		//glCullFace(GL_FRONT); //只对封闭的模型有效果，开放的模型没有效果
 		planeVaoBuffer.Bind();
 		simpleDepthShader.use();
+
+		glm::mat4 lightView = glm::lookAt(lightPos,
+			glm::vec3(0.f, 0.f, 0.f),
+			glm::vec3(0.f, 1.0f, 0.0f));
+		glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+		simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTexId);
 		//绘制地板
@@ -248,6 +270,8 @@ int main(int argc, char** argv)
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 		shadowMappingShader.use();
+		shadowMappingShader.setVec3("light.position", lightPos);
+		shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTexId);
 		glActiveTexture(GL_TEXTURE1);
@@ -259,8 +283,33 @@ int main(int argc, char** argv)
 
 		cubeVaoBuffer.Bind();
 		RenderCube(shadowMappingShader, vecModelMatrix);
-		cubeVaoBuffer.UnBind();
 		shadowMappingShader.unUse();
+
+		lightShader.use();
+		
+		glm::mat4 lightModelMatrix(1.0);
+		lightModelMatrix = glm::scale(lightModelMatrix, glm::vec3(0.15f, 0.15f, 0.15));
+		lightModelMatrix = glm::translate(lightModelMatrix, glm::vec3(lightPos));
+		RenderLight(lightShader,lightModelMatrix);
+		lightShader.unUse();
+#pragma region create element
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		ImGui::Begin("Hello Gamma");
+		
+		
+		string strLightPos = "light position ";
+		ImGui::DragFloat3(strLightPos.c_str(), (float*)(&lightPos.x), 1.0f, -20.0f, 20.0f);
+		
+
+		ImGui::End();
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#pragma endregion
+		cubeVaoBuffer.UnBind();
+		
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源
@@ -271,6 +320,12 @@ int main(int argc, char** argv)
 	glDeleteVertexArrays(1, &planeVAOId);
 	GLuint planeVBOId = planeVaoBuffer.GetVBO();
 	glDeleteBuffers(1, &planeVBOId);
+
+#pragma region Cleanup imgui
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+#pragma endregion
 	glfwTerminate();
 	return 0;
 }
@@ -282,6 +337,11 @@ void RenderCube(const Shader& shader, vector<glm::mat4>& vecModelMatrix)
 		shader.setMat4("model", vecModelMatrix[i]);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
+}
+void RenderLight(const Shader& shader, glm::mat4&modelMatrix)
+{
+	shader.setMat4("model", modelMatrix);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 void RenderPlane(const Shader& shader)
 {
