@@ -191,6 +191,9 @@ int main(int argc, char** argv)
 	lightPos.y += boxLength * 0.5f;
 	lightPos.x -= boxLength * 0.5f;*/
 	glm::vec3 lightPos = glm::vec3(-2.0f, 4.0f, -1.0f);
+	
+	bool bDirection = false;
+	float bais = 0.1f;
 	float nearPlane = 1.f;
 	float farPlane = 7.5f;
 	float val = 10.f;
@@ -204,6 +207,7 @@ int main(int argc, char** argv)
 	shadowMappingShader.setMat4("projection", cameraProjection);
 	
 	shadowMappingShader.setVec3("eyePos", camera.Position);
+	
 	//设置平行灯光参数
 	glm::vec3 ambient(0.09f, 0.09f, 0.09f);
 	glm::vec3 diffuse(0.3f, 0.3f, 0.3f);
@@ -217,6 +221,7 @@ int main(int argc, char** argv)
 	shadowMappingShader.setInt("material.diffuseTexture", 0);
 	shadowMappingShader.setInt("shadowMap", 1);
 	shadowMappingShader.setFloat("material.shiness", 256.0f);
+	shadowMappingShader.setVec3("light.direction", lightDir);
 	shadowMappingShader.unUse();
 
 	lightShader.use();
@@ -272,6 +277,8 @@ int main(int argc, char** argv)
 		shadowMappingShader.use();
 		shadowMappingShader.setVec3("light.position", lightPos);
 		shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+		shadowMappingShader.setBool("bDirection", bDirection);
+		shadowMappingShader.setFloat("bais", bais/100);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTexId);
 		glActiveTexture(GL_TEXTURE1);
@@ -302,7 +309,8 @@ int main(int argc, char** argv)
 		
 		string strLightPos = "light position ";
 		ImGui::DragFloat3(strLightPos.c_str(), (float*)(&lightPos.x), 1.0f, -20.0f, 20.0f);
-		
+		ImGui::Checkbox(u8"是否为平行光", &bDirection);
+		ImGui::DragFloat("bais", &bais, 0.05, 0, 1);
 
 		ImGui::End();
 		ImGui::Render();

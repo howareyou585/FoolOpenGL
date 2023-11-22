@@ -11,7 +11,7 @@ in VS_OUT
 //方向光
 struct DirectionLight
 {
-	//vec3 direction;
+	vec3 direction;
 	vec3 position;
 	vec3 ambient;
 	vec3 diffuse;
@@ -28,6 +28,8 @@ uniform vec3 eyePos;
 uniform Material material;
 uniform DirectionLight light;
 uniform sampler2D shadowMap;
+uniform bool bDirection;
+uniform float bais;
 float calculateShadow(vec4 fragPosLightSpace);
 
 void main()
@@ -36,8 +38,12 @@ void main()
     //ambient
 	vec3 ambientColor = light.ambient*color;
 	vec3 nor = normalize(fs_in.normalDir);
-	//vec3 lightDir =normalize(light.direction);
-	vec3 lightDir = normalize(light.position - fs_in.fragPosWorldSpace);
+	vec3 lightDir = vec3(0.5,0.5,0.5);
+	if(!bDirection)
+	{
+		lightDir = normalize(light.position - fs_in.fragPosWorldSpace);
+	}
+	//vec3 lightDir = normalize(light.position - vec3(0,0,0));
 	//计算片段是否在阴影中：shadowValue非0即1
 	float shadowValue =  calculateShadow(fs_in.fragPosLightSpace);
 	//diffuse
@@ -69,6 +75,6 @@ float calculateShadow(vec4 fragPosLightSpace)
 	// get depth of current fragment from light's perspective
 	float currentDepth = projCoord.z;//在灯光空间下片元的屏幕坐标的深度
 	//比较采样点在深度贴图中的深度值与采样点在本次采样的深度值。要么在阴影中，要么不在阴影中
-	float shadow = currentDepth-0.005>closestDepth ? 1.0f : 0.0f;
+	float shadow = currentDepth-bais>closestDepth ? 1.0f : 0.0f;
 	return shadow;
 }
