@@ -139,8 +139,10 @@ int main(int argc, char** argv)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
 		SHADOW_WIDTH, SHADOW_HEIGTH,
 		0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);*/
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTextureID, 0);
@@ -198,14 +200,14 @@ int main(int argc, char** argv)
 	float farPlane = 7.5f;
 	float val = 10.f;
 	glm::mat4 lightProjection = glm::ortho(-val, val, -val, val, nearPlane, farPlane);
+	//glm::mat4 lightProjection = glm::ortho(camera.Zoom, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 10000.0f);
 	glm::mat4 cameraProjection = glm::perspective(camera.Zoom, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
 	
 
 	shadowMappingShader.use();
 	//设置相机参数
-	shadowMappingShader.setMat4("view", camera.GetViewMatrix());
-	shadowMappingShader.setMat4("projection", cameraProjection);
 	
+	shadowMappingShader.setMat4("projection", cameraProjection);
 	shadowMappingShader.setVec3("eyePos", camera.Position);
 	
 	//设置平行灯光参数
@@ -225,7 +227,7 @@ int main(int argc, char** argv)
 	shadowMappingShader.unUse();
 
 	lightShader.use();
-	lightShader.setMat4("view", camera.GetViewMatrix());
+	
 	lightShader.setMat4("projection", cameraProjection);
 	lightShader.unUse();
 	/*quadShader.use();
@@ -275,7 +277,9 @@ int main(int argc, char** argv)
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 		shadowMappingShader.use();
+		shadowMappingShader.setMat4("view", camera.GetViewMatrix());
 		shadowMappingShader.setVec3("light.position", lightPos);
+
 		shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 		shadowMappingShader.setBool("bDirection", bDirection);
 		shadowMappingShader.setFloat("bais", bais/100);
@@ -293,7 +297,7 @@ int main(int argc, char** argv)
 		shadowMappingShader.unUse();
 
 		lightShader.use();
-		
+		lightShader.setMat4("view", camera.GetViewMatrix());
 		glm::mat4 lightModelMatrix(1.0);
 		lightModelMatrix = glm::scale(lightModelMatrix, glm::vec3(0.15f, 0.15f, 0.15));
 		lightModelMatrix = glm::translate(lightModelMatrix, glm::vec3(lightPos));
