@@ -28,9 +28,9 @@ uniform vec3 eyePos;
 uniform Material material;
 uniform DirectionLight light;
 uniform sampler2D shadowMap;
-uniform bool bDirection;
 uniform float bais;
 uniform int  pcf;
+uniform bool Ortho;
 //refBaisRadio 为片元法线与灯光方向的夹角的余弦
 //max(0.05 * (1.0 - dot(normal, lightDir)), 0.005)
 //当夹角为0时，值最大（1），当夹角为90时 值最小
@@ -42,8 +42,8 @@ void main()
     //ambient
 	vec3 ambientColor = light.ambient*color;
 	vec3 nor = normalize(fs_in.normalDir);
-	vec3 lightDir = vec3(0.5,0.5,0.5);
-	if(!bDirection)
+	vec3 lightDir = vec3(0.5,-0.5,0.5);
+	if(!Ortho)
 	{
 		lightDir = normalize(light.position - fs_in.fragPosWorldSpace);
 	}
@@ -116,3 +116,9 @@ float calculateShadow(vec4 fragPosLightSpace,float refBaisRadio)
 	
 	return shadow;
 }
+
+//float LinearizeDepth(float depth)
+//{
+//    float z = depth * 2.0 - 1.0; // Back to NDC 
+//    return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
+//}

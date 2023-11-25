@@ -196,6 +196,7 @@ int main(int argc, char** argv)
 	lightPos.x -= boxLength * 0.5f;*/
 	glm::vec3 lightPos = glm::vec3(-2.0f, 4.0f, -1.0f);
 	
+	bool bOrtho = true;
 	bool bDirection = false;
 	float bais = 0.1f;
 	int pcfvalue = 0;
@@ -205,7 +206,7 @@ int main(int argc, char** argv)
 	float val = 10.f;
 	glm::mat4 lightProjection = glm::ortho(-val, val, -val, val, nearPlane, farPlane);
 	//glm::mat4 lightProjection = glm::ortho(camera.Zoom, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 10000.0f);
-	glm::mat4 cameraProjection = glm::perspective(camera.Zoom, (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
+	glm::mat4 cameraProjection = glm::perspective(glm::radians(camera.Zoom), (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 1000.0f);
 	
 
 	shadowMappingShader.use();
@@ -247,6 +248,15 @@ int main(int argc, char** argv)
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame; // 上一帧的时间
+
+		if (bOrtho)
+		{
+			lightProjection = glm::ortho(-val, val, -val, val, nearPlane, farPlane);
+		}
+		else
+		{
+			lightProjection = glm::perspective(glm::radians(camera.Zoom), (GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT, 0.01f, 10000.0f);
+		}
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		//用户定义的深度framebuffer
@@ -321,6 +331,7 @@ int main(int argc, char** argv)
 		ImGui::Checkbox(u8"是否为平行光", &bDirection);
 		ImGui::DragFloat("bais", &bais, 0.05, 0, 1);
 		ImGui::DragInt("PCF", &pcfvalue, 1, 0, 5);
+		ImGui::Checkbox("Ortho", &bOrtho);
 
 		ImGui::End();
 		ImGui::Render();
