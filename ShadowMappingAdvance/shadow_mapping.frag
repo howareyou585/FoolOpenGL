@@ -30,7 +30,11 @@ uniform DirectionLight light;
 uniform sampler2D shadowMap;
 uniform bool bDirection;
 uniform float bais;
-float calculateShadow(vec4 fragPosLightSpace,float refBais);
+uniform int  pcf;
+//refBaisRadio 为片元法线与灯光方向的夹角的余弦
+//max(0.05 * (1.0 - dot(normal, lightDir)), 0.005)
+//当夹角为0时，值最大（1），当夹角为90时 值最小
+float calculateShadow(vec4 fragPosLightSpace,float refBaisRadio);
 
 void main()
 {
@@ -63,24 +67,52 @@ void main()
 
 
 }
-float calculateShadow(vec4 fragPosLightSpace,float refBais)
+float calculateShadow(vec4 fragPosLightSpace,float refBaisRadio)
 {
 	// perform perspective divide
 	vec3 projCoord = fragPosLightSpace.xyz/fragPosLightSpace.w;//在灯光空间下片元的屏幕坐标
 	// transform to [0,1] range
 	projCoord = projCoord*0.5+0.5;
 	 // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-	float relBais = max(bais, 0.05*refBais);
+	// max(0.05 * (1.0 - dot(normal, lightDir)), 0.005)
+	float relBais = max(0.05*(1- refBaisRadio),bais);
 	//采样点在深度贴图中的最近距离
 	//vec2 ts = 1.0f/textureSize(shadowMap,0);
 	float currentDepth = projCoord.z;//在灯光空间下片元的屏幕坐标的深度
-	float closestDepth = texture(shadowMap, projCoord.xy).r;
-	float	shadow = currentDepth-relBais>closestDepth ? 1.0f : 0.0f;
+
+	//vec2 texsize = textureSize(shadowMap,0);
+
+	
+	float shadow  =0;
+	if(pcf == 0)
+	{
+		float closestDepth = texture(shadowMap, projCoord.xy ).r;
+		shadow = currentDepth-relBais>closestDepth ? 1.0f : 0.0f;
+	}
+	else
+	{
+		// PCF
+		vec2 txtSize = 1.0 / textureSize(shadowMap,0);
+		for(int x = -pcf; x<=pcf;x++)
+		{
+			for(int y = -pcf; y<= pcf;y++)
+			{
+				vec2 offset= vec2(x*txtSize.x,y*txtSize.y);
+				float closestDepth = texture(shadowMap, projCoord.xy +  offset.xy).r;
+				shadow += currentDepth-relBais>closestDepth ? 1.0f : 0.0f;
+			}
+		}
+		shadow/=(pcf*pcf);
+	}
+	
 	
 	// get depth of current fragment from light's perspective
 	
 	//比较采样点在深度贴图中的深度值与采样点在本次采样的深度值。要么在阴影中，要么不在阴影中
-	
+	if(projCoord.z>1.0)
+	{
+		shadow = 0.0f;
+	}
 	
 	return shadow;
 }

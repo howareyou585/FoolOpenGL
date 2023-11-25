@@ -141,7 +141,8 @@ int main(int argc, char** argv)
 		0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	GLfloat borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -197,6 +198,7 @@ int main(int argc, char** argv)
 	
 	bool bDirection = false;
 	float bais = 0.1f;
+	int pcfvalue = 0;
 	float nearPlane = 1.f;
 	//float farPlane = 7.5f;
 	float farPlane = 200.0f; 
@@ -285,6 +287,7 @@ int main(int argc, char** argv)
 		shadowMappingShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 		shadowMappingShader.setBool("bDirection", bDirection);
 		shadowMappingShader.setFloat("bais", bais/100);
+		shadowMappingShader.setInt("pcf", pcfvalue);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, woodTexId);
 		glActiveTexture(GL_TEXTURE1);
@@ -317,6 +320,7 @@ int main(int argc, char** argv)
 		ImGui::DragFloat3(strLightPos.c_str(), (float*)(&lightPos.x), 1.0f, -20.0f, 20.0f);
 		ImGui::Checkbox(u8"是否为平行光", &bDirection);
 		ImGui::DragFloat("bais", &bais, 0.05, 0, 1);
+		ImGui::DragInt("PCF", &pcfvalue, 1, 0, 5);
 
 		ImGui::End();
 		ImGui::Render();
