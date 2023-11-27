@@ -12,7 +12,7 @@ void main()
 		gl_Layer = face;// built-in variable that specifies to which face we render.
 		for(int i = 0; i < 3; i++)
 		{
-			FragPos = gl_in[i].gl_Position; // 世界坐标下的顶点
+			FragPos = gl_in[i].gl_Position; // 世界坐标下的顶点输出到片段着色器，因为要在片段着色器中计算深度值
             gl_Position = shadowMatrices[face] * FragPos;//灯光空间下 的顶点
             EmitVertex();
 		}
