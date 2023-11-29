@@ -167,6 +167,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureDecal", "TextureDeca
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureTransitionGradient", "TextureTransitionGradient\TextureTransitionGradient.vcxproj", "{50FC4590-2C0F-4BE8-9EF2-AA8171790010}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TexturePromoteTransition", "TexturePromoteTransition\TexturePromoteTransition.vcxproj", "{7732AAD9-4380-4953-9E97-3F00A70669F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -661,6 +663,12 @@ Global
 		{50FC4590-2C0F-4BE8-9EF2-AA8171790010}.Release|x64.ActiveCfg = Release|Win32
 		{50FC4590-2C0F-4BE8-9EF2-AA8171790010}.Release|x86.ActiveCfg = Release|Win32
 		{50FC4590-2C0F-4BE8-9EF2-AA8171790010}.Release|x86.Build.0 = Release|Win32
+		{7732AAD9-4380-4953-9E97-3F00A70669F5}.Debug|x64.ActiveCfg = Debug|Win32
+		{7732AAD9-4380-4953-9E97-3F00A70669F5}.Debug|x86.ActiveCfg = Debug|Win32
+		{7732AAD9-4380-4953-9E97-3F00A70669F5}.Debug|x86.Build.0 = Debug|Win32
+		{7732AAD9-4380-4953-9E97-3F00A70669F5}.Release|x64.ActiveCfg = Release|Win32
+		{7732AAD9-4380-4953-9E97-3F00A70669F5}.Release|x86.ActiveCfg = Release|Win32
+		{7732AAD9-4380-4953-9E97-3F00A70669F5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
