@@ -2,20 +2,31 @@
 
 out vec4 FragColor;
 in vec2 texCoord;
-uniform sampler2D hdrBuffer;
-uniform float exposure;
-uniform bool enableHdrFlg;
+uniform sampler2D t0;
+uniform bool horizontal; // 水平 /竖直
+float weight[5] = float[] (0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162);
+
 void main()
 {
-	vec3 hdrColor = texture(hdrBuffer,texCoord).rgb;
-	if(enableHdrFlg)
+	vec2 tex_offset = 1.0/textureSize(t0,0);
+	vec3 result = vec3(0);
+	if(horizontal)
 	{
-		vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
-		             
-		FragColor = vec4(result,1.0f);
+		//水平方向模糊
+		for(int i = 0; i < 5; i++)
+		{
+			result += texture(t0,vec2(texCoord.x+tex_offset.x*i, texCoord.y)).rgb*weight[i];
+			result += texture(t0,vec2(texCoord.x-tex_offset.x*i, texCoord.y)).rgb*weight[i];
+		}
 	}
 	else
 	{
-		FragColor = vec4(hdrColor,1.0f);
+		//竖直方向模糊
+		for(int i = 0; i < 5; i++)
+		{
+			result += texture(t0,vec2(texCoord.x, texCoord.y+tex_offset.y*i)).rgb*weight[i];
+			result += texture(t0,vec2(texCoord.x, texCoord.y-tex_offset.y*i)).rgb*weight[i];
+		}
 	}
+	FragColor  = vec4(result,1.0);
 }

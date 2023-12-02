@@ -1,21 +1,16 @@
-#version 330
+#version 330 core
 
 out vec4 FragColor;
 in vec2 texCoord;
-uniform sampler2D hdrBuffer;
+uniform sampler2D scene;
+uniform sampler2D bloomBlur;
 uniform float exposure;
-uniform bool enableHdrFlg;
+
 void main()
 {
-	vec3 hdrColor = texture(hdrBuffer,texCoord).rgb;
-	if(enableHdrFlg)
-	{
-		vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
-		             
-		FragColor = vec4(result,1.0f);
-	}
-	else
-	{
-		FragColor = vec4(hdrColor,1.0f);
-	}
+	vec3 hdrColor = texture(scene,texCoord).rgb;
+	vec3 bloomClor = texture(scene,texCoord).rgb;
+	vec3 result = hdrColor + bloomClor;
+	result = vec3(1.0) - exp(-result * exposure);
+	FragColor = vec4(result,1.0);
 }

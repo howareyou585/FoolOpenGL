@@ -30,8 +30,8 @@ float lastFrame = 0.0f; // 上一帧的时间
 float lastX = WINDOW_WIDTH / 2.0f;
 float lastY = WINDOW_HEIGHT / 2.0f;
 bool  bFirstMove = true;
-bool  hdrFlg = false;
-float exposureValue = 1.0f;
+float exposure = 1.0f;
+int amount = 10; // 这个数一定是一个偶数：水平一次 竖直一次。
 bool hdrKeyPressed = false;
 Camera camera;
 
@@ -104,7 +104,7 @@ int main(int argc, char** argv)
 	}
 
 	// 设置视口参数
-	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	
 #pragma region  创建CubeVAOBuffer
 	VAOBuffer vaoBuffer;
 
@@ -122,6 +122,22 @@ int main(int argc, char** argv)
 	// 创建缓存对象
 	GLuint VAOId = vaoBuffer.GetVAO();
 	GLuint VBOId = vaoBuffer.GetVBO();
+#pragma endregion
+
+#pragma region 创建quad VAOBuffer
+	VAOBuffer quadVaoBuffer;
+	
+	vecAttrib.clear();
+	mapAttrib2Size.clear();
+	vecAttrib.emplace_back(vertex_attribute::position);
+	vecAttrib.emplace_back(vertex_attribute::texcoord);
+	mapAttrib2Size[vertex_attribute::position] = 2;
+	mapAttrib2Size[vertex_attribute::texcoord] = 2;
+	quadVaoBuffer.BuildVAO(quadVertices, sizeof(quadVertices), nullptr,
+		0, vecAttrib, mapAttrib2Size);
+
+	GLuint quadVAO = quadVaoBuffer.GetVAO();
+	GLuint quadVBO = quadVaoBuffer.GetVBO();
 #pragma endregion
 
 	
@@ -154,11 +170,11 @@ int main(int argc, char** argv)
 	GLuint hdrFBO;
 	glGenFramebuffers(1, &hdrFBO);
 	//-Create floating point color buffer
-	GLuint colorBuffer[2]; 
-	glGenTextures(2, colorBuffer);
+	GLuint hdrColorBuffer[2]; 
+	glGenTextures(2, hdrColorBuffer);
 	for (auto i = 0; i < 2; i++)
 	{
-		glBindTexture(GL_TEXTURE_2D, colorBuffer[0]);
+		glBindTexture(GL_TEXTURE_2D, hdrColorBuffer[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -175,7 +191,7 @@ int main(int argc, char** argv)
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 	for (int i = 0; i < 2; i++)
 	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, colorBuffer[i], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, hdrColorBuffer[i], 0);
 	}
 	//attach depth buffers 
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepthBuffer);
@@ -187,6 +203,26 @@ int main(int argc, char** argv)
 	glDrawBuffers(2, attachments);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #pragma endregion
+#pragma region 创建TWO BLUR FBO 
+	GLuint blurFBO[2]={};  // 水平方向 + 竖直方向 模糊FBO
+	GLuint blurColorBuffer[2] = {}; 
+	glGenFramebuffers(2, blurFBO);
+	glGenTextures(2, blurColorBuffer);
+	for (auto i = 0; i < 2; i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, blurColorBuffer[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurColorBuffer[i], 0);
+		
+	}
+	
+#pragma endregion
+
 
 	BoundingBox box;
 	int nVal = sizeof(cubeVertices2) / sizeof(GLfloat);
@@ -254,6 +290,11 @@ int main(int argc, char** argv)
 	Shader preBloomShader("PrepareBloom.vertex", "PrepareBloom.frag");
 	Shader blurShader("Blur.vertex", "Blur.frag");
 	Shader BloomShader("Bloom.vertex", "Bloom.frag");
+	
+	BloomShader.use();
+	BloomShader.setInt("scene", 0);
+	BloomShader.setInt("bloomBlur", 1);
+	BloomShader.unUse();
 
 	preBloomShader.use();
 	
@@ -271,7 +312,9 @@ int main(int argc, char** argv)
 	/*shaderCube.use();
 	shaderCube.setMat4("projection", projectionMatrix);
 	shaderCube.unUse();*/
-
+	blurShader.use();
+	blurShader.setInt("t0", 0);
+	blurShader.unUse();
 	
 
 	int nVertex = sizeof(cubeVertices2) / (sizeof(GLfloat) * 8);
@@ -280,11 +323,9 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	glm::vec3 targetPos = totalBoundingBox.GetCenter();
 
-	
+	bool bFirstIter = true;//第一次模糊标识
 	while (!glfwWindowShouldClose(window))
 	{
-
-		
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -293,7 +334,8 @@ int main(int argc, char** argv)
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
 
 #pragma region  绘制到hdrFBO
-		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER,hdrFBO);
+		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -318,60 +360,91 @@ int main(int argc, char** argv)
 			preBloomShader.setMat4("model",vecCubeModelMtx[i]);
 			glDrawArrays(GL_TRIANGLES, 0, nVertex);
 		}
-		
 		preBloomShader.unUse();
 #pragma endregion
 
+#pragma region 对超过阈值亮度部分模糊
+		 //hdrColorBuffer[1] 保存是超过阈值亮度部分
+		glBindVertexArray(quadVAO);
+		bool bhorizontal = true; //初始设置为水平
 		
-
-		shaderCube.use();
-		shaderCube.setMat4("view", viewMatrix);
-		for (auto i = 0; i < lightPositions.size(); i++)
+		
+		int lastId = 0;
+		blurShader.use();
+	
+		for (int i = 0; i < amount; i++)
 		{
-			glm::mat4 lightModelMatrix(1.0f);
-			lightModelMatrix = glm::translate(lightModelMatrix, lightPositions[i]);
-			lightModelMatrix = glm::scale(lightModelMatrix, glm::vec3(0.2, 0.2, 0.2));
-			shaderCube.setMat4("model", lightModelMatrix);
-			shaderCube.setVec3("lightColor", lightColors[i]);
-			glDrawArrays(GL_TRIANGLES, 0, nVertex);
+			lastId = i % 2;
+			glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[i%2]);
+			glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+			blurShader.setBool("horizontal", bhorizontal);
+			glActiveTexture(GL_TEXTURE0);
+			
+			if (bFirstIter)
+			{
+				glBindTexture(GL_TEXTURE_2D, hdrColorBuffer[1]);
+				bFirstIter = false;
+			}
+			else
+			{
+				//当对像素进行水平方向的模糊时，要用上一次竖直模糊后的结果blurColorBuffer[1]
+				//当对像素进行竖直方向的模糊时，要用上一次水平模糊后的结果blurColorBuffer[0]
+				int textureIndex = bhorizontal ? 1 : 0;
+				glBindTexture(GL_TEXTURE_2D, blurColorBuffer[textureIndex]);//index ： 0，1,0,1....（水平，竖直，水平，竖直...)
+			}
+			
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			bhorizontal = !bhorizontal;
 		}
-		shaderCube.unUse();
+		blurShader.unUse();
+		//blurShader.use();
+		//bool horizontal = true, first_iteration = true;
+		//unsigned int amount = 10;
+		//
+		//for (unsigned int i = 0; i < amount; i++)
+		//{
+		//	glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[horizontal]);
+		//	blurShader.setInt("horizontal", horizontal);
+		//	glBindTexture(GL_TEXTURE_2D, first_iteration ? hdrColorBuffer[1] : blurColorBuffer[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
+		//	//renderQuad();
+		//	glDrawArrays(GL_TRIANGLES, 0, 6);
+		//	horizontal = !horizontal;
+		//	if (first_iteration)
+		//		first_iteration = false;
+		//}
+		//blurShader.unUse();
+#pragma endregion
+
+#pragma region 绘制到最终场景
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glBindVertexArray(quadVAOId);
+		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+		BloomShader.use();
+		BloomShader.setFloat("exposure", exposure);
 
-		shaderHdr.use();
-		shaderHdr.setBool("enableHdrFlg", hdrFlg);
-		shaderHdr.setFloat("exposure", exposureValue);
-		//cout<<"hdrFlg:"<<hdrFlg<<endl;
-		std::cout << "hdr: " << (hdrFlg ? "on" : "off") << "| exposure: " << exposureValue << std::endl;
-
-		shaderHdr.setInt("colorBuffer", 0);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, colorBuffer);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, squareIndexes);
+		glBindTexture(GL_TEXTURE_2D, hdrColorBuffer[0]);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, blurColorBuffer[1]);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		BloomShader.unUse();
+#pragma endregion
+
 #pragma region create element
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		ImGui::Begin("Hello OpenGL");
-		//ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Enable HDR", &hdrFlg);      // Edit bools storing our window open/close state
-		//ImGui::Checkbox("Another Window", &show_another_window);
-		ImGui::SliderFloat("EXPOSURE VALUE", &exposureValue, 0, 10);
-		//ImGui::SliderFloat("light1 position", &lightPositions[0].x, 0, 50);
-		//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::ColorEdit3("light2 color", (float*)&lightColors[1]); // Edit 3 floats representing a color
-		ImGui::ColorEdit3("light3 color", (float*)&lightColors[2]);
-		ImGui::ColorEdit3("light4 color", (float*)&lightColors[3]);
-	
+		ImGui::Begin("Hello Bloom");
+		
+		ImGui::SliderFloat("EXPOSURE VALUE", &exposure, 0, 10);
+		ImGui::DragInt("AMOUNT VALUE", &amount, 2,0,20);
 		ImGui::End();
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 #pragma endregion
-		shaderHdr.unUse();
+		
 		glBindVertexArray(0);
 		glUseProgram(0);
 
@@ -434,27 +507,12 @@ void processInput(GLFWwindow *ptrWindow, Camera & camera)
 		bMove = true;
 		//camera.ProcessKeyboard()
 	}
-	if (glfwGetKey(ptrWindow, GLFW_KEY_SPACE) == GLFW_PRESS )
-	{
-		hdrFlg = !hdrFlg;
-		
-	}
+	
 	if (glfwGetKey(ptrWindow, GLFW_KEY_SPACE) == GLFW_RELEASE)
 	{
 		hdrKeyPressed = false;
 	}
 
-	if (glfwGetKey(ptrWindow, GLFW_KEY_Q) == GLFW_PRESS)
-	{
-		if (exposureValue > 0.0f)
-			exposureValue -= 0.001f;
-		else
-			exposureValue = 0.0f;
-	}
-	else if (glfwGetKey(ptrWindow, GLFW_KEY_E) == GLFW_PRESS)
-	{
-		exposureValue += 0.001f;
-	}
 	if (bMove)
 	{
 		camera.ProcessKeyboard(direction, deltaTime);
