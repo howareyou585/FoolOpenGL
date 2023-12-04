@@ -22,8 +22,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Bloom.frag" />
+    <None Include="Bloom.vertex" />
     <None Include="Blur.frag" />
     <None Include="Blur.vertex" />
+    <None Include="light_box.frag" />
     <None Include="PrepareBloom.frag" />
     <None Include="PrepareBloom.vertex" />
   </ItemGroup>

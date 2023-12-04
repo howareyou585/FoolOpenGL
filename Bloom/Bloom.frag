@@ -9,8 +9,8 @@ uniform float exposure;
 void main()
 {
 	vec3 hdrColor = texture(scene,texCoord).rgb;
-	vec3 bloomClor = texture(scene,texCoord).rgb;
-	vec3 result = hdrColor + bloomClor;
-	result = vec3(1.0) - exp(-result * exposure);
+	vec3 bloomColor = texture(scene,texCoord).rgb;
+	hdrColor += bloomColor;
+	vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
 	FragColor = vec4(result,1.0);
 }

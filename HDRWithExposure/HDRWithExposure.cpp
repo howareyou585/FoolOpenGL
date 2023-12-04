@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiIO& io = ImGui::GetIO(); 
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();//Ö÷ÌâÑÕÉ«

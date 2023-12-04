@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
 	// 创建窗口
 	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT,
-		"Demo of triangle", NULL, NULL);
+		"Demo of bloom", NULL, NULL);
 	if (!window)
 	{
 		std::cout << "Error::GLFW could not create winddow!" << std::endl;
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiIO& io = ImGui::GetIO();
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();//主题颜色
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 	// 注册窗口键盘事件回调函数
 	//glfwSetKeyCallback(window, key_callback);
 	// 注册窗口鼠标事件回调函数
-	//glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 	//首先我们要告诉GLFW，它应该隐藏光标，并捕捉(Capture)它。
 	//捕捉光标表示的是，如果焦点在你的程序上
@@ -218,7 +218,10 @@ int main(int argc, char** argv)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurColorBuffer[i], 0);
-		
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			return 0;
+		}
 	}
 	
 #pragma endregion
@@ -284,12 +287,14 @@ int main(int argc, char** argv)
 	totalBoundingBox.Merge(modelBoundingBox);
 #pragma endregion
 
-	camera.InitCamera(totalBoundingBox,0.6f);
+	camera.InitCamera(totalBoundingBox,0.3f);
 
 	// Section2 准备着色器程序
 	Shader preBloomShader("PrepareBloom.vertex", "PrepareBloom.frag");
+	Shader lightBoxShader("PrepareBloom.vertex", "light_box.frag");
 	Shader blurShader("Blur.vertex", "Blur.frag");
 	Shader BloomShader("Bloom.vertex", "Bloom.frag");
+	
 	
 	BloomShader.use();
 	BloomShader.setInt("scene", 0);
@@ -308,12 +313,17 @@ int main(int argc, char** argv)
 		preBloomShader.setVec3("lights[" + std::to_string(i) + "].Color", lightColors[i]);
 	}
 	preBloomShader.unUse();
+
+	lightBoxShader.use();
+	lightBoxShader.setMat4("projection", projectionMatrix);
+	
+	lightBoxShader.unUse();
 	
 	/*shaderCube.use();
 	shaderCube.setMat4("projection", projectionMatrix);
 	shaderCube.unUse();*/
 	blurShader.use();
-	blurShader.setInt("t0", 0);
+	blurShader.setInt("image", 0);
 	blurShader.unUse();
 	
 
@@ -361,58 +371,75 @@ int main(int argc, char** argv)
 			glDrawArrays(GL_TRIANGLES, 0, nVertex);
 		}
 		preBloomShader.unUse();
+		//绘制灯光
+		lightBoxShader.use();
+		lightBoxShader.setMat4("view", viewMatrix);
+		for (int i = 0; i < lightPositions.size(); i++)
+		{
+			model = glm::mat4(1.0);
+			model = glm::translate(model, lightPositions[i]);
+			model = glm::scale(model, glm::vec3(0.25, 0.25, 0.25));
+			
+			lightBoxShader.setMat4("model", model);
+			
+			lightBoxShader.setVec3("lightColor", lightColors[i]);
+			glDrawArrays(GL_TRIANGLES, 0, nVertex);
+		}
+		lightBoxShader.unUse();
 #pragma endregion
-
 #pragma region 对超过阈值亮度部分模糊
 		 //hdrColorBuffer[1] 保存是超过阈值亮度部分
 		glBindVertexArray(quadVAO);
-		bool bhorizontal = true; //初始设置为水平
-		
-		
-		int lastId = 0;
-		blurShader.use();
-	
-		for (int i = 0; i < amount; i++)
-		{
-			lastId = i % 2;
-			glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[i%2]);
-			glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-			blurShader.setBool("horizontal", bhorizontal);
-			glActiveTexture(GL_TEXTURE0);
-			
-			if (bFirstIter)
-			{
-				glBindTexture(GL_TEXTURE_2D, hdrColorBuffer[1]);
-				bFirstIter = false;
-			}
-			else
-			{
-				//当对像素进行水平方向的模糊时，要用上一次竖直模糊后的结果blurColorBuffer[1]
-				//当对像素进行竖直方向的模糊时，要用上一次水平模糊后的结果blurColorBuffer[0]
-				int textureIndex = bhorizontal ? 1 : 0;
-				glBindTexture(GL_TEXTURE_2D, blurColorBuffer[textureIndex]);//index ： 0，1,0,1....（水平，竖直，水平，竖直...)
-			}
-			
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-			bhorizontal = !bhorizontal;
-		}
-		blurShader.unUse();
-		//blurShader.use();
-		//bool horizontal = true, first_iteration = true;
-		//unsigned int amount = 10;
+		//bool bhorizontal = true; //初始设置为水平
 		//
-		//for (unsigned int i = 0; i < amount; i++)
+		//
+		//int lastId = 0;
+		//blurShader.use();
+	
+		//for (int i = 0; i < amount; i++)
 		//{
-		//	glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[horizontal]);
-		//	blurShader.setInt("horizontal", horizontal);
-		//	glBindTexture(GL_TEXTURE_2D, first_iteration ? hdrColorBuffer[1] : blurColorBuffer[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
-		//	//renderQuad();
+		//	lastId = i % 2;
+		//	glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[i%2]);
+		//	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+		//	blurShader.setBool("horizontal", bhorizontal);
+		//	glActiveTexture(GL_TEXTURE0);
+		//	
+		//	if (bFirstIter)
+		//	{
+		//		glBindTexture(GL_TEXTURE_2D, hdrColorBuffer[1]);
+		//		bFirstIter = false;
+		//	}
+		//	else
+		//	{
+		//		//当对像素进行水平方向的模糊时，要用上一次竖直模糊后的结果blurColorBuffer[1]
+		//		//当对像素进行竖直方向的模糊时，要用上一次水平模糊后的结果blurColorBuffer[0]
+		//		int textureIndex = bhorizontal ? 1 : 0;
+		//		glBindTexture(GL_TEXTURE_2D, blurColorBuffer[textureIndex]);//index ： 0，1,0,1....（水平，竖直，水平，竖直...)
+		//	}
+		//	
 		//	glDrawArrays(GL_TRIANGLES, 0, 6);
-		//	horizontal = !horizontal;
-		//	if (first_iteration)
-		//		first_iteration = false;
+		//	bhorizontal = !bhorizontal;
 		//}
 		//blurShader.unUse();
+		blurShader.use();
+		bool horizontal = true, first_iteration = true;
+		int amount = 10;
+		
+		for (unsigned int i = 0; i < amount; i++)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[horizontal]);
+			blurShader.setInt("horizontal", horizontal);
+			glActiveTexture(GL_TEXTURE0);
+			
+			glBindTexture(GL_TEXTURE_2D, first_iteration ? hdrColorBuffer[1] : blurColorBuffer[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
+			int nerr = glGetError();
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			nerr = glGetError();
+			horizontal = !horizontal;
+			if (first_iteration)
+				first_iteration = false;
+		}
+		blurShader.unUse();
 #pragma endregion
 
 #pragma region 绘制到最终场景
