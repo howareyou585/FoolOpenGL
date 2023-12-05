@@ -390,56 +390,56 @@ int main(int argc, char** argv)
 #pragma region 对超过阈值亮度部分模糊
 		 //hdrColorBuffer[1] 保存是超过阈值亮度部分
 		glBindVertexArray(quadVAO);
-		//bool bhorizontal = true; //初始设置为水平
-		//
-		//
-		//int lastId = 0;
-		//blurShader.use();
-	
-		//for (int i = 0; i < amount; i++)
-		//{
-		//	lastId = i % 2;
-		//	glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[i%2]);
-		//	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-		//	blurShader.setBool("horizontal", bhorizontal);
-		//	glActiveTexture(GL_TEXTURE0);
-		//	
-		//	if (bFirstIter)
-		//	{
-		//		glBindTexture(GL_TEXTURE_2D, hdrColorBuffer[1]);
-		//		bFirstIter = false;
-		//	}
-		//	else
-		//	{
-		//		//当对像素进行水平方向的模糊时，要用上一次竖直模糊后的结果blurColorBuffer[1]
-		//		//当对像素进行竖直方向的模糊时，要用上一次水平模糊后的结果blurColorBuffer[0]
-		//		int textureIndex = bhorizontal ? 1 : 0;
-		//		glBindTexture(GL_TEXTURE_2D, blurColorBuffer[textureIndex]);//index ： 0，1,0,1....（水平，竖直，水平，竖直...)
-		//	}
-		//	
-		//	glDrawArrays(GL_TRIANGLES, 0, 6);
-		//	bhorizontal = !bhorizontal;
-		//}
-		//blurShader.unUse();
-		blurShader.use();
-		bool horizontal = true, first_iteration = true;
-		int amount = 10;
+		bool bhorizontal = true; //初始设置为水平
 		
-		for (unsigned int i = 0; i < amount; i++)
+		
+		int lastId = 0;
+		blurShader.use();
+	
+		for (int i = 0; i < amount; i++)
 		{
-			glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[horizontal]);
-			blurShader.setInt("horizontal", horizontal);
+			lastId = i % 2;
+			glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[i%2]);
+			glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+			blurShader.setBool("horizontal", bhorizontal);
 			glActiveTexture(GL_TEXTURE0);
 			
-			glBindTexture(GL_TEXTURE_2D, first_iteration ? hdrColorBuffer[1] : blurColorBuffer[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
-			int nerr = glGetError();
+			if (bFirstIter)
+			{
+				glBindTexture(GL_TEXTURE_2D, hdrColorBuffer[1]);
+				bFirstIter = false;
+			}
+			else
+			{
+				//当对像素进行水平方向的模糊时，要用上一次竖直模糊后的结果blurColorBuffer[1]
+				//当对像素进行竖直方向的模糊时，要用上一次水平模糊后的结果blurColorBuffer[0]
+				int textureIndex = bhorizontal ? 1 : 0;
+				glBindTexture(GL_TEXTURE_2D, blurColorBuffer[textureIndex]);//index ： 0，1,0,1....（水平，竖直，水平，竖直...)
+			}
+			
 			glDrawArrays(GL_TRIANGLES, 0, 6);
-			nerr = glGetError();
-			horizontal = !horizontal;
-			if (first_iteration)
-				first_iteration = false;
+			bhorizontal = !bhorizontal;
 		}
 		blurShader.unUse();
+		//blurShader.use();
+		//bool horizontal = true, first_iteration = true;
+		//int amount = 10;
+		//
+		//for (unsigned int i = 0; i < amount; i++)
+		//{
+		//	glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[horizontal]);
+		//	blurShader.setInt("horizontal", horizontal);
+		//	glActiveTexture(GL_TEXTURE0);
+		//	
+		//	glBindTexture(GL_TEXTURE_2D, first_iteration ? hdrColorBuffer[1] : blurColorBuffer[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
+		//	int nerr = glGetError();
+		//	glDrawArrays(GL_TRIANGLES, 0, 6);
+		//	nerr = glGetError();
+		//	horizontal = !horizontal;
+		//	if (first_iteration)
+		//		first_iteration = false;
+		//}
+		//blurShader.unUse();
 #pragma endregion
 
 #pragma region 绘制到最终场景
@@ -453,7 +453,7 @@ int main(int argc, char** argv)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, hdrColorBuffer[0]);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, blurColorBuffer[1]);
+		glBindTexture(GL_TEXTURE_2D, blurColorBuffer[!bhorizontal]);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		BloomShader.unUse();
 #pragma endregion
