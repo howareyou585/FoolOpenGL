@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 	// 注册窗口键盘事件回调函数
 	//glfwSetKeyCallback(window, key_callback);
 	// 注册窗口鼠标事件回调函数
-	glfwSetCursorPosCallback(window, mouse_callback);
+	//glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 	//首先我们要告诉GLFW，它应该隐藏光标，并捕捉(Capture)它。
 	//捕捉光标表示的是，如果焦点在你的程序上
@@ -287,7 +287,7 @@ int main(int argc, char** argv)
 	totalBoundingBox.Merge(modelBoundingBox);
 #pragma endregion
 
-	camera.InitCamera(totalBoundingBox,0.3f);
+	camera.InitCamera(totalBoundingBox,0.25f);
 
 	// Section2 准备着色器程序
 	Shader preBloomShader("PrepareBloom.vertex", "PrepareBloom.frag");
@@ -390,56 +390,28 @@ int main(int argc, char** argv)
 #pragma region 对超过阈值亮度部分模糊
 		 //hdrColorBuffer[1] 保存是超过阈值亮度部分
 		glBindVertexArray(quadVAO);
-		bool bhorizontal = true; //初始设置为水平
 		
-		
-		int lastId = 0;
 		blurShader.use();
-	
+		bool horizontal = true, first_iteration = true;
+		
 		for (int i = 0; i < amount; i++)
 		{
-			lastId = i % 2;
-			glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[i%2]);
+			glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[horizontal]);
 			glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-			blurShader.setBool("horizontal", bhorizontal);
-			glActiveTexture(GL_TEXTURE0);
-			
-			if (bFirstIter)
+			blurShader.setInt("horizontal", horizontal);
+			if (first_iteration)
 			{
 				glBindTexture(GL_TEXTURE_2D, hdrColorBuffer[1]);
-				bFirstIter = false;
+				first_iteration = false;
 			}
 			else
 			{
-				//当对像素进行水平方向的模糊时，要用上一次竖直模糊后的结果blurColorBuffer[1]
-				//当对像素进行竖直方向的模糊时，要用上一次水平模糊后的结果blurColorBuffer[0]
-				int textureIndex = bhorizontal ? 1 : 0;
-				glBindTexture(GL_TEXTURE_2D, blurColorBuffer[textureIndex]);//index ： 0，1,0,1....（水平，竖直，水平，竖直...)
+				glBindTexture(GL_TEXTURE_2D, blurColorBuffer[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
 			}
-			
 			glDrawArrays(GL_TRIANGLES, 0, 6);
-			bhorizontal = !bhorizontal;
+			horizontal = !horizontal;				
 		}
 		blurShader.unUse();
-		//blurShader.use();
-		//bool horizontal = true, first_iteration = true;
-		//int amount = 10;
-		//
-		//for (unsigned int i = 0; i < amount; i++)
-		//{
-		//	glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[horizontal]);
-		//	blurShader.setInt("horizontal", horizontal);
-		//	glActiveTexture(GL_TEXTURE0);
-		//	
-		//	glBindTexture(GL_TEXTURE_2D, first_iteration ? hdrColorBuffer[1] : blurColorBuffer[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
-		//	int nerr = glGetError();
-		//	glDrawArrays(GL_TRIANGLES, 0, 6);
-		//	nerr = glGetError();
-		//	horizontal = !horizontal;
-		//	if (first_iteration)
-		//		first_iteration = false;
-		//}
-		//blurShader.unUse();
 #pragma endregion
 
 #pragma region 绘制到最终场景
@@ -453,7 +425,7 @@ int main(int argc, char** argv)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, hdrColorBuffer[0]);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, blurColorBuffer[!bhorizontal]);
+		glBindTexture(GL_TEXTURE_2D, blurColorBuffer[!horizontal]);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		BloomShader.unUse();
 #pragma endregion
@@ -466,7 +438,7 @@ int main(int argc, char** argv)
 		ImGui::Begin("Hello Bloom");
 		
 		ImGui::SliderFloat("EXPOSURE VALUE", &exposure, 0, 10);
-		ImGui::DragInt("AMOUNT VALUE", &amount, 2,0,20);
+		ImGui::DragInt("AMOUNT VALUE", &amount, 2,0,100);
 		ImGui::End();
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
