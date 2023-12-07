@@ -16,6 +16,9 @@
 #include "learnopengl/vaobuffer.h"
 #include "learnopengl/vertexset.h"
 #include "learnopengl/light.h"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 // 键盘回调函数原型声明
 void processInput(GLFWwindow* window, Camera& camera);
@@ -35,7 +38,9 @@ GLuint cubeVAOId = 0, cubeVBOId = 0;
 bool PrepareQuadBuffer();
 bool PrepareCubeBuffer();
 void RenderQuad();
-
+float yOffset = 0.f;
+float zOffset = 0.f;
+bool volumes = true;
 int main(int argc, char** argv)
 {
 	if (!glfwInit())	// 初始化glfw库
@@ -62,14 +67,28 @@ int main(int argc, char** argv)
 	}
 	// 创建的窗口的context指定为当前context
 	glfwMakeContextCurrent(window);
-	glfwSetCursorPosCallback(window, mouse_callback);
+#pragma region imgui初始化
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();//主题颜色
+	//ImGui::StyleColorsLight();
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 130");
+#pragma endregion
+	//glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 	//首先我们要告诉GLFW，它应该隐藏光标，并捕捉(Capture)它。
 	//捕捉光标表示的是，如果焦点在你的程序上
 	//（译注：即表示你正在操作这个程序，Windows中拥有焦点的程序标题栏通常是有颜色的那个，
 	//而失去焦点的程序标题栏则是灰色的），光标应该停留在窗口中（除非程序失去焦点或者退出）。
 	//我们可以用一个简单地配置调用来完成：
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	//在调用这个函数之后，无论我们怎么去移动鼠标，光标都不会显示了，
 	// 它也不会离开窗口。对于FPS摄像机系统来说非常完美。
 	// 初始化GLEW 获取OpenGL函数
@@ -91,6 +110,8 @@ int main(int argc, char** argv)
 	// Section1 准备顶点数据
 	// 指定顶点属性数据 顶点位置
 	Model nanosuit(FileSystem::getPath("Model/backpack/backpack.obj"));
+#pragma region 场景中模型的位置
+
 	std::vector<glm::vec3> objectPositions;
 	objectPositions.push_back(glm::vec3(-3.0, -0.5, -3.0));
 	objectPositions.push_back(glm::vec3(0.0, -0.5, -3.0));
@@ -101,7 +122,8 @@ int main(int argc, char** argv)
 	objectPositions.push_back(glm::vec3(-3.0, -0.5, 3.0));
 	objectPositions.push_back(glm::vec3(0.0, -0.5, 3.0));
 	objectPositions.push_back(glm::vec3(3.0, -0.5, 3.0));
-
+#pragma endregion
+#pragma region 根据模型设置相机的位置
 	BoundingBox sceneBoundingBox;
 	BoundingBox& box = nanosuit.GetBoundingBox();
 	glm::mat4 modelMatrix(1.0f);
@@ -113,10 +135,13 @@ int main(int argc, char** argv)
 	}
 	camera.InitCamera(sceneBoundingBox, 0.8f);
 	auto length = sceneBoundingBox.GetLength() * 0.8f;
+#pragma endregion
 	// Section2 准备着色器程序
 	Shader shaderGeometryPass("g_buffer.vertex", "g_buffer.frag");
 	Shader shaderLightingPass("deferred_shading.vertex", "deferred_shading.frag");
 	Shader shaderLightBox("light_box.vertex", "light_box.frag");
+
+#pragma region 设置多个灯光参数
 	const GLuint NR_LIGHTS = 32;
 	std::vector<glm::vec3> lightPositions;
 	std::vector<glm::vec3> lightColors;
@@ -135,43 +160,10 @@ int main(int argc, char** argv)
 		lightColors.push_back(glm::vec3(rColor, gColor, bColor));
 	}
 	float constant = 1.0f;
-	float linear = 0.09f;
-	float quadratic = 0.032f;
-	vector<PointLight> vecPointLight;
-	shaderLightingPass.use();
-	
-	for (auto i = 0; i < lightPositions.size(); i++)
-	{
-		/*PointLight pointLight(lightAmbientColors[i], lightDiffuseColors[i], lightSpecularColors[i], lightPositions[i]);
-		pointLight.SetAttenuatedConstant(constant);
-		pointLight.SetAttenuatedLinear(linear);
-		pointLight.SetAttenuatedQuadratic(quadratic);*/
-		string strParamName = string("lights[") + to_string(i) + string("].");
-		string str = strParamName + POSITION_PARAM_NAME;
-		shaderLightingPass.setVec3(str, lightPositions[i]);
-		str = strParamName + ATTENUATION_CONSTANT_PARAM_NAME;
-		shaderLightingPass.setFloat(str, constant);
-
-		str = strParamName + ATTENUATION_LINEAR_PARAM_NAME;
-		shaderLightingPass.setFloat(str, linear);
-
-		str = strParamName + ATTENUATION_QUADRATIC_PARAM_NAME;
-		shaderLightingPass.setFloat(str, quadratic);
-
-		str = strParamName + "color";
-		shaderLightingPass.setVec3(str, lightColors[i]);
-	}
-	shaderLightingPass.unUse();
-	/*map<GLenum, AttachmentType> mapColorAttachment;
-	mapColorAttachment[GL_COLOR_ATTACHMENT0] = AttachmentType::Texture;
-	mapColorAttachment[GL_COLOR_ATTACHMENT1] = AttachmentType::Texture;
-	mapColorAttachment[GL_COLOR_ATTACHMENT2] = AttachmentType::Texture;
-	FBOBuffer fboBuffer(mapColorAttachment, true, false);*/
-	//Set up G-Buffer 
-	//3 textures
-	//1.position(RGB)
-	//2.color(RGB)+shiness(A)
-	//3.normal(RGB)
+	float linear = 0.7;
+	float quadratic = 1.8f;
+#pragma endregion
+#pragma region  创建G-Buffer
 	GLuint gBufferFrameBufferId;
 	glGenFramebuffers(1, &gBufferFrameBufferId);
 	glBindFramebuffer(GL_FRAMEBUFFER, gBufferFrameBufferId);
@@ -221,6 +213,7 @@ int main(int argc, char** argv)
 		std::cout << "Framebuffer not complete!" << std::endl;
 		return -1;
 	}
+#pragma endregion
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
@@ -264,7 +257,32 @@ int main(int argc, char** argv)
 		//设置点光源参数
 
 		shaderLightingPass.use();
-		
+		for (auto i = 0; i < lightPositions.size(); i++)
+		{
+			
+			string strParamName = string("lights[") + to_string(i) + string("].");
+			string str = strParamName + POSITION_PARAM_NAME;
+			shaderLightingPass.setVec3(str, glm::vec3(lightPositions[i].x, lightPositions[i].y+yOffset, lightPositions[i].z + zOffset ));
+			str = strParamName + ATTENUATION_CONSTANT_PARAM_NAME;
+			shaderLightingPass.setFloat(str, constant);
+
+			str = strParamName + ATTENUATION_LINEAR_PARAM_NAME;
+			shaderLightingPass.setFloat(str, linear);
+
+			str = strParamName + ATTENUATION_QUADRATIC_PARAM_NAME;
+			shaderLightingPass.setFloat(str, quadratic);
+
+			str = strParamName + "color";
+			shaderLightingPass.setVec3(str, lightColors[i]);
+
+			str = strParamName + "radius";
+			//计算光体积的半径
+			const float maxBrightness = std::fmaxf(std::fmaxf(lightColors[i].r, lightColors[i].g), lightColors[i].b);
+			float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+			shaderLightingPass.setFloat(str, radius);
+		}
+
+		shaderLightingPass.setBool("lightVolumeState", volumes);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, gPositionTextureId);
 		glActiveTexture(GL_TEXTURE1);
@@ -294,7 +312,7 @@ int main(int argc, char** argv)
 		for (auto i = 0; i < lightPositions.size(); i++)
 		{
 			glm::mat4 modelMatrix(1.0f);
-			modelMatrix = glm::translate(modelMatrix, lightPositions[i]);
+			modelMatrix = glm::translate(modelMatrix, glm::vec3(lightPositions[i].x, lightPositions[i].y + yOffset, lightPositions[i].z+zOffset));
 			modelMatrix = glm::scale(modelMatrix, glm::vec3(0.125f, 0.125f, 0.125f));
 			shaderLightBox.setMat4("modelMatrix", modelMatrix);
 			shaderLightBox.setVec3("lightColor", lightColors[i]);
@@ -302,6 +320,20 @@ int main(int argc, char** argv)
 		}
 		
 		shaderLightBox.unUse();
+#pragma region create element
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		ImGui::Begin("Hello Deferrred");
+		//ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+		ImGui::DragFloat("light yoffset", &yOffset,0.1f,-5.f,5.f);      // Edit bools storing our window open/close state
+		ImGui::DragFloat("light zoffset", &zOffset, 0.1f, -5.f, 5.f);														//ImGui::Checkbox("Another Window", &show_another_window);
+		ImGui::Checkbox("light volumes", &volumes);
+		ImGui::End();
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#pragma endregion
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 		glUseProgram(0);
@@ -311,6 +343,11 @@ int main(int argc, char** argv)
 	// 释放资源
 	/*glDeleteVertexArrays(1, &VAOId);
 	glDeleteBuffers(1, &VBOId);*/
+#pragma region Cleanup imgui
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+#pragma endregion
 	glfwTerminate();
 	return 0;
 }

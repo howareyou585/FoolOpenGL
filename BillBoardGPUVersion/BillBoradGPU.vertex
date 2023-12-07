@@ -2,7 +2,7 @@
 layout(location = 0) in vec3 aposition;
 uniform vec3 rightDir; //相机的右方向
 uniform vec3 upDir;     //(0,1,0) 或者是相机的上方向
-
+uniform vec2 offset;
 uniform mat4 mvp;
 out vec2 texcoord;
 void main()
@@ -19,5 +19,6 @@ void main()
 	float x = texcoord.x;
 	float y = texcoord.y;
 	vec3 pnt = aposition + ((x-0.5)*5.0)*rightDir +(y*5)*upDir;
+	pnt += vec3(offset,0.0)*y;
 	gl_Position = mvp*vec4(pnt, 1.0);
 }

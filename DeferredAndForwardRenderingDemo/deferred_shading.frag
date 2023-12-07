@@ -12,6 +12,7 @@ struct Light
 	float constant;
 	float linear;
 	float quadratic;
+	float radius; //光体积的半径
 } ;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
@@ -19,6 +20,7 @@ uniform sampler2D gAlbedoSpec;
 uniform vec3 eyePos;
 const int NR_LIGHTS = 32;
 uniform Light lights[NR_LIGHTS]; 
+uniform bool lightVolumeState;
 
 void main()
 {
@@ -34,7 +36,9 @@ void main()
 	for(int i = 0; i <NR_LIGHTS; i++)
 	{
 		//vec3 ambientColor = lights[i].ambient;
-	
+		float dis =  length(lights[i].position - fragPos);
+		if(!lightVolumeState  || lights[i].radius<dis)
+		{
 		vec3 lightDir =normalize(lights[i].position - fragPos);
 	
 		//diffuse
@@ -48,10 +52,11 @@ void main()
 		vec3 spacularColor = lights[i].color*specular*spacularFator;
 
 		
-		float dis =  length(lights[i].position - fragPos);
+		
 		float attenuation  = 1.0f/(lights[i].constant+lights[i].linear*dis+lights[i].quadratic*dis*dis);
 		
 		result += ( diffuseColor + spacularColor)*attenuation;
+		}
 	}
 
 	fragColor = vec4(result,1.0f);

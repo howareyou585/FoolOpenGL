@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 	
 	
 	vaoBuffer.BuildVAO(billboardVertices, sizeof(billboardVertices), NULL,
-		0, vecAttrib, mapAttrib2Size, GL_DYNAMIC_DRAW);
+		0, vecAttrib, mapAttrib2Size);
 	error = glGetError();
 	// 创建缓存对象
 	vaoId = vaoBuffer.GetVAO();
@@ -117,7 +117,8 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	//glCullFace(GL_BACK);
 	
-	
+	glm::vec2 offset;
+	float time = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -154,7 +155,12 @@ int main(int argc, char** argv)
 		error = glGetError();
 		shader.setVec3("rightDir", camera.Right);
 		shader.setVec3("upDir", glm::vec3(0, 1, 0));
-	    
+		
+		offset.x = glm::cos(time);
+		offset.y = glm::sin(time);
+		shader.setVec2("offset", offset);
+		time += 0.02f;
+		
 		for (auto i = 0; i < 100;i+=5)
 		{
 			for (auto j = 0; j > -100; j -= 5)
