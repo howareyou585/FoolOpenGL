@@ -119,3 +119,5 @@ packages/nupengl.core.redist.0.1.0.1/build/native/default-propertiesui.xml
 packages/nupengl.core.redist.0.1.0.1/build/native/nupengl.core.redist.targets
 packages/nupengl.core.redist.0.1.0.1/build/publisher-info.txt
 packages/nupengl.core.redist.0.1.0.1/nupengl.core.redist.0.1.0.1.nupkg
+*.enc
+*.ini
