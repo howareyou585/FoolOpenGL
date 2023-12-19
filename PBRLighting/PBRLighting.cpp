@@ -101,15 +101,30 @@ int main(int argc, char** argv)
 	// 创建cube缓存对象
 	Model circle("..\\resources\\models\\sphere\\Sphere.obj");
 	BoundingBox box = circle.GetBoundingBox();
-	camera.InitCamera(box, 2.5f);
+	camera.InitCamera(box, 4.5f);
+
+	glm::vec3 lightPositions[] = {
+	   glm::vec3(-10.0f,  10.0f, 10.0f)/*,
+	   glm::vec3(10.0f,  10.0f, 10.0f),
+	   glm::vec3(-10.0f, -10.0f, 10.0f),
+	   glm::vec3(10.0f, -10.0f, 10.0f),*/
+	};
+	glm::vec3 lightColors[] = {
+		glm::vec3(300.0f, 300.0f, 300.0f)//,
+		/*glm::vec3(300.0f, 300.0f, 300.0f),
+		glm::vec3(300.0f, 300.0f, 300.0f),
+		glm::vec3(300.0f, 300.0f, 300.0f)*/
+	};
 	//shader
 	Shader shader("PBRLighting.vertex", "PBRLighting.frag");
 	shader.use();
-	
+	shader.setVec3("lightPositions", lightPositions[0]);
+	shader.setVec3("lightColors", lightColors[0]);
 	glm::mat4 projectMatrix = camera.GetProjectionMatrix((GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT);
 	shader.setMat4("projection", projectMatrix);
 
 	shader.unUse();
+	
 	
 	//configure depth map FBO
 	
@@ -129,17 +144,23 @@ int main(int argc, char** argv)
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shader.use();
+		shader.setVec3("camPos", camera.Position);
 		shader.setMat4("view", camera.GetViewMatrix());
 		float spacing = 2.5f;
-		for (int i = 0; i < col; i++)
-		{
-			glm::mat4 model(1.0);
-			model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
-			glm::vec3 offset((i - (col / 2)) * spacing,
-				0.0,0.0f);
-			model = glm::translate(model,offset);
-			shader.setMat4("model", model);
-			circle.Draw(shader);
+		for(int n = 0; n<row; n++)
+		{ 
+			shader.setFloat("_metallic", (float)n / row);
+			for (int i = 0; i < col; i++)
+			{
+				glm::mat4 model(1.0);
+				model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+				glm::vec3 offset((i - (col / 2)) * spacing,
+					n*2.5, 0.0f);
+				model = glm::translate(model, offset);
+				shader.setMat4("model", model);
+				shader.setFloat("_roughness", (float)i / col);
+				circle.Draw(shader);
+			}
 		}
 		shader.unUse();
 #pragma region create element
