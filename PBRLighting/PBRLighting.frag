@@ -26,12 +26,40 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 	denom = PI * denom * denom; //分母
 	return nom/denom;
 }
+
+// ----------------------------------------------------------------------------
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float nom   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
+}
+// ----------------------------------------------------------------------------
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+
+    return ggx1 * ggx2;
+}
+
+
 void main()
 {
 	vec3 nDir = normalize(Normal) ; // 法线向量
 	vec3 vDir = normalize(camPos- WorldPos);//
 	vec3 lDir = normalize(lightPositions - WorldPos); // 灯光的方向
     vec3 hDir = normalize(vDir + lDir);//半程向量
-	float dGGX =  DistributionGGX(nDir,hDir, _roughness);
-	color = vec4(dGGX,dGGX,dGGX, 1.0);
+
+	float dGGX_result =  DistributionGGX(nDir,hDir, _roughness);
+	
+	float ggx_result = GeometrySmith(nDir,  vDir,  lDir, _roughness);
+	float spacular = dGGX_result* ggx_result;
+	color = vec4(spacular,spacular,spacular, 1.0);
 }

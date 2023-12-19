@@ -149,7 +149,7 @@ int main(int argc, char** argv)
 		float spacing = 2.5f;
 		for(int n = 0; n<row; n++)
 		{ 
-			shader.setFloat("_metallic", (float)n / row);
+			shader.setFloat("_metallic", std::fmax(0.05,(float)n / (row-1)));//
 			for (int i = 0; i < col; i++)
 			{
 				glm::mat4 model(1.0);
@@ -158,7 +158,8 @@ int main(int argc, char** argv)
 					n*2.5, 0.0f);
 				model = glm::translate(model, offset);
 				shader.setMat4("model", model);
-				shader.setFloat("_roughness", (float)i / col);
+				//当粗糙度为0时，给一个默认的0.05；
+				shader.setFloat("_roughness", std::fmax(0.05,(float)i / (col-1)));
 				circle.Draw(shader);
 			}
 		}
