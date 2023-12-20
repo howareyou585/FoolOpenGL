@@ -104,25 +104,29 @@ int main(int argc, char** argv)
 	camera.InitCamera(box, 4.5f);
 
 	glm::vec3 lightPositions[] = {
-	   glm::vec3(-10.0f,  10.0f, 10.0f)/*,
+	   glm::vec3(-10.0f,  10.0f, 10.0f),
 	   glm::vec3(10.0f,  10.0f, 10.0f),
 	   glm::vec3(-10.0f, -10.0f, 10.0f),
-	   glm::vec3(10.0f, -10.0f, 10.0f),*/
+	   glm::vec3(10.0f, -10.0f, 10.0f),
 	};
 	glm::vec3 lightColors[] = {
-		glm::vec3(300.0f, 300.0f, 300.0f)//,
-		/*glm::vec3(300.0f, 300.0f, 300.0f),
 		glm::vec3(300.0f, 300.0f, 300.0f),
-		glm::vec3(300.0f, 300.0f, 300.0f)*/
+		glm::vec3(300.0f, 300.0f, 300.0f),
+		glm::vec3(300.0f, 300.0f, 300.0f),
+		glm::vec3(300.0f, 300.0f, 300.0f)
 	};
 	//shader
 	Shader shader("PBRLighting.vertex", "PBRLighting.frag");
 	shader.use();
-	shader.setVec3("lightPositions", lightPositions[0]);
-	shader.setVec3("lightColors", lightColors[0]);
+	for (int i = 0; i < 4; i++)
+	{
+		shader.setVec3("lightPositions["+to_string(i)+"]", lightPositions[i]);
+		shader.setVec3("lightColors[" + to_string(i) + "]", lightColors[i]);
+	}
 	glm::mat4 projectMatrix = camera.GetProjectionMatrix((GLfloat)WINDOW_WIDTH / WINDOW_HEIGHT);
 	shader.setMat4("projection", projectMatrix);
 
+	shader.setVec3("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
 	shader.unUse();
 	
 	

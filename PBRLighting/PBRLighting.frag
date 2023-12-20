@@ -1,11 +1,12 @@
 #version 330
 
-out vec4 color;
+out vec4 fragColor;
 uniform vec3 camPos;
+uniform vec3 albedo;
 uniform float _roughness;
 uniform float _metallic;
-uniform vec3 lightPositions;
-uniform vec3 lightColors;
+uniform vec3 lightPositions[4];
+uniform vec3 lightColors[4];
 in vec2 TexCoords;
 in vec3 WorldPos;
 in vec3 Normal;
@@ -49,17 +50,63 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
 void main()
 {
+	// calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
+    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow) 
+	//计算法向入射时的反射率；
+	//如果金属度为0，则F0 = 0.04，如果金属度为1，diffuse颜色作为F0
+	vec3 F0 = vec3(0.04); // 初始化0.04 
+	F0 = mix(F0, albedo, _metallic);
+
 	vec3 nDir = normalize(Normal) ; // 法线向量
 	vec3 vDir = normalize(camPos- WorldPos);//
-	vec3 lDir = normalize(lightPositions - WorldPos); // 灯光的方向
-    vec3 hDir = normalize(vDir + lDir);//半程向量
-
-	float dGGX_result =  DistributionGGX(nDir,hDir, _roughness);
+	vec3 BRDF=vec3(0,0,0);
+	for(int i = 0; i < 4; i++)
+	{
+		vec3 lDir = normalize(lightPositions[i] - WorldPos); // 灯光的方向
+		vec3 hDir = normalize(vDir + lDir);//半程向量
+		float distance = length(lightPositions[i] - WorldPos);
+        float attenuation = 1.0 / (distance * distance);
+        vec3 radiance = lightColors[i] * attenuation;
 	
-	float ggx_result = GeometrySmith(nDir,  vDir,  lDir, _roughness);
-	float spacular = dGGX_result* ggx_result;
-	color = vec4(spacular,spacular,spacular, 1.0);
+		//高光的计算
+		float dGGX_result =  DistributionGGX(nDir,hDir, _roughness); 
+		float ggx_result = GeometrySmith(nDir,  vDir,  lDir, _roughness);
+		vec3  fresnel = fresnelSchlick(clamp(dot(hDir, vDir), 0.0, 1.0), F0);
+		// Cook-Torrance BRDF
+		vec3 numerator    = dGGX_result * ggx_result * fresnel; //分子
+		float denominator = 4.0 * max(dot(nDir, vDir), 0.0) * max(dot(nDir, lDir), 0.0) + 0.0001; // 分母 =》+ 0.0001 to prevent divide by zero
+		vec3 specular = numerator / denominator;
+
+		// kS is equal to Fresnel
+		vec3 kS = fresnel;
+		// for energy conservation, the diffuse and specular light can't
+		// be above 1.0 (unless the surface emits light); to preserve this
+		// relationship the diffuse component (kD) should equal 1.0 - kS.
+		// 能量守恒，漫射光和镜面光不能大于1.0（除非表面发光）；
+		//diffuse分量（kD）应等于1.0-kS。
+		vec3 kD = vec3(1.0) - kS;
+		// multiply kD by the inverse metalness such that only non-metals 
+		// have diffuse lighting, or a linear blend if partly metal (pure metals
+		// have no diffuse light).
+		//将kD乘以(1-金属性)，使得只有非金属具有漫射照明，或者如果部分为金属（纯金属没有漫射光）
+		kD *= 1.0 - _metallic;	  
+		float NdotL = max(0, dot(nDir,lDir));
+		BRDF += (kD*albedo/PI+specular)*NdotL*radiance;
+	}
+	
+	//现在已经有了漫反射和高光，没有环境光的话，这两种光作用不到的话，会出现黑的情况。
+	vec3 ambient = albedo*0.05;
+	vec3 color = ambient+BRDF;
+	// HDR tonemapping
+    color = color / (color + vec3(1.0));
+    // gamma correct
+    //color = pow(color, vec3(1.0/2.2)); 
+	
+	fragColor = vec4(color, 1.0);
 }
