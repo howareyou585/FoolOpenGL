@@ -1,8 +1,9 @@
 #version 330
 
 layout(location = 0) in vec3 aposition;
-layout(location = 1) in vec2 atextcoord;
-layout(location = 2) in vec3 anormal;
+layout(location = 1) in vec3 anormal;
+layout(location = 2) in vec2 atextcoord;
+
 uniform mat4 projection;
 uniform mat4 model;
 uniform mat4 view;

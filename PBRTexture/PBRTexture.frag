@@ -86,7 +86,7 @@ void main()
 	float metallic = texture(metallicMap,TexCoords).r;
 	float roughness = texture(roughnessMap,TexCoords).r;
 	float ao        = texture(aoMap, TexCoords).r;
-	vec3 Normal = getNormalFromMap();
+	vec3 NN = getNormalFromMap();
 	// calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow) 
 	//计算法向入射时的反射率；
@@ -94,7 +94,7 @@ void main()
 	vec3 F0 = vec3(0.04); // 初始化0.04 
 	F0 = mix(F0, diffuse, metallic);
 
-	vec3 nDir = normalize(Normal) ; // 法线向量
+	vec3 nDir = normalize(NN) ; // 法线向量
 	vec3 vDir = normalize(camPos- WorldPos);//
 	vec3 BRDF=vec3(0,0,0);
 	for(int i = 0; i < 4; i++)
@@ -140,4 +140,5 @@ void main()
     color = pow(color, vec3(1.0/2.2)); 
 	
 	fragColor = vec4(color, 1.0);
+	
 }
