@@ -23,6 +23,8 @@
 using namespace std;
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false, int wrapType = GL_REPEAT);
+unsigned int TextureFromHDRFile(const char *path, const string &directory,  bool bFlip = true, int wrapType = GL_REPEAT);
+
 unsigned int TextureFromFile(const char *path, const string &directory, int& width, int& height, bool gamma = false);
 unsigned int TextureArrayFromFile(const vector<string>& vecFile, const string &directory, bool gamma = false);
 class Model 
@@ -316,6 +318,7 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 		{
 			internalFormat = gamma ? GL_SRGB : GL_RGB;
 			dataFormat = GL_RGB;
+			
 		}
 		else if (nrComponents == 4)
 		{
@@ -342,6 +345,36 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 
     return textureID;
 }
+
+unsigned int TextureFromHDRFile(const char *path, const string &directory, bool bFlip, int wrapType)
+{
+	
+	stbi_set_flip_vertically_on_load(bFlip);
+	string filename = string(path);
+	filename = directory + '/' + filename;
+	int width, height, nrComponents;
+	float *data = stbi_loadf(filename.c_str(), &width, &height, &nrComponents, 0);
+	unsigned int hdrTexture = 0;
+	if (data)
+	{
+		glGenTextures(1, &hdrTexture);
+		glBindTexture(GL_TEXTURE_2D, hdrTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data); // note how we specify the texture's data value to be float
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapType);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapType);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		std::cout << "Failed to load HDR image." << std::endl;
+	}
+	return hdrTexture;
+}
+
 unsigned int TextureFromFile(const char *path, const string &directory, int& width, int& height, bool gamma)
 {
 	string filename = string(path);
