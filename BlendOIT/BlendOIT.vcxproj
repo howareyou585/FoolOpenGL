@@ -14,8 +14,12 @@
     <ClCompile Include="BlendOIT.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="OIT.frag" />
-    <None Include="OIT.vertex" />
+    <None Include="Composite.frag" />
+    <None Include="Composite.vertex" />
+    <None Include="Solid.frag" />
+    <None Include="Solid.vertex" />
+    <None Include="Transprent.frag" />
+    <None Include="Transprent.vertex" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5303AF1F-52FD-4F89-888D-3410AE15D49A}</ProjectGuid>
