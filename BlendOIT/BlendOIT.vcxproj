@@ -16,6 +16,8 @@
   <ItemGroup>
     <None Include="Composite.frag" />
     <None Include="Composite.vertex" />
+    <None Include="Screen.frag" />
+    <None Include="Screen.vertex" />
     <None Include="Solid.frag" />
     <None Include="Solid.vertex" />
     <None Include="Transprent.frag" />
