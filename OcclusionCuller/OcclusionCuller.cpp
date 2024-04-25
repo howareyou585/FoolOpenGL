@@ -5,12 +5,14 @@ OcclusionCuller::OcclusionCuller(const vector<vec3>& vecColor, const vector<mat4
 	m_fbo(0),m_defFBO(0),m_colorBuffer(0), m_depthBuffer(0)
 	
 {
+	m_vecOcclusionData.reserve(vecColor.size());
 	for (auto i = 0; i < vecColor.size(); i++)
 	{
-		OcclusionData& cm =m_vecOcclusionData[i] ;
+		OcclusionData cm;
 		cm.mdlOrignalColor = vecColor[i];
 		cm.mdlMtx = vecMtx[i];
 		cm.isOcclusion = false;
+		m_vecOcclusionData.emplace_back(cm);
 	}
 	InitColor();
 }
