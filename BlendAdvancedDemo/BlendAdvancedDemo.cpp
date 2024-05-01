@@ -170,7 +170,7 @@ int main(int argc, char** argv)
 		// 清除颜色缓冲区 重置为指定颜色
 		glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDepthMask(GL_FALSE);
+		glDepthMask(GL_FALSE);//一定要加上这句
 		// 这里填写场景绘制代码
 		glBindVertexArray(transparentVAOId);
 		shader.use();
