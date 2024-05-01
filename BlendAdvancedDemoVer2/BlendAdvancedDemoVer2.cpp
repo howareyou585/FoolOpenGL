@@ -13,6 +13,7 @@
 #include "learnopengl/boundingbox.h"
 #include "learnopengl/model.h"
 #include "learnopengl/camera.h"
+#include "learnopengl/vertexset.h"
 // 键盘回调函数原型声明
 //void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow* window, Camera& camera);
@@ -83,10 +84,36 @@ int main(int argc, char** argv)
 	// 设置视口参数
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	//创建透明GPU 缓存
-	VAOBuffer vaoTransparentBuffer;
+	//创建cube buffer
 	vector<vertex_attribute> vecAttrib;
 	map<vertex_attribute, int> mapAttrib2Size;
+	vecAttrib.emplace_back(vertex_attribute::position);
+	vecAttrib.emplace_back(vertex_attribute::texcoord);
+	mapAttrib2Size[vertex_attribute::position] = 3;
+	mapAttrib2Size[vertex_attribute::texcoord] = 2;
+
+	VAOBuffer vaoCubeSolidBuffer;
+	//cubeVertices3
+	vaoCubeSolidBuffer.BuildVAO(cubeVertices3, sizeof(cubeVertices3), nullptr,
+		0, vecAttrib, mapAttrib2Size);
+
+	GLuint cubeSolidVAOId = vaoCubeSolidBuffer.GetVAO();
+	GLuint cubeSolidVBOId = vaoCubeSolidBuffer.GetVBO();
+
+	//创建plane buffer
+	VAOBuffer vaoFloorSolidBuffer;
+	
+	vaoFloorSolidBuffer.BuildVAO(planeVertices2, sizeof(planeVertices2), nullptr,
+		0, vecAttrib, mapAttrib2Size);
+
+	GLuint floorSolidVAOId = vaoFloorSolidBuffer.GetVAO();
+	GLuint floorSolidVBOId = vaoFloorSolidBuffer.GetVBO();
+	//创建透明GPU 缓存
+	VAOBuffer vaoTransparentBuffer;
+	/*vector<vertex_attribute> vecAttrib;
+	map<vertex_attribute, int> mapAttrib2Size;*/
+	// 创建缓存对象
+	
 	vecAttrib.emplace_back(vertex_attribute::position);
 	vecAttrib.emplace_back(vertex_attribute::texcoord);
 	mapAttrib2Size[vertex_attribute::position] = 3;
@@ -110,6 +137,8 @@ int main(int argc, char** argv)
 	//加载材质
 	
 	GLuint texWindowId = TextureFromFile("window.png", "../resources/textures");
+	GLuint texCubeId = TextureFromFile("marble.jpg", "../resources/textures");
+	GLuint texFloorId = TextureFromFile("metal.png", "../resources/textures");
 	// world space positions of our cubes
 	glm::vec3 vegetation[] = {
 		glm::vec3(-1.5f, 0.0f, -0.48f),
@@ -152,9 +181,7 @@ int main(int argc, char** argv)
 	shader.unUse();
 	int nVertex = sizeof(transparentVertices) / (sizeof(GLuint) * 5);
 	// 开始游戏主循环
-	glEnable(GL_DEPTH_TEST); //一定要开启深度测试
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	//glCullFace(GL_BACK);
 	glm::vec3 targetPos = totalBoundingBox.GetCenter();
 	float distance = glm::length(targetPos - camera.Position);
@@ -172,7 +199,8 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// 这里填写场景绘制代码
-		glBindVertexArray(transparentVAOId);
+		glEnable(GL_DEPTH_TEST); //一定要开启深度测试
+		
 		shader.use();
 		//鼠标移动，镜头方向不变
 		targetPos = camera.Position + distance * camera.Front;
@@ -181,14 +209,42 @@ int main(int argc, char** argv)
 		shader.setMat4("view", viewMatrix);
 		glm::mat4 projectionMatrix = camera.GetProjectionMatrix((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT);
 		shader.setMat4("projection", projectionMatrix);
+		//绘制不透明的cube
 
+		vaoCubeSolidBuffer.Bind();
+		glm::mat4 cubeModelMatrix(1.0f);
+		cubeModelMatrix = glm::translate(cubeModelMatrix, glm::vec3(-1.0f, 0.0f, -1.0f));
+		shader.setMat4("model", cubeModelMatrix);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texCubeId);
+		//绘制第一个不透明的box
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		cubeModelMatrix = glm::mat4(1.0);
+		cubeModelMatrix = glm::translate(cubeModelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
+		shader.setMat4("model", cubeModelMatrix);
+		//绘制第二个不透明的box
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//绘制不透明的地面
+		vaoFloorSolidBuffer.Bind();
+		glm::mat4 floorModelMatrix(1.0f);
+		shader.setMat4("model", floorModelMatrix);
+		glBindTexture(GL_TEXTURE_2D, texFloorId);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDepthMask(GL_FALSE);
+		glBindVertexArray(transparentVAOId);
+		//将透明的物体进行排序
+		//glDepthMask(false);
 		for (int i = 0;i< nModelMatrix; i++)
 		{
 			auto dist = glm::length(camera.Position - vegetation[i]);
 			mapDistance2Matrix[dist] = vecModelMatrix[i];
 		}
 
-		glActiveTexture(GL_TEXTURE0);
+		
 		glBindTexture(GL_TEXTURE_2D, texWindowId);
 		//先绘制远处的透明模型，在绘制近处的透明模型
 		for (auto rit = mapDistance2Matrix.rbegin(); rit!=mapDistance2Matrix.rend();rit++)
@@ -200,12 +256,17 @@ int main(int argc, char** argv)
 		shader.unUse();
 		glBindVertexArray(0);
 		glUseProgram(0);
-
+		glDisable(GL_BLEND);
+		glDepthMask(GL_TRUE);
 		glfwSwapBuffers(window); // 交换缓存
 	}
 	// 释放资源
 	glDeleteVertexArrays(1, &transparentVAOId);
 	glDeleteBuffers(1, &transparentVBOId);
+	glDeleteVertexArrays(1, &cubeSolidVAOId);
+	glDeleteBuffers(1, &cubeSolidVBOId);
+	glDeleteVertexArrays(1, &floorSolidVAOId);
+	glDeleteBuffers(1, &floorSolidVBOId);
 	glfwTerminate();
 	return 0;
 }
