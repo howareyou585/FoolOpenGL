@@ -527,7 +527,6 @@ int main(int argc, char** argv)
 	glfwTerminate();
 
 	return EXIT_SUCCESS;
-	return 0;
 }
 //void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 //{
