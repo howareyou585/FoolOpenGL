@@ -1,5 +1,6 @@
 // 引入GLEW库 定义静态链接
 #define GLEW_STATIC
+#define TEST_VIEWMATRIX_Z
 #include <GLEW/glew.h>
 // 引入GLFW库
 #include <GLFW/glfw3.h>
@@ -14,6 +15,7 @@
 #include "learnopengl/boundingbox.h"
 #include "learnopengl/model.h"
 #include "learnopengl/camera.h"
+
 // 键盘回调函数原型声明
 //void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processInput(GLFWwindow *window, Camera & camera);
@@ -113,11 +115,19 @@ int main(int argc, char** argv)
 	};
 	BoundingBox box;
 	int nVal = sizeof(cubeVertices3) / sizeof(GLfloat);
+#ifdef  TEST_VIEWMATRIX_Z
+	vector<glm::vec4> vecPosition;
+	vecPosition.reserve(nVal);
+#endif //  TEST_VIEWMATRIX_Z
 	for (int i = 0; i < nVal; i += 5)
 	{
 		glm::vec3 pnt(cubeVertices3[i], cubeVertices3[i + 1], cubeVertices3[i + 2]);
 		box.Merge(pnt);
+#ifdef  TEST_VIEWMATRIX_Z
+		vecPosition.emplace_back(glm::vec4(cubeVertices3[i], cubeVertices3[i + 1], cubeVertices3[i + 2], 1.0f));
+#endif
 	}
+
 	BoundingBox totalBoundingBox;
 	int nModelMatrix = sizeof(cubePositions) / sizeof(glm::vec3);
 	vector<glm::mat4> vecModelMatrix;
@@ -198,6 +208,27 @@ int main(int argc, char** argv)
 			//glDrawArrays(GL_LINES, 0, nVertex);
 		}
 		shader.unUse();
+#ifdef  TEST_VIEWMATRIX_Z
+		for (auto j = 0; j < nModelMatrix; j++)
+		{
+			for (auto i = 0; i < vecPosition.size(); i++)
+			{
+				glm::vec4 pos = vecPosition[i];
+				auto temppos = viewMatrix * vecModelMatrix[j] * pos;
+				if (temppos.z >= 0)
+				{
+					cout << "pos error" << endl;
+				}
+				else
+				{
+					char strCoord[100] = {};
+					sprintf(strCoord, "%f,%f,%f\n", temppos.x, temppos.y, temppos.z);
+					string str(strCoord);
+					cout << str;
+				}
+			}
+		}
+#endif
 		glBindVertexArray(0);
 		glUseProgram(0);
 
