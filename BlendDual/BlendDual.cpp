@@ -156,6 +156,7 @@ int main(int argc, char** argv)
 	glEnable(GL_BLEND);
 	//glBlendFunc(GL_ONE, GL_SRC1_COLOR);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendColor(0.2f, 0.5f, 0.7f, 0.5f);
 	//glCullFace(GL_BACK);
 	glm::vec3 targetPos = totalBoundingBox.GetCenter();
 	float distance = glm::length(targetPos - camera.Position);
