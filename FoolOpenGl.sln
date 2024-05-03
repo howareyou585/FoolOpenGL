@@ -177,6 +177,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PBR_IBL_Irradiance_Conversi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OcclusionCuller", "OcclusionCuller\OcclusionCuller.vcxproj", "{89A3B4C7-833F-4F7F-97C1-CF6BC42EA6A6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BlendDual", "BlendDual\BlendDual.vcxproj", "{8C75F421-9B69-4C9F-8DA6-262463DCFABB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameBufferOffScene", "FrameBufferOffScene\FrameBufferOffScene.vcxproj", "{59FAF07A-D408-4FEB-82F9-92B765C6CB26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -701,6 +705,18 @@ Global
 		{89A3B4C7-833F-4F7F-97C1-CF6BC42EA6A6}.Release|x64.ActiveCfg = Release|Win32
 		{89A3B4C7-833F-4F7F-97C1-CF6BC42EA6A6}.Release|x86.ActiveCfg = Release|Win32
 		{89A3B4C7-833F-4F7F-97C1-CF6BC42EA6A6}.Release|x86.Build.0 = Release|Win32
+		{8C75F421-9B69-4C9F-8DA6-262463DCFABB}.Debug|x64.ActiveCfg = Debug|Win32
+		{8C75F421-9B69-4C9F-8DA6-262463DCFABB}.Debug|x86.ActiveCfg = Debug|Win32
+		{8C75F421-9B69-4C9F-8DA6-262463DCFABB}.Debug|x86.Build.0 = Debug|Win32
+		{8C75F421-9B69-4C9F-8DA6-262463DCFABB}.Release|x64.ActiveCfg = Release|Win32
+		{8C75F421-9B69-4C9F-8DA6-262463DCFABB}.Release|x86.ActiveCfg = Release|Win32
+		{8C75F421-9B69-4C9F-8DA6-262463DCFABB}.Release|x86.Build.0 = Release|Win32
+		{59FAF07A-D408-4FEB-82F9-92B765C6CB26}.Debug|x64.ActiveCfg = Debug|Win32
+		{59FAF07A-D408-4FEB-82F9-92B765C6CB26}.Debug|x86.ActiveCfg = Debug|Win32
+		{59FAF07A-D408-4FEB-82F9-92B765C6CB26}.Debug|x86.Build.0 = Debug|Win32
+		{59FAF07A-D408-4FEB-82F9-92B765C6CB26}.Release|x64.ActiveCfg = Release|Win32
+		{59FAF07A-D408-4FEB-82F9-92B765C6CB26}.Release|x86.ActiveCfg = Release|Win32
+		{59FAF07A-D408-4FEB-82F9-92B765C6CB26}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

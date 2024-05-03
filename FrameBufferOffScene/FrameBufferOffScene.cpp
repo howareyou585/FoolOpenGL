@@ -130,6 +130,13 @@ int main(int argc, char** argv)
 	// now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
+
+	//以下的两种写法可以加，也可以省略：因为系统默render target =>GL_COLOR_ATTACHMENT0
+	/*glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+	static const GLenum draw_buffers[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, draw_buffers);*/
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// 设置视口参数
