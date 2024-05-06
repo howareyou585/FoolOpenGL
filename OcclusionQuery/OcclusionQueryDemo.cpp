@@ -72,6 +72,9 @@ int main(int argc, char** argv)
 	// 初始化GLEW 获取OpenGL函数
 	glewExperimental = GL_TRUE; // 让glew获取所有拓展函数
 	GLenum status = glewInit();
+	GL_CHECK_ERROR; //GLEW有一个历史悠久的bug，调用glewInit()会设置一个GL_INVALID_ENUM的错误标记，
+	                //所以第一次调用的glGetError永远会猝不及防地给你返回一个错误代码。
+					//如果要修复这个bug，我们建议您在调用glewInit之后立即调用glGetError消除这个标记：
 	if (status != GLEW_OK)
 	{
 		std::cout << "Error::GLEW glew version:" << glewGetString(GLEW_VERSION)
@@ -140,6 +143,7 @@ int main(int argc, char** argv)
 	GLuint one_query;
 	glGenQueries(1, &one_query);
 	GL_INPUT_ERROR
+
 	glEnable(GL_DEPTH_TEST);
 	// 清除颜色缓冲区 重置为指定颜色
 	glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
@@ -159,19 +163,30 @@ int main(int argc, char** argv)
 		vaoBuffer.Bind();
 
 		sceneShader.use();
+		int nOcclusionCount = 0;
 		for (auto i = 0; i < AMOUNT; i++)
 		{
 			sceneShader.setMat4("model", vecCubeModelMatrix[i]);
 			sceneShader.setVec3("color", vecCubeModelColor[i]);
+			glBeginQuery(GL_SAMPLES_PASSED, one_query);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glEndQuery(GL_SAMPLES_PASSED);
+			GLuint the_result = 0;
+			glGetQueryObjectuiv(one_query, GL_QUERY_RESULT, &the_result);
+			if (!the_result)
+			{
+				//cout << "no no no " << endl;
+				++nOcclusionCount;
+			}
 		}
-
+		cout << "nOcclusionCount = " << nOcclusionCount << endl;
+		
 		sceneShader.unUse();
 		glBindVertexArray(0);
 		glfwSwapBuffers(window); // 交换缓存
 		int span = (int)((glfwGetTime() - currentFrame)*1000);
 		char str[100] = {};
-		sprintf(str, "共花费了%dms", span);
+		//sprintf(str, "共花费了%dms", span);
 		cout << span << endl;
 
 	}
