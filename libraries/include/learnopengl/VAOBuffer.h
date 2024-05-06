@@ -37,6 +37,29 @@ public:
 		}
 		
 	}
+	~VAOBuffer()
+	{
+		DeleteBuffer();
+	}
+	void DeleteBuffer()
+	{
+		if (m_vaoId)
+		{
+			glDeleteVertexArrays(1, &m_vaoId);
+			m_vaoId = 0; //需要手动设置为0；
+			
+		}
+		if (m_vboId)
+		{
+			glDeleteBuffers(1, &m_vboId);
+			m_vboId = 0;
+		}
+		if (m_eboId)
+		{
+			glDeleteBuffers(1, &m_eboId);
+			m_eboId = 0;
+		}
+	}
 	VAOBuffer(vector<glm::vec3>& vecPositon,
 		vector<glm::vec2>& vecTexcoord,
 		vector<glm::vec3>& vecNormal,

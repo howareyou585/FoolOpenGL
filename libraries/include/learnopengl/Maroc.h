@@ -1,12 +1,13 @@
 #ifndef MARCO_H
 #define MARCO_H
 #include "../GLEW/glew.h"
-#define GL_INPUT_ERROR {int error = glGetError();\
+#define GL_INPUT_ERROR do {int error = glGetError();\
 if (error != 0)\
 {\
 	std::cout << "error:" << error << std::endl;\
 }\
-}
+}while(0);
+
 
 #define AMBIENT_PARAM_NAME  "ambient"
 #define DIFFUSE_PARAM_NAME  "diffuse"
