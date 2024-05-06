@@ -25,7 +25,7 @@ void UpdateInstanceMatrix(vector<glm::mat4>& vecInsMatrix);
 void UpdateInstanceColor(vector<glm::vec3>& vecInsColor);
 bool OcclusionCuller(vector<glm::mat4>&vecCubeModelMatrix, vector<glm::vec3>&vecCubeModelColor, Shader& shader);
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
-const int AMOUNT = 10000;
+const int AMOUNT = 1000;
 float deltaTime = 0.0f; // 当前帧与上一帧的时间差
 float lastFrame = 0.0f; // 上一帧的时间
 float lastX = WINDOW_WIDTH / 2.0f;
