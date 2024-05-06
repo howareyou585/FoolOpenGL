@@ -23,6 +23,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);// 定义程序常量
 void UpdateInstanceMatrix(vector<glm::mat4>& vecInsMatrix);
 void UpdateInstanceColor(vector<glm::vec3>& vecInsColor);
+bool OcclusionCuller(vector<glm::mat4>&vecCubeModelMatrix, vector<glm::vec3>&vecCubeModelColor, Shader& shader);
 const int WINDOW_WIDTH = 800, WINDOW_HEIGHT = 600;
 const int AMOUNT = 10000;
 float deltaTime = 0.0f; // 当前帧与上一帧的时间差
@@ -140,14 +141,15 @@ int main(int argc, char** argv)
 	sceneShader.setMat4("projection", projection);
 	sceneShader.unUse();
 
-	GLuint one_query;
-	glGenQueries(1, &one_query);
-	GL_INPUT_ERROR
+	
 
 	glEnable(GL_DEPTH_TEST);
 	// 清除颜色缓冲区 重置为指定颜色
 	glClearColor(0.18f, 0.04f, 0.14f, 1.0f);
 
+	vaoBuffer.Bind();
+	OcclusionCuller(vecCubeModelMatrix, vecCubeModelColor, sceneShader);
+	vaoBuffer.UnBind();
 	// 开始游戏主循环
 	while (!glfwWindowShouldClose(window))
 	{
@@ -157,32 +159,17 @@ int main(int argc, char** argv)
 		processInput(window, camera);
 		glfwPollEvents(); // 处理例如鼠标 键盘等事件
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-
-		// 这里填写场景绘制代码
 		vaoBuffer.Bind();
-
 		sceneShader.use();
-		int nOcclusionCount = 0;
-		for (auto i = 0; i < AMOUNT; i++)
+		for (int i = 0; i<vecCubeModelMatrix.size(); i++)
 		{
 			sceneShader.setMat4("model", vecCubeModelMatrix[i]);
 			sceneShader.setVec3("color", vecCubeModelColor[i]);
-			glBeginQuery(GL_SAMPLES_PASSED, one_query);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
-			glEndQuery(GL_SAMPLES_PASSED);
-			GLuint the_result = 0;
-			glGetQueryObjectuiv(one_query, GL_QUERY_RESULT, &the_result);
-			if (!the_result)
-			{
-				//cout << "no no no " << endl;
-				++nOcclusionCount;
-			}
 		}
-		cout << "nOcclusionCount = " << nOcclusionCount << endl;
 		
 		sceneShader.unUse();
-		glBindVertexArray(0);
+		vaoBuffer.UnBind();
 		glfwSwapBuffers(window); // 交换缓存
 		int span = (int)((glfwGetTime() - currentFrame)*1000);
 		char str[100] = {};
@@ -192,8 +179,6 @@ int main(int argc, char** argv)
 	}
 	// 释放资源
 	vaoBuffer.DeleteBuffer();
-	glDeleteQueries(1, &one_query);
-	one_query = 0;
 	sceneShader.deleteProgram();
 	glfwTerminate();
 	return 0;
@@ -238,6 +223,50 @@ void UpdateInstanceColor(vector<glm::vec3>& vecColor)
 		GLfloat bColor = ((rand() % AMOUNT) / 200.0f) + 0.5; // Between 0.5 and 1.0
 		vecColor.push_back(glm::vec3(rColor, gColor, bColor));
 	}
+}
+bool OcclusionCuller(vector<glm::mat4>& vecCubeModelMatrix, vector<glm::vec3>& vecCubeModelColor,Shader &shader)
+{
+	bool bret = false;
+	if (!vecCubeModelMatrix.size() || !vecCubeModelColor.size())
+	{
+		return bret;
+	}
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	GLuint the_query;
+	glGenQueries(1, &the_query);
+	GL_INPUT_ERROR
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	shader.use();
+	for (auto i = 0; i < vecCubeModelMatrix.size();)
+	{
+		shader.setMat4("model", vecCubeModelMatrix[i]);
+		shader.setVec3("color", vecCubeModelColor[i]);
+		glBeginQuery(GL_SAMPLES_PASSED, the_query);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glEndQuery(GL_SAMPLES_PASSED);
+		GLuint the_result = 0;
+		glGetQueryObjectuiv(the_query, GL_QUERY_RESULT, &the_result);
+		if (!the_result)
+		{
+			auto itMatrix = vecCubeModelMatrix.begin();
+			auto itColor = vecCubeModelColor.begin();
+			std::advance(itMatrix, i);
+			std::advance(itColor, i);
+			vecCubeModelMatrix.erase(itMatrix);
+			vecCubeModelColor.erase(itColor);
+		}
+		else
+		{
+			i++;
+		}
+	}
+	GL_CHECK_ERROR;
+	shader.unUse();
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glDeleteQueries(1, &the_query);
+	the_query = 0;
+	bret = true;
+	return bret;
 }
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
